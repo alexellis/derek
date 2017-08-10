@@ -13,10 +13,14 @@ import (
 func handle(req types.PullRequestOuter) {
 	client := github.NewClient(nil)
 
-	if hasUnsignedCommits, err := hasUnsigned(req, client); hasUnsignedCommits && err == nil {
-		fmt.Println("Checking labels on item")
+	hasUnsignedCommits, err := hasUnsigned(req, client)
+
+	if err != nil {
+		fmt.Println("Something went wrong: ", err)
+	} else if hasUnsignedCommits {
+		fmt.Println("Need to apply labels on item.")
 	} else {
-		fmt.Println("Things look OK.")
+		fmt.Println("Things look OK right now.")
 	}
 }
 
@@ -38,7 +42,7 @@ func hasUnsigned(req types.PullRequestOuter, client *github.Client) (bool, error
 
 	for _, commit := range commits {
 		if commit.Commit != nil && commit.Commit.Message != nil {
-			if isSigned(*commit.Commit.Message) {
+			if isSigned(*commit.Commit.Message) == false {
 				hasUnsigned = true
 			}
 
@@ -58,6 +62,7 @@ func hasUnsigned(req types.PullRequestOuter, client *github.Client) (bool, error
 			fmt.Printf("Commit msg:\n'%s'\n", *commit.Commit.Message)
 		}
 	}
+
 	return hasUnsigned, err
 }
 
