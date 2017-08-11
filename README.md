@@ -9,6 +9,10 @@ When someone sends a PR without a sign-off, I'll apply a label and also send the
 
 I'm not a long-running daemon.. I'd get bored that way. I work with webhooks - so stick me in a serverless framework like [OpenFaaS](https://github.com/alexellis/faas) and forget about me. Just apply oil from time to time.
 
+*Inspiration*
+
+The idea for a bot that could comment on issues or respond to activity is from the Moby project's bot called [Poule](https://github.com/icecrime/poule). It's a much more complex long-running daemon which uses Personal Access Tokens (so needs to run as a full GitHub login).
+
 ## Early instructions
 
 Git clone Derek and build it with Golang.
