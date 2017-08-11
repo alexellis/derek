@@ -2,7 +2,7 @@ require 'openssl'
 require 'jwt'  # https://rubygems.org/gems/jwt
 
 # Private key contents
-private_pem = File.read("derek.2017-08-10.private-key.pem")
+private_pem = File.read("private-key.pem")
 private_key = OpenSSL::PKey::RSA.new(private_pem)
 
 # Generate the JWT

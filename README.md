@@ -3,6 +3,10 @@ It's derek. Nice to meet you.
 
 ## Early instructions
 
+Git clone Derek and build it with Golang.
+
+Install Derek as a Github app and get your private key, save it as "private-key.pem" and put it into the auth folder.
+
 Get a JWT:
 
 * In auth folder, insert your pem/private key
@@ -35,3 +39,4 @@ Run `derek`:
 $ export access_token=$(cat access_token.txt) ; ./derek < sample/cli.json 
 ```
 
+If there's no DCO derek will add a label of no-dco and also comment on the issue.
