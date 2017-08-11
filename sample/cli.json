@@ -8,7 +8,7 @@
         "diff_url": "https://github.com/alexellis/fuzzy-robot/pull/1.diff",
         "patch_url": "https://github.com/alexellis/fuzzy-robot/pull/1.patch",
         "issue_url": "https://api.github.com/repos/alexellis/fuzzy-robot/issues/1",
-        "number": 30,
+        "number": 122,
         "state": "closed",
         "locked": false,
         "title": "My header",
@@ -317,7 +317,7 @@
     },
     "repository": {
         "id": 99932326,
-        "name": "faas-cli",
+        "name": "faas",
         "full_name": "alexellis/fuzzy-robot",
         "owner": {
             "login": "alexellis",
