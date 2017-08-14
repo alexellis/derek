@@ -1,6 +1,8 @@
 # derek
 It's derek. Nice to meet you.
 
+> Is this bot live yet?
+
 ## How do I work?
 
 I'm designed to be installed as a GitHub App, but don't worry - I don't need a lot of permissions. Just access to issues and pull requests will do.
