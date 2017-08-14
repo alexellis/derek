@@ -47,7 +47,6 @@ You can save a test event from a webhook (re-delivery page or the live endpoint)
 
 Run `derek`:
 
-
 ```
 $ export access_token=$(cat access_token.txt) ; ./derek < sample/cli.json 
 ```
