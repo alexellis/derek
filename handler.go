@@ -7,37 +7,31 @@ import (
 
 	"os"
 
-	"golang.org/x/oauth2"
-
 	log "github.com/Sirupsen/logrus"
+	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/types"
 	"github.com/google/go-github/github"
 )
 
-func makeClient(ctx context.Context, accessToken string) *github.Client {
-	if len(accessToken) == 0 {
-		return github.NewClient(nil)
-	}
-
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: accessToken},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-
-	client := github.NewClient(tc)
-	return client
-}
-
 func handle(req types.PullRequestOuter) {
 	ctx := context.Background()
 
-	client := makeClient(ctx, os.Getenv("access_token"))
+	token := os.Getenv("access_token")
+	if len(token) == 0 {
+		newToken, tokenErr := auth.MakeAccessTokenForInstallation(os.Getenv("installation"), os.Getenv("private_key"))
+		if tokenErr != nil {
+			log.Fatalln(tokenErr.Error())
+		}
+
+		token = newToken
+	}
+
+	client := auth.MakeClient(ctx, token)
 
 	hasUnsignedCommits, err := hasUnsigned(req, client)
-	hasNoDcoLabel := false
 
 	if err != nil {
-		fmt.Println("Something went wrong: ", err)
+		log.Fatal(err)
 	} else if hasUnsignedCommits {
 		fmt.Println("May need to apply labels on item.")
 
@@ -48,16 +42,12 @@ func handle(req types.PullRequestOuter) {
 		}
 		fmt.Println("Current labels ", issue.Labels)
 
-		for _, label := range issue.Labels {
-			if label.GetName() == "no-dco" {
-				hasNoDcoLabel = true
-			}
-		}
-
-		if !hasNoDcoLabel {
+		if hasNoDcoLabel(issue) == false {
 			fmt.Println("Applying label")
-			assignResult, _, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"no-dco"})
-			fmt.Println(assignResult, assignLabelErr)
+			_, _, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"no-dco"})
+			if assignLabelErr != nil {
+				log.Fatal(assignLabelErr)
+			}
 
 			link := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", req.Repository.Owner.Login, req.Repository.Name)
 			body := `Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off.
@@ -68,7 +58,10 @@ That's something we need before your Pull Request can be merged. Please see our 
 			}
 
 			comment, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, comment)
-			fmt.Println(comment, resp.Rate, err)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(comment, resp.Rate)
 		}
 	} else {
 		fmt.Println("Things look OK right now.")
@@ -78,21 +71,25 @@ That's something we need before your Pull Request can be merged. Please see our 
 			log.Fatalln(labelErr)
 		}
 
-		fmt.Println("Current labels ", issue.Labels)
-
-		for _, label := range issue.Labels {
-			if label.GetName() == "no-dco" {
-				hasNoDcoLabel = true
-			}
-		}
-
-		if hasNoDcoLabel {
+		if hasNoDcoLabel(issue) {
 			fmt.Println("Removing label")
 			_, removeLabelErr := client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, "no-dco")
-			fmt.Println(removeLabelErr)
+			if removeLabelErr != nil {
+				log.Fatal(removeLabelErr)
+			}
 		}
-
 	}
+}
+
+func hasNoDcoLabel(issue *github.Issue) bool {
+	if issue != nil {
+		for _, label := range issue.Labels {
+			if label.GetName() == "no-dco" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func hasUnsigned(req types.PullRequestOuter, client *github.Client) (bool, error) {
@@ -109,6 +106,7 @@ func hasUnsigned(req types.PullRequestOuter, client *github.Client) (bool, error
 		log.Fatalf("Error getting PR %d\n%s", req.PullRequest.Number, err.Error())
 		return hasUnsigned, err
 	}
+
 	fmt.Println("Rate limiting", resp.Rate)
 
 	for _, commit := range commits {
@@ -116,21 +114,6 @@ func hasUnsigned(req types.PullRequestOuter, client *github.Client) (bool, error
 			if isSigned(*commit.Commit.Message) == false {
 				hasUnsigned = true
 			}
-
-			fmt.Printf("Commit - %s - signed-text: %t\n", commit.GetSHA(), isSigned(*commit.Commit.Message))
-			fmt.Println(commit.Commit.Verification)
-
-			if commit.Commit.Verification != nil {
-				fmt.Println("Verification element")
-
-				fmt.Printf("IsVerified? %t\n", commit.Commit.Verification.GetVerified())
-				if commit.Commit.Verification.Signature != nil {
-					fmt.Printf("Signature value: %s\n", *commit.Commit.Verification.Signature)
-				}
-			} else {
-				fmt.Println("No verification")
-			}
-			fmt.Printf("Commit msg:\n'%s'\n", *commit.Commit.Message)
 		}
 	}
 
