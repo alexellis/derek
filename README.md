@@ -1,5 +1,5 @@
 # derek
-It's derek. Nice to meet you.
+It's derek. Nice to meet you. I'd like to help you with Pull Requests on your project.
 
 ## How do I work?
 
@@ -9,47 +9,43 @@ When someone sends a PR without a sign-off, I'll apply a label and also send the
 
 I'm not a long-running daemon.. I'd get bored that way. I work with webhooks - so stick me in a serverless framework like [OpenFaaS](https://github.com/alexellis/faas) and forget about me. Just apply oil from time to time.
 
+This is me in action! Normally contributors edit and re-push within a few minutes after re-reading the contribution guide.
+
+[](https://user-images.githubusercontent.com/6358735/29704343-542a36da-8971-11e7-871e-da30c8e86cae.png)!
+
 *Inspiration*
 
 The idea for a bot that could comment on issues or respond to activity is from the Moby project's bot called [Poule](https://github.com/icecrime/poule). It's a much more complex long-running daemon which uses Personal Access Tokens (so needs to run as a full GitHub login).
 
-## Early instructions
+## Get your own Derek robot
 
-Git clone Derek and build it with Golang.
+* Setup [OpenFaaS](https://github.com/alexellis/openfaas)
 
-Install Derek as a Github app and get your private key, save it as "private-key.pem" and put it into the auth folder.
+* Now get your publically-available URL for OpenFaaS (or one punched out with an ngrok.io tunnel)
 
-Get a JWT:
+* Install Derek as a Github app and get your private key, save it as "private-key.pem" and put it into the auth folder.
 
-* In auth folder, insert your pem/private key
+### Configure Docker image:
 
-You'll get this when you create your Github App
+We have to build a Docker image with your .pem file included
 
-* Get a JWT
+We'll also set the symmetric key or secret that you got from GitHub as the `secret_key` environmental variable. Validating via a symmetric key is also known as HMAC. If you want to turn this off (to edit and debug) then set `validate_hmac="false"`
 
-This needs the Ruby version on brew, install required gems too.
+Fill out the `installation` variable with the installation ID you got from GitHub for Derek.
 
-Run export JWT=(ruby app.rb)
-
-* Now get your bearer token:
+Set the following in your Dockerfile
 
 ```
-$ curl -i -X POST -H "Authorization: Bearer $JWT" -H "Accept: application/vnd.github.machine-man-preview+json" https://api.github.com/installations/<id>/access_tokens
+ENV secret_key="docker"
+ENV installation=45362
+ENV private_key="derek.pem"
+
+ENV validate_hmac="true"
 ```
 
-The <id> is where your app was installed, you can find this via the webhooks sent to your endpoint or via GitHub profile page.
-
-Save the resulting token into your access_token.txt file.
-
-* Save a test event
-
-You can save a test event from a webhook (re-delivery page or the live endpoint) or edit sample/cli.json.
-
-Run `derek`:
-
+Now, build and deploy Derek:
 
 ```
-$ export access_token=$(cat access_token.txt) ; ./derek < sample/cli.json 
+$ docker build -t derek .
+$ faas-cli -action build -name derek -image derek -fprocess=./derek
 ```
-
-If there's no DCO derek will add a label of no-dco and also comment on the issue.
