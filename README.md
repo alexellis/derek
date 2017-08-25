@@ -1,6 +1,8 @@
 # derek
 It's derek. Nice to meet you. I'd like to help you with Pull Requests on your project.
 
+> Please show support for the project and **Star** the repo.
+
 ## How do I work?
 
 I'm designed to be installed as a [GitHub App](https://developer.github.com/apps/building-integrations/setting-up-and-registering-github-apps/), but don't worry - I don't need a lot of permissions. Just access to issues and pull requests will do.
