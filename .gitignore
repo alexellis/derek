@@ -17,4 +17,4 @@ derek
 *.txt
 auth/*.pem
 
-
+*.pem

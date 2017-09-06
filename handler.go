@@ -13,7 +13,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func handle(req types.PullRequestOuter) {
+func handlePullRequest(req types.PullRequestOuter) {
 	ctx := context.Background()
 
 	token := os.Getenv("access_token")

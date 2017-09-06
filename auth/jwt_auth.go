@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"io/ioutil"
 	"time"
 
@@ -9,9 +10,13 @@ import (
 
 // GetSignedJwtToken get a tokens signed with private key
 func GetSignedJwtToken(keyPath string) (string, error) {
+	if len(keyPath) == 0 {
+		return "", fmt.Errorf("unable to read from empty keypath, try setting env: \"private_key\" to a filename and path")
+	}
+
 	keyBytes, err := ioutil.ReadFile(keyPath)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to read keypath: %s, error: %s", keyPath, err)
 	}
 
 	key, keyErr := jwt.ParseRSAPrivateKeyFromPEM(keyBytes)
