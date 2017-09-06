@@ -2,7 +2,7 @@ FROM alpine:3.5
 
 RUN apk --no-cache add curl ca-certificates \ 
     && echo "Pulling watchdog binary from Github." \
-    && curl -sSL https://github.com/alexellis/faas/releases/download/0.6.0/fwatchdog > /usr/bin/fwatchdog \
+    && curl -sSL https://github.com/alexellis/faas/releases/download/0.6.4/fwatchdog > /usr/bin/fwatchdog \
     && chmod +x /usr/bin/fwatchdog \
     && apk del curl --no-cache
 
