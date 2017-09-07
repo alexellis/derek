@@ -1,13 +1,26 @@
 # derek
-It's derek. Nice to meet you. I'd like to help you with Pull Requests on your project.
+It's derek. Nice to meet you. I'd like to help you with Pull Requests and Issues on your GitHub project.
 
 > Please show support for the project and **Star** the repo.
 
+
+## What can I do?
+
+* Check that commits are signed-off
+
+When someone sends a PR without a sign-off, I'll apply a label `no-dco` and also send them a comment pointing them to the contributor guide. Most of the time when I've been helping the OpenFaaS project - people read my message and fix things up without you having to get involved.
+
+* Allow users in a specified MAINTAINERS file to apply comments to issues
+
+You don't have to give people full write access anymore to help you manage issues. I'll do that for you, just put them in a MAINTAINERS file in the root and when they comment on an issue then I'll use my granular permissions instead.
+
+* Derek add label: awesome
+
+[Live demo here](https://twitter.com/alexellisuk/status/905694832445804544)
+
 ## How do I work?
 
-I'm designed to be installed as a [GitHub App](https://developer.github.com/apps/building-integrations/setting-up-and-registering-github-apps/), but don't worry - I don't need a lot of permissions. Just access to issues and pull requests will do.
-
-> When someone sends a PR without a sign-off, I'll apply a label `no-dco` and also send them a comment pointing them to the contributor guide.
+I'm designed to be installed as a [GitHub App](https://developer.github.com/apps/building-integrations/setting-up-and-registering-github-apps/), but don't worry - I don't need a lot of permissions. Just access to issues and Pull Requests will do.
 
 I'm not a long-running daemon.. I'd get bored that way. I work with webhooks - so stick me in a serverless framework like [OpenFaaS](https://github.com/alexellis/faas) and forget about me. Just apply oil from time to time.
 
