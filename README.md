@@ -14,9 +14,17 @@ When someone sends a PR without a sign-off, I'll apply a label `no-dco` and also
 
 You don't have to give people full write access anymore to help you manage issues. I'll do that for you, just put them in a MAINTAINERS file in the root and when they comment on an issue then I'll use my granular permissions instead.
 
-* Derek add label: awesome
+Example:
+
+```
+Derek add label: awesome
+```
 
 [Live demo here](https://twitter.com/alexellisuk/status/905694832445804544)
+
+Example from a live project:
+
+https://github.com/alexellis/faas-cli/issues/85
 
 ## How do I work?
 
