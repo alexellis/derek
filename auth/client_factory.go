@@ -19,8 +19,8 @@ type JwtAuth struct {
 }
 
 // MakeAccessTokenForInstallation makes an access token for an installation / private key
-func MakeAccessTokenForInstallation(installation string, privateKeyPath string) (string, error) {
-	signed, err := GetSignedJwtToken(privateKeyPath)
+func MakeAccessTokenForInstallation(appID, installation, privateKeyPath string) (string, error) {
+	signed, err := GetSignedJwtToken(appID, privateKeyPath)
 
 	if err == nil {
 		c := http.Client{}
