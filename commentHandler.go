@@ -90,6 +90,34 @@ func handleComment(req types.IssueCommentOuter) {
 		}
 
 		break
+	case "Assign":
+		allowed := isMaintainer(req.Comment.User.Login, req.Repository)
+		fmt.Printf("%s wants to %s user %s to issue %d - allowed? %t\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number, allowed)
+
+		if allowed {
+			client, ctx := makeClient()
+			_, _, err := client.Issues.AddAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{command.Value})
+			if err != nil {
+				log.Fatalln(err)
+			}
+			fmt.Printf("%s assigned successfully or already assigned.\n", command.Value)
+		}
+
+		break
+	case "Unassign":
+		allowed := isMaintainer(req.Comment.User.Login, req.Repository)
+		fmt.Printf("%s wants to %s user %s from issue %d - allowed? %t\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number, allowed)
+
+		if allowed {
+			client, ctx := makeClient()
+			_, _, err := client.Issues.RemoveAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{command.Value})
+			if err != nil {
+				log.Fatalln(err)
+			}
+			fmt.Printf("%s unassigned successfully or already unassigned.\n", command.Value)
+		}
+
+		break
 
 	default:
 		log.Fatalln("Unable to work with comment: " + req.Comment.Body)
@@ -97,23 +125,35 @@ func handleComment(req types.IssueCommentOuter) {
 	}
 }
 
-func parse(body string) *types.LabelAction {
-	labelAction := types.LabelAction{}
+func parse(body string) *types.CommentAction {
+	commentAction := types.CommentAction{}
 	add := "Derek add label: "
 	remove := "Derek remove label: "
+	assign := "Derek assign: "
+	unassign := "Derek unassign: "
 
 	if len(body) > len(add) && body[0:len(add)] == add {
 		label := body[len(add):]
 		label = strings.Trim(label, " \t.,\n\r")
-		labelAction.Type = "AddLabel"
-		labelAction.Value = label
+		commentAction.Type = "AddLabel"
+		commentAction.Value = label
 	} else if len(body) > len(remove) && body[0:len(remove)] == remove {
 		label := body[len(remove):]
 		label = strings.Trim(label, " \t.,\n\r")
-		labelAction.Type = "RemoveLabel"
-		labelAction.Value = label
+		commentAction.Type = "RemoveLabel"
+		commentAction.Value = label
+	} else if len(body) > len(assign) && body[0:len(assign)] == assign {
+		assignee := body[len(assign):]
+		assignee = strings.Trim(assignee, " \t.,\n\r")
+		commentAction.Type = "Assign"
+		commentAction.Value = assignee
+	} else if len(body) > len(unassign) && body[0:len(unassign)] == unassign {
+		assignee := body[len(unassign):]
+		assignee = strings.Trim(assignee, " \t.,\n\r")
+		commentAction.Type = "Unassign"
+		commentAction.Value = assignee
 	}
-	return &labelAction
+	return &commentAction
 }
 
 func getMaintainers(owner string, repository string) []string {

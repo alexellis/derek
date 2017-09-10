@@ -43,7 +43,7 @@ type Comment struct {
 	}
 }
 
-type LabelAction struct {
+type CommentAction struct {
 	Type  string
 	Value string
 }
