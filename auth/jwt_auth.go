@@ -9,7 +9,7 @@ import (
 )
 
 // GetSignedJwtToken get a tokens signed with private key
-func GetSignedJwtToken(keyPath string) (string, error) {
+func GetSignedJwtToken(appID, keyPath string) (string, error) {
 	if len(keyPath) == 0 {
 		return "", fmt.Errorf("unable to read from empty keypath, try setting env: \"private_key\" to a filename and path")
 	}
@@ -26,7 +26,7 @@ func GetSignedJwtToken(keyPath string) (string, error) {
 
 	now := time.Now()
 	claims := jwt.StandardClaims{
-		Issuer:    "4385",
+		Issuer:    appID,
 		IssuedAt:  now.Unix(),
 		ExpiresAt: now.Add(time.Minute * 9).Unix(),
 	}

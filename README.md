@@ -65,12 +65,13 @@ We have to build a Docker image with your .pem file included
 
 We'll also set the symmetric key or secret that you got from GitHub as the `secret_key` environmental variable. Validating via a symmetric key is also known as HMAC. If you want to turn this off (to edit and debug) then set `validate_hmac="false"`
 
-Fill out the `installation` variable with the installation ID you got from GitHub for Derek.
+Fill out the `application` variable with the ID of the registered Derek Github App, and the `installation` variable with the installation ID you got when adding Derek to your account.
 
 Set the following in your Dockerfile
 
 ```
 ENV secret_key="docker"
+ENV application=4385
 ENV installation=45362
 ENV private_key="derek.pem"
 

@@ -13,6 +13,7 @@ ENV cgi_headers="true"
 
 ENV fprocess="./derek"
 ENV secret_key="docker"
+ENV application=4385
 ENV installation=45362
 ENV private_key="derek.pem"
 
