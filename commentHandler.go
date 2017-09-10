@@ -127,32 +127,24 @@ func handleComment(req types.IssueCommentOuter) {
 
 func parse(body string) *types.CommentAction {
 	commentAction := types.CommentAction{}
-	add := "Derek add label: "
-	remove := "Derek remove label: "
-	assign := "Derek assign: "
-	unassign := "Derek unassign: "
 
-	if len(body) > len(add) && body[0:len(add)] == add {
-		label := body[len(add):]
-		label = strings.Trim(label, " \t.,\n\r")
-		commentAction.Type = "AddLabel"
-		commentAction.Value = label
-	} else if len(body) > len(remove) && body[0:len(remove)] == remove {
-		label := body[len(remove):]
-		label = strings.Trim(label, " \t.,\n\r")
-		commentAction.Type = "RemoveLabel"
-		commentAction.Value = label
-	} else if len(body) > len(assign) && body[0:len(assign)] == assign {
-		assignee := body[len(assign):]
-		assignee = strings.Trim(assignee, " \t.,\n\r")
-		commentAction.Type = "Assign"
-		commentAction.Value = assignee
-	} else if len(body) > len(unassign) && body[0:len(unassign)] == unassign {
-		assignee := body[len(unassign):]
-		assignee = strings.Trim(assignee, " \t.,\n\r")
-		commentAction.Type = "Unassign"
-		commentAction.Value = assignee
+	commands := map[string]string{
+		"Derek add label: ":    "AddLabel",
+		"Derek remove label: ": "RemoveLabel",
+		"Derek assign: ":       "Assign",
+		"Derek unassign: ":     "Unassign",
 	}
+
+	for trigger, commandType := range commands {
+		if len(body) > len(trigger) && body[0:len(trigger)] == trigger {
+			val := body[len(trigger):]
+			val = strings.Trim(val, " \t.,\n\r")
+			commentAction.Type = commandType
+			commentAction.Value = val
+			break
+		}
+	}
+
 	return &commentAction
 }
 
