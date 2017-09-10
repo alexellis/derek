@@ -96,7 +96,11 @@ func handleComment(req types.IssueCommentOuter) {
 
 		if allowed {
 			client, ctx := makeClient()
-			_, _, err := client.Issues.AddAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{command.Value})
+			assignee := command.Value
+			if assignee == "me" {
+				assignee = req.Comment.User.Login
+			}
+			_, _, err := client.Issues.AddAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{assignee})
 			if err != nil {
 				log.Fatalln(err)
 			}
@@ -110,7 +114,11 @@ func handleComment(req types.IssueCommentOuter) {
 
 		if allowed {
 			client, ctx := makeClient()
-			_, _, err := client.Issues.RemoveAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{command.Value})
+			assignee := command.Value
+			if assignee == "me" {
+				assignee = req.Comment.User.Login
+			}
+			_, _, err := client.Issues.RemoveAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{assignee})
 			if err != nil {
 				log.Fatalln(err)
 			}

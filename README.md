@@ -11,14 +11,19 @@ It's derek ![](https://avatars2.githubusercontent.com/in/4385?v=4&u=55bb4ce98267
 
 When someone sends a PR without a sign-off, I'll apply a label `no-dco` and also send them a comment pointing them to the contributor guide. Most of the time when I've been helping the OpenFaaS project - people read my message and fix things up without you having to get involved.
 
-* Allow users in a specified MAINTAINERS file to apply comments to issues
+* Allow users in a specified MAINTAINERS file to apply labels/assign users to issues
 
 You don't have to give people full write access anymore to help you manage issues. I'll do that for you, just put them in a MAINTAINERS file in the root and when they comment on an issue then I'll use my granular permissions instead.
+
+> Note that the assign/unassign commands provides the shortcut `me` to assign to the commenter
 
 Example:
 
 ```
 Derek add label: awesome
+Derek remove label: awesome
+Derek assign: alexellis
+Derek unassign: me
 ```
 
 [Live demo here](https://twitter.com/alexellisuk/status/905694832445804544)
