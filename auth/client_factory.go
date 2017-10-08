@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"time"
 
+	"os"
+
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
@@ -29,14 +31,27 @@ func MakeAccessTokenForInstallation(appID, installation, privateKeyPath string) 
 		req.Header.Add("Authorization", "Bearer "+signed)
 		req.Header.Add("Accept", "application/vnd.github.machine-man-preview+json")
 
+		if len(os.Getenv("debug")) > 0 {
+			fmt.Println("Bearer " + signed)
+
+		}
+
 		res, err := c.Do(req)
 
+		if len(os.Getenv("debug")) > 0 {
+			fmt.Println("Res code: " + res.Status)
+		}
 		if err == nil {
 			defer res.Body.Close()
 			bytesOut, readErr := ioutil.ReadAll(res.Body)
 			if readErr != nil {
 				return "", readErr
 			}
+
+			if len(os.Getenv("debug")) > 0 {
+				fmt.Println("Res bytesOut: " + string(bytesOut))
+			}
+
 			jwtAuth := JwtAuth{}
 			jsonErr := json.Unmarshal(bytesOut, &jwtAuth)
 			if jsonErr != nil {
