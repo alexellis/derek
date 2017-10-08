@@ -41,11 +41,16 @@ func MakeAccessTokenForInstallation(appID, installation, privateKeyPath string) 
 		if len(os.Getenv("debug")) > 0 {
 			fmt.Println("Res code: " + res.Status)
 		}
+
 		if err == nil {
 			defer res.Body.Close()
 			bytesOut, readErr := ioutil.ReadAll(res.Body)
 			if readErr != nil {
 				return "", readErr
+			}
+
+			if res.StatusCode != http.StatusCreated {
+				return "", fmt.Errorf("Unable to get access token: %d, %s", res.StatusCode, string(bytesOut))
 			}
 
 			if len(os.Getenv("debug")) > 0 {
