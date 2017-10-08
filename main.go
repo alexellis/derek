@@ -47,6 +47,6 @@ func main() {
 		handleComment(req)
 		break
 	default:
-		log.Fatalln("X_Github_Event want: ['pull_request', 'comment'], got: " + eventType)
+		log.Fatalln("X_Github_Event want: ['pull_request', 'issue_comment'], got: " + eventType)
 	}
 }

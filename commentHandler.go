@@ -55,10 +55,11 @@ func handleComment(req types.IssueCommentOuter) {
 
 		if allowed {
 			client, ctx := makeClient()
-			_, _, err := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{command.Value})
+			_, res, err := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{command.Value})
 			if err != nil {
-				log.Fatalln(err)
+				log.Fatalf("%s, limit: %d, remaining: %d", err, res.Limit, res.Remaining)
 			}
+
 			fmt.Println("Label added successfully or already existed.")
 		}
 		break

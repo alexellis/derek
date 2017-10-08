@@ -44,9 +44,9 @@ func handlePullRequest(req types.PullRequestOuter) {
 
 		if hasNoDcoLabel(issue) == false {
 			fmt.Println("Applying label")
-			_, _, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"no-dco"})
+			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"no-dco"})
 			if assignLabelErr != nil {
-				log.Fatal(assignLabelErr)
+				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
 			}
 
 			link := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", req.Repository.Owner.Login, req.Repository.Name)
@@ -59,16 +59,18 @@ That's something we need before your Pull Request can be merged. Please see our 
 
 			comment, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, comment)
 			if err != nil {
+				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, resp.Limit, resp.Remaining)
 				log.Fatal(err)
 			}
 			fmt.Println(comment, resp.Rate)
 		}
 	} else {
 		fmt.Println("Things look OK right now.")
-		issue, _, labelErr := client.Issues.Get(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
+		issue, res, labelErr := client.Issues.Get(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
 
 		if labelErr != nil {
-			log.Fatalln(labelErr)
+			log.Fatalf("%s limit: %d, remaining: %d", labelErr, res.Limit, res.Remaining)
+			log.Fatalln()
 		}
 
 		if hasNoDcoLabel(issue) {
