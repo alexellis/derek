@@ -24,13 +24,15 @@ Derek add label: awesome
 Derek remove label: awesome
 Derek assign: alexellis
 Derek unassign: me
+Derek close
+Derek reopen 
 ```
 
 [Live demo here](https://twitter.com/alexellisuk/status/905694832445804544)
 
 Example from a live project:
 
-https://github.com/alexellis/faas-cli/issues/85
+https://github.com/openfaas/faas-cli/issues/85
 
 ## How do I work?
 
@@ -50,15 +52,15 @@ The idea for a bot that could comment on issues or respond to activity is from t
 
 Derek is active and operating 24/7 helping the OpenFaaS project!
 
-* http://github.com/alexellis/faas
+* http://github.com/openfaas/faas
 
-* http://github.com/alexellis/faas-netes
+* http://github.com/openfaas/faas-netes
 
-* http://github.com/alexellis/faas-cli
+* http://github.com/openfaas/faas-cli
 
 ## Get your own Derek robot
 
-* Setup [OpenFaaS](https://github.com/alexellis/openfaas) and the `faas-cli`
+* Setup [OpenFaaS](https://github.com/openfaas/faas) and the [faas-cli](https://github.com/openfaas/faas-cli)
 
 * Now get your publically-available URL for OpenFaaS (or one punched out with an ngrok.io tunnel)
 
@@ -87,7 +89,7 @@ Now, build and deploy Derek:
 
 ```
 $ docker build -t derek .
-$ faas-cli -action build -name derek -image derek -fprocess=./derek
+$ faas-cli deploy --name derek --image derek --fprocess=./derek
 ```
 
 **Testing**
