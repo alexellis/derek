@@ -14,6 +14,9 @@ import (
 	"github.com/google/go-github/github"
 )
 
+const open = "open"
+const closed = "closed"
+
 func makeClient() (*github.Client, context.Context) {
 	ctx := context.Background()
 
@@ -127,7 +130,30 @@ func handleComment(req types.IssueCommentOuter) {
 		}
 
 		break
+	case "close", "reopen":
+		allowed := isMaintainer(req.Comment.User.Login, req.Repository)
+		fmt.Printf("%s wants to %s issue #%d - allowed? %t\n", req.Comment.User.Login, command.Type, req.Issue.Number, allowed)
 
+		if allowed {
+			client, ctx := makeClient()
+
+			var state string
+
+			if command.Type == "close" {
+				state = closed
+			} else if command.Type == "reopen" {
+				state = open
+			}
+			input := &github.IssueRequest{State: &state}
+
+			_, _, err := client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			fmt.Printf("Request to %s issue #%d by %s was successful.\n", command.Type, req.Issue.Number, req.Comment.User.Login)
+		}
+
+		break
 	default:
 		log.Fatalln("Unable to work with comment: " + req.Comment.Body)
 		break
@@ -142,10 +168,13 @@ func parse(body string) *types.CommentAction {
 		"Derek remove label: ": "RemoveLabel",
 		"Derek assign: ":       "Assign",
 		"Derek unassign: ":     "Unassign",
+		"Derek close":          "close",
+		"Derek reopen":         "reopen",
 	}
 
 	for trigger, commandType := range commands {
-		if len(body) > len(trigger) && body[0:len(trigger)] == trigger {
+
+		if isValidCommand(body, trigger) {
 			val := body[len(trigger):]
 			val = strings.Trim(val, " \t.,\n\r")
 			commentAction.Type = commandType
@@ -155,6 +184,12 @@ func parse(body string) *types.CommentAction {
 	}
 
 	return &commentAction
+}
+
+func isValidCommand(body string, trigger string) bool {
+
+	return (len(body) > len(trigger) && body[0:len(trigger)] == trigger) || (body == trigger && !strings.HasSuffix(trigger, ": "))
+
 }
 
 func getMaintainers(owner string, repository string) []string {
