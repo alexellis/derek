@@ -1,0 +1,17 @@
+provider:
+  name: faas
+  gateway: http://localhost:8080  # can be a remote server
+
+functions:
+  open-derek:
+    handler: ./
+    image: derek:0.1.1
+    lang: Dockerfile
+    environment:
+      secret_key: secret_key_here
+      installation: installation_number
+      private_key: derek.pem
+      application: application_number
+      validate_hmac: true
+      debug: true
+
