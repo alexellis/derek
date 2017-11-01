@@ -16,6 +16,8 @@ import (
 
 const open = "open"
 const closed = "closed"
+const maintFileEnvName = "maintainers_file"
+const defaultMaintFile = "MAINTAINERS"
 
 func makeClient() (*github.Client, context.Context) {
 	ctx := context.Background()
@@ -194,7 +196,11 @@ func isValidCommand(body string, trigger string) bool {
 
 func getMaintainers(owner string, repository string) []string {
 	client := http.Client{}
-	req, _ := http.NewRequest("GET", fmt.Sprintf("https://github.com/%s/%s/raw/master/MAINTAINERS", owner, repository), nil)
+
+	maintainersFile := getEnv(maintFileEnvName, defaultMaintFile)
+	maintainersFile = fmt.Sprintf("https://github.com/%s/%s/raw/master/%s", owner, repository, strings.Trim(maintainersFile, "/"))
+
+	req, _ := http.NewRequest("GET", maintainersFile, nil)
 
 	res, resErr := client.Do(req)
 	if resErr != nil {
@@ -202,7 +208,7 @@ func getMaintainers(owner string, repository string) []string {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		log.Fatalln("HTTP Status code: %d while fetching maintainers list", res.StatusCode)
+		log.Fatalln(fmt.Sprintf("HTTP Status code: %d while fetching maintainers list (%s)", res.StatusCode, maintainersFile))
 	}
 	if res.Body != nil {
 		defer res.Body.Close()
@@ -225,4 +231,11 @@ func isMaintainer(userLogin string, repository types.Repository) bool {
 	}
 
 	return allow
+}
+
+func getEnv(envVar, assumed string) string {
+	if value, exists := os.LookupEnv(envVar); exists {
+		return value
+	}
+	return assumed
 }
