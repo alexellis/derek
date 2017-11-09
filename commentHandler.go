@@ -16,7 +16,7 @@ import (
 
 const open = "open"
 const closed = "closed"
-const maintFileEnvName = "maintainers_file"
+const maintainersFileEnv = "maintainers_file"
 const defaultMaintFile = "MAINTAINERS"
 
 func makeClient() (*github.Client, context.Context) {
@@ -197,10 +197,10 @@ func isValidCommand(body string, trigger string) bool {
 func getMaintainers(owner string, repository string) []string {
 	client := http.Client{}
 
-	maintainersFile := getEnv(maintFileEnvName, defaultMaintFile)
+	maintainersFile := getEnv(maintainersFileEnv, defaultMaintFile)
 	maintainersFile = fmt.Sprintf("https://github.com/%s/%s/raw/master/%s", owner, repository, strings.Trim(maintainersFile, "/"))
 
-	req, _ := http.NewRequest("GET", maintainersFile, nil)
+	req, _ := http.NewRequest(http.MethodGet, maintainersFile, nil)
 
 	res, resErr := client.Do(req)
 	if resErr != nil {
