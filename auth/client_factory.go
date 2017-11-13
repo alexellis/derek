@@ -19,12 +19,12 @@ type JwtAuth struct {
 }
 
 // MakeAccessTokenForInstallation makes an access token for an installation / private key
-func MakeAccessTokenForInstallation(appID, installation, privateKeyPath string) (string, error) {
+func MakeAccessTokenForInstallation(appID string, installation int, privateKeyPath string) (string, error) {
 	signed, err := GetSignedJwtToken(appID, privateKeyPath)
 
 	if err == nil {
 		c := http.Client{}
-		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("https://api.github.com/installations/%s/access_tokens", installation), nil)
+		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("https://api.github.com/installations/%d/access_tokens", installation), nil)
 
 		req.Header.Add("Authorization", "Bearer "+signed)
 		req.Header.Add("Accept", "application/vnd.github.machine-man-preview+json")

@@ -1,0 +1,16 @@
+provider:
+  name: faas
+  # gateway: http://localhost:80  # can be a remote server
+
+functions:
+  the-derek:
+    handler: ./
+    image: derek:2.0
+    lang: Dockerfile
+    environment:
+      private_key: derek.pem
+      validate_hmac: false
+      debug: true
+    environment_file:
+      - secrets.yml
+      # See secrets.example.yml

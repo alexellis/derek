@@ -1,4 +1,4 @@
-FROM golang:1.7.5 as build
+FROM golang:1.9.2-alpine as build
 
 RUN mkdir -p /go/src/github.com/alexellis/derek
 WORKDIR /go/src/github.com/alexellis/derek
@@ -9,7 +9,7 @@ FROM alpine:3.5
 
 RUN apk --no-cache add curl ca-certificates \ 
     && echo "Pulling watchdog binary from Github." \
-    && curl -sSL https://github.com/alexellis/faas/releases/download/0.6.5/fwatchdog > /usr/bin/fwatchdog \
+    && curl -sSL https://github.com/alexellis/faas/releases/download/0.6.9/fwatchdog > /usr/bin/fwatchdog \
     && chmod +x /usr/bin/fwatchdog \
     && apk del curl --no-cache
 
@@ -22,6 +22,7 @@ COPY derek.pem	.
 ENV cgi_headers="true"
 ENV validate_hmac="true"
 ENV fprocess="./derek"
+ENV validate_customers="true"
 
 EXPOSE 8080
 CMD ["fwatchdog"]

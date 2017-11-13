@@ -19,12 +19,12 @@ const closed = "closed"
 const maintainersFileEnv = "maintainers_file"
 const defaultMaintFile = "MAINTAINERS"
 
-func makeClient() (*github.Client, context.Context) {
+func makeClient(installation int) (*github.Client, context.Context) {
 	ctx := context.Background()
 
 	token := os.Getenv("access_token")
 	if len(token) == 0 {
-		newToken, tokenErr := auth.MakeAccessTokenForInstallation(os.Getenv("application"), os.Getenv("installation"), os.Getenv("private_key"))
+		newToken, tokenErr := auth.MakeAccessTokenForInstallation(os.Getenv("application"), installation, os.Getenv("private_key"))
 		if tokenErr != nil {
 			log.Fatalln(tokenErr.Error())
 		}
@@ -59,7 +59,7 @@ func handleComment(req types.IssueCommentOuter) {
 		}
 
 		if allowed {
-			client, ctx := makeClient()
+			client, ctx := makeClient(req.Installation.ID)
 			_, res, err := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{command.Value})
 			if err != nil {
 				log.Fatalf("%s, limit: %d, remaining: %d", err, res.Limit, res.Remaining)
@@ -87,7 +87,7 @@ func handleComment(req types.IssueCommentOuter) {
 		}
 
 		if allowed {
-			client, ctx := makeClient()
+			client, ctx := makeClient(req.Installation.ID)
 			_, err := client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, command.Value)
 			if err != nil {
 				log.Fatalln(err)
@@ -101,7 +101,7 @@ func handleComment(req types.IssueCommentOuter) {
 		fmt.Printf("%s wants to %s user %s to issue %d - allowed? %t\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number, allowed)
 
 		if allowed {
-			client, ctx := makeClient()
+			client, ctx := makeClient(req.Installation.ID)
 			assignee := command.Value
 			if assignee == "me" {
 				assignee = req.Comment.User.Login
@@ -119,7 +119,7 @@ func handleComment(req types.IssueCommentOuter) {
 		fmt.Printf("%s wants to %s user %s from issue %d - allowed? %t\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number, allowed)
 
 		if allowed {
-			client, ctx := makeClient()
+			client, ctx := makeClient(req.Installation.ID)
 			assignee := command.Value
 			if assignee == "me" {
 				assignee = req.Comment.User.Login
@@ -137,7 +137,7 @@ func handleComment(req types.IssueCommentOuter) {
 		fmt.Printf("%s wants to %s issue #%d - allowed? %t\n", req.Comment.User.Login, command.Type, req.Issue.Number, allowed)
 
 		if allowed {
-			client, ctx := makeClient()
+			client, ctx := makeClient(req.Installation.ID)
 
 			var state string
 

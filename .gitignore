@@ -18,3 +18,6 @@ derek
 auth/*.pem
 
 *.pem
+template
+build
+secrets.yml
