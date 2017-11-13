@@ -10,12 +10,18 @@ import (
 	"github.com/alexellis/derek/types"
 )
 
+func hmacValidation() bool {
+	val := os.Getenv("validate_hmac")
+	return len(val) > 0 && (val == "1" || val == "true")
+}
+
 func main() {
 	bytesIn, _ := ioutil.ReadAll(os.Stdin)
 
-	xHubSignature := os.Getenv("XHubSignature")
-	if len(xHubSignature) == 0 {
-		xHubSignature = os.Getenv("Http_X_Hub_Signature")
+	xHubSignature := os.Getenv("Http_X_Hub_Signature")
+	if hmacValidation() && len(xHubSignature) == 0 {
+		log.Fatal("must provide X_Hub_Signature")
+		return
 	}
 
 	if len(xHubSignature) > 0 {
@@ -26,9 +32,9 @@ func main() {
 			log.Fatal(err.Error())
 			return
 		}
-	} else if len(os.Getenv("validate_hmac")) > 0 {
-		log.Fatal("must provide X_Hub_Signature")
 	}
+
+	// HMAC Validated or not turned on.
 
 	eventType := os.Getenv("Http_X_Github_Event")
 	switch eventType {
@@ -37,6 +43,14 @@ func main() {
 		if err := json.Unmarshal(bytesIn, &req); err != nil {
 			log.Fatalf("Cannot parse input %s", err.Error())
 		}
+
+		customer, err := auth.IsCustomer(req.Repository)
+		if err != nil {
+			log.Fatalf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+		} else if !customer {
+			log.Fatalf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+		}
+
 		handlePullRequest(req)
 		break
 	case "issue_comment":
@@ -44,6 +58,14 @@ func main() {
 		if err := json.Unmarshal(bytesIn, &req); err != nil {
 			log.Fatalf("Cannot parse input %s", err.Error())
 		}
+
+		customer, err := auth.IsCustomer(req.Repository)
+		if err != nil {
+			log.Fatalf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+		} else if !customer {
+			log.Fatalf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+		}
+
 		handleComment(req)
 		break
 	default:

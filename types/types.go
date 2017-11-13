@@ -7,16 +7,26 @@ type Repository struct {
 
 type Owner struct {
 	Login string `json:"login"`
+	Type  string `json:"type"`
 }
 
 type PullRequest struct {
 	Number int `json:"number"`
 }
 
+type InstallationRequest struct {
+	Installation ID `json:"installation"`
+}
+
+type ID struct {
+	ID int `json:"id"`
+}
+
 type PullRequestOuter struct {
 	Repository  Repository  `json:"repository"`
 	PullRequest PullRequest `json:"pull_request"`
 	Action      string      `json:"action"`
+	InstallationRequest
 }
 
 type IssueCommentOuter struct {
@@ -24,6 +34,7 @@ type IssueCommentOuter struct {
 	Comment    Comment    `json:"comment"`
 	Action     string     `json:"action"`
 	Issue      Issue      `json:"issue"`
+	InstallationRequest
 }
 
 type IssueLabel struct {
