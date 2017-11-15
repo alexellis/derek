@@ -52,13 +52,25 @@ The idea for a bot that could comment on issues or respond to activity is from t
 
 ### Where is Derek working now?
 
-Derek is active and operating 24/7 helping the OpenFaaS project!
+Derek is active and operating 24/7 helping the award-winning OpenFaaS project!
 
 * http://github.com/openfaas/faas
 
 * http://github.com/openfaas/faas-netes
 
 * http://github.com/openfaas/faas-cli
+
+### Maintainers
+
+* Alex Ellis - author
+* Richard Gee (@rgee0) - co-maintainer
+* John Mccabe (@johnmccabe) - co-maintainer
+
+Alex Ellis created Derek to automate project maintainer duties around licensing and to help bring granular permissions back to GitHub. Derek has empowered contributors in the OpenFaaS community to run and maintain the project without needing full write access. OpenFaaS contributors continue to improve Derek so they can get the job done without fuss.
+
+### Contributions
+
+Please follow the [OpenFaaS contribution guide](https://github.com/openfaas/faas/blob/master/CONTRIBUTING.md).
 
 ## Get your own Derek robot
 
