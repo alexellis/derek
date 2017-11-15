@@ -13,22 +13,40 @@ It's derek ![](https://avatars2.githubusercontent.com/in/4385?v=4&u=55bb4ce98267
 
 When someone sends a PR without a sign-off, I'll apply a label `no-dco` and also send them a comment pointing them to the contributor guide. Most of the time when I've been helping the OpenFaaS project - people read my message and fix things up without you having to get involved.
 
-* Allow users in a specified MAINTAINERS file to apply labels/assign users to issues
+* Allow users in a specified MAINTAINERS file to manage issues and pull-requests
 
-You don't have to give people full write access anymore to help you manage issues. I'll do that for you, just put them in a MAINTAINERS file in the root and when they comment on an issue then I'll use my granular permissions instead.
+You don't have to give people full write access anymore to help you manage issues and pull-requests. I'll do that for you, just put them in a MAINTAINERS file in the root and when they comment on an issue then I'll use my granular permissions instead.
 
 > Note that the assign/unassign commands provides the shortcut `me` to assign to the commenter
 
 Example:
 
+* Labels
+
 ```
 Derek add label: awesome
 Derek remove label: awesome
+```
+
+* Assign work
+
+```
 Derek assign: alexellis
 Derek unassign: me
+```
+
+* Manage issues and PRs
+
+```
 Derek close
 Derek reopen 
 ```
+
+Coming soon
+* [x] Derek as a managed GitHub App
+* [ ] Lock thread
+* [ ] Edit title
+* [ ] Toggle the DCO-feature
 
 [Live demo here](https://twitter.com/alexellisuk/status/905694832445804544)
 
@@ -55,9 +73,7 @@ The idea for a bot that could comment on issues or respond to activity is from t
 Derek is active and operating 24/7 helping the award-winning OpenFaaS project!
 
 * http://github.com/openfaas/faas
-
 * http://github.com/openfaas/faas-netes
-
 * http://github.com/openfaas/faas-cli
 
 ### Maintainers
