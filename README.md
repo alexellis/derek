@@ -1,13 +1,11 @@
 # derek
 
-It's derek ![](https://avatars2.githubusercontent.com/in/4385?v=4&u=55bb4ce982675cb17680b7215e7e0d024b549324&s=24). Nice to meet you. I'd like to help you with Pull Requests and Issues on your GitHub project.
-
-
-> Please show support for the project and **Star** the repo.
-
 [![Go Report Card](https://goreportcard.com/badge/github.com/alexellis/derek)](https://goreportcard.com/report/github.com/alexellis/derek) [![Build Status](https://travis-ci.org/alexellis/derek.svg?branch=master)](https://travis-ci.org/alexellis/derek)
 [![OpenFaaS](https://img.shields.io/badge/openfaas-serverless-blue.svg)](https://www.openfaas.com)
 
+It's derek ![](https://avatars2.githubusercontent.com/in/4385?v=4&u=55bb4ce982675cb17680b7215e7e0d024b549324&s=24). Nice to meet you. I'd like to help you with Pull Requests and Issues on your GitHub project.
+
+> Please show support for the project and **Star** the repo.
 
 ## What can I do?
 
