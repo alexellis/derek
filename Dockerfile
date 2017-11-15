@@ -17,7 +17,7 @@ WORKDIR /root/
 COPY --from=build /go/src/github.com/alexellis/derek/derek derek
 
 # Replace this with a Swarm secret, so that the image can be pushed remotely.
-COPY derek.pem	.
+#COPY derek.pem	.
 
 ENV cgi_headers="true"
 ENV validate_hmac="true"
