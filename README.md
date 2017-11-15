@@ -5,6 +5,10 @@ It's derek ![](https://avatars2.githubusercontent.com/in/4385?v=4&u=55bb4ce98267
 
 > Please show support for the project and **Star** the repo.
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/alexellis/derek)](https://goreportcard.com/report/github.com/alexellis/derek) [![Build Status](https://travis-ci.org/alexellis/derek.svg?branch=master)](https://travis-ci.org/alexellis/derek)
+[![OpenFaaS](https://img.shields.io/badge/openfaas-serverless-blue.svg)](https://www.openfaas.com)
+
+
 ## What can I do?
 
 * Check that commits are signed-off
