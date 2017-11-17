@@ -10,6 +10,9 @@ import (
 	"github.com/alexellis/derek/types"
 )
 
+const dcoCheck = "dco_check"
+const comments = "comments"
+
 func hmacValidation() bool {
 	val := os.Getenv("validate_hmac")
 	return len(val) > 0 && (val == "1" || val == "true")
@@ -35,8 +38,8 @@ func main() {
 	}
 
 	// HMAC Validated or not turned on.
-
 	eventType := os.Getenv("Http_X_Github_Event")
+
 	switch eventType {
 	case "pull_request":
 		req := types.PullRequestOuter{}
@@ -51,8 +54,16 @@ func main() {
 			log.Fatalf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
-		handlePullRequest(req)
+		derekConfig, err := getConfig(req.Repository.Owner.Login, req.Repository.Name)
+		if err != nil {
+			log.Fatalf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+		}
+
+		if enabledFeature(dcoCheck, derekConfig) {
+			handlePullRequest(req)
+		}
 		break
+
 	case "issue_comment":
 		req := types.IssueCommentOuter{}
 		if err := json.Unmarshal(bytesIn, &req); err != nil {
@@ -66,7 +77,14 @@ func main() {
 			log.Fatalf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
-		handleComment(req)
+		derekConfig, err := getConfig(req.Repository.Owner.Login, req.Repository.Name)
+		if err != nil {
+			log.Fatalf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+		}
+
+		if permittedUserFeature(comments, derekConfig, req.Comment.User.Login) {
+			handleComment(req)
+		}
 		break
 	default:
 		log.Fatalln("X_Github_Event want: ['pull_request', 'issue_comment'], got: " + eventType)

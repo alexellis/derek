@@ -8,9 +8,9 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/google/go-github/github"
 	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/types"
-	"github.com/google/go-github/github"
 )
 
 func handlePullRequest(req types.PullRequestOuter) {

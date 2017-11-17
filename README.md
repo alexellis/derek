@@ -47,7 +47,7 @@ Coming soon
 * [x] Derek as a managed GitHub App
 * [ ] Lock thread
 * [ ] Edit title
-* [ ] Toggle the DCO-feature
+* [x] Toggle the DCO-feature
 
 [Live demo here](https://twitter.com/alexellisuk/status/905694832445804544)
 

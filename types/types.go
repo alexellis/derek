@@ -58,3 +58,8 @@ type CommentAction struct {
 	Type  string
 	Value string
 }
+
+type DerekConfig struct {
+	Features    []string
+	Maintainers []string
+}
