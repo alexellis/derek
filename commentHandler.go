@@ -3,21 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/google/go-github/github"
 	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/types"
-	"github.com/google/go-github/github"
 )
 
 const open = "open"
 const closed = "closed"
-const maintainersFileEnv = "maintainers_file"
-const defaultMaintFile = "MAINTAINERS"
 
 func makeClient(installation int) (*github.Client, context.Context) {
 	ctx := context.Background()
@@ -42,8 +38,8 @@ func handleComment(req types.IssueCommentOuter) {
 	command := parse(req.Comment.Body)
 	switch command.Type {
 	case "AddLabel":
-		allowed := isMaintainer(req.Comment.User.Login, req.Repository)
-		fmt.Printf("%s wants to %s of %s to issue %d - allowed? %t\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number, allowed)
+
+		fmt.Printf("%s wants to %s of %s to issue %d\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number)
 
 		found := false
 		for _, label := range req.Issue.Labels {
@@ -58,20 +54,19 @@ func handleComment(req types.IssueCommentOuter) {
 			return
 		}
 
-		if allowed {
-			client, ctx := makeClient(req.Installation.ID)
-			_, res, err := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{command.Value})
-			if err != nil {
-				log.Fatalf("%s, limit: %d, remaining: %d", err, res.Limit, res.Remaining)
-			}
-
-			fmt.Println("Label added successfully or already existed.")
+		client, ctx := makeClient(req.Installation.ID)
+		_, res, err := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{command.Value})
+		if err != nil {
+			log.Fatalf("%s, limit: %d, remaining: %d", err, res.Limit, res.Remaining)
 		}
+
+		fmt.Println("Label added successfully or already existed.")
+
 		break
 
 	case "RemoveLabel":
-		allowed := isMaintainer(req.Comment.User.Login, req.Repository)
-		fmt.Printf("%s wants to %s of %s to issue %d - allowed? %t\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number, allowed)
+
+		fmt.Printf("%s wants to %s of %s to issue %d \n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number)
 
 		found := false
 		for _, label := range req.Issue.Labels {
@@ -86,74 +81,65 @@ func handleComment(req types.IssueCommentOuter) {
 			return
 		}
 
-		if allowed {
-			client, ctx := makeClient(req.Installation.ID)
-			_, err := client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, command.Value)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			fmt.Println("Label removed successfully or already removed.")
+		client, ctx := makeClient(req.Installation.ID)
+		_, err := client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, command.Value)
+		if err != nil {
+			log.Fatalln(err)
 		}
+		fmt.Println("Label removed successfully or already removed.")
 
 		break
 	case "Assign":
-		allowed := isMaintainer(req.Comment.User.Login, req.Repository)
-		fmt.Printf("%s wants to %s user %s to issue %d - allowed? %t\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number, allowed)
 
-		if allowed {
-			client, ctx := makeClient(req.Installation.ID)
-			assignee := command.Value
-			if assignee == "me" {
-				assignee = req.Comment.User.Login
-			}
-			_, _, err := client.Issues.AddAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{assignee})
-			if err != nil {
-				log.Fatalln(err)
-			}
-			fmt.Printf("%s assigned successfully or already assigned.\n", command.Value)
+		fmt.Printf("%s wants to %s user %s to issue %d\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number)
+
+		client, ctx := makeClient(req.Installation.ID)
+		assignee := command.Value
+		if assignee == "me" {
+			assignee = req.Comment.User.Login
 		}
+		_, _, err := client.Issues.AddAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{assignee})
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Printf("%s assigned successfully or already assigned.\n", command.Value)
 
 		break
 	case "Unassign":
-		allowed := isMaintainer(req.Comment.User.Login, req.Repository)
-		fmt.Printf("%s wants to %s user %s from issue %d - allowed? %t\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number, allowed)
 
-		if allowed {
-			client, ctx := makeClient(req.Installation.ID)
-			assignee := command.Value
-			if assignee == "me" {
-				assignee = req.Comment.User.Login
-			}
-			_, _, err := client.Issues.RemoveAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{assignee})
-			if err != nil {
-				log.Fatalln(err)
-			}
-			fmt.Printf("%s unassigned successfully or already unassigned.\n", command.Value)
+		fmt.Printf("%s wants to %s user %s from issue %d\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number)
+
+		client, ctx := makeClient(req.Installation.ID)
+		assignee := command.Value
+		if assignee == "me" {
+			assignee = req.Comment.User.Login
 		}
+		_, _, err := client.Issues.RemoveAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{assignee})
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Printf("%s unassigned successfully or already unassigned.\n", command.Value)
 
 		break
 	case "close", "reopen":
-		allowed := isMaintainer(req.Comment.User.Login, req.Repository)
-		fmt.Printf("%s wants to %s issue #%d - allowed? %t\n", req.Comment.User.Login, command.Type, req.Issue.Number, allowed)
+		fmt.Printf("%s wants to %s issue #%d\n", req.Comment.User.Login, command.Type, req.Issue.Number)
 
-		if allowed {
-			client, ctx := makeClient(req.Installation.ID)
+		client, ctx := makeClient(req.Installation.ID)
 
-			var state string
+		var state string
 
-			if command.Type == "close" {
-				state = closed
-			} else if command.Type == "reopen" {
-				state = open
-			}
-			input := &github.IssueRequest{State: &state}
-
-			_, _, err := client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			fmt.Printf("Request to %s issue #%d by %s was successful.\n", command.Type, req.Issue.Number, req.Comment.User.Login)
+		if command.Type == "close" {
+			state = closed
+		} else if command.Type == "reopen" {
+			state = open
 		}
+		input := &github.IssueRequest{State: &state}
+
+		_, _, err := client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Printf("Request to %s issue #%d by %s was successful.\n", command.Type, req.Issue.Number, req.Comment.User.Login)
 
 		break
 	default:
@@ -163,6 +149,7 @@ func handleComment(req types.IssueCommentOuter) {
 }
 
 func parse(body string) *types.CommentAction {
+
 	commentAction := types.CommentAction{}
 
 	commands := map[string]string{
@@ -192,50 +179,4 @@ func isValidCommand(body string, trigger string) bool {
 
 	return (len(body) > len(trigger) && body[0:len(trigger)] == trigger) || (body == trigger && !strings.HasSuffix(trigger, ": "))
 
-}
-
-func getMaintainers(owner string, repository string) []string {
-	client := http.Client{}
-
-	maintainersFile := getEnv(maintainersFileEnv, defaultMaintFile)
-	maintainersFile = fmt.Sprintf("https://github.com/%s/%s/raw/master/%s", owner, repository, strings.Trim(maintainersFile, "/"))
-
-	req, _ := http.NewRequest(http.MethodGet, maintainersFile, nil)
-
-	res, resErr := client.Do(req)
-	if resErr != nil {
-		log.Fatalln(resErr)
-	}
-
-	if res.StatusCode != http.StatusOK {
-		log.Fatalln(fmt.Sprintf("HTTP Status code: %d while fetching maintainers list (%s)", res.StatusCode, maintainersFile))
-	}
-	if res.Body != nil {
-		defer res.Body.Close()
-	}
-
-	bytesOut, _ := ioutil.ReadAll(res.Body)
-	lines := string(bytesOut)
-	return strings.Split(lines, "\n")
-}
-
-func isMaintainer(userLogin string, repository types.Repository) bool {
-	maintainers := getMaintainers(repository.Owner.Login, repository.Name)
-	fmt.Println("UserLogin: "+userLogin+", Maintainers: ", maintainers)
-	allow := false
-	for _, maintainer := range maintainers {
-		if len(maintainer) > 0 && maintainer == userLogin {
-			allow = true
-			break
-		}
-	}
-
-	return allow
-}
-
-func getEnv(envVar, assumed string) string {
-	if value, exists := os.LookupEnv(envVar); exists {
-		return value
-	}
-	return assumed
 }

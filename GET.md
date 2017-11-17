@@ -38,6 +38,19 @@ $ docker build -t derek .
 $ faas-cli deploy --name derek --image derek --fprocess=./derek
 ```
 
+Finally configure the features that you want to enable within your GitHub repo by creating a `.DEREK.yml` file.
+The file should detail which features you wish to enable and the maintainer names; for example this repo would look as follows:
+
+```yml
+maintainers:
+ - alexellis
+ - rgee0
+ - johnmccabe
+features:
+ - dco_check
+ - comments
+```
+
 **Testing**
 
 Create a label of "no-dco" within every project you want Derek to help you with.

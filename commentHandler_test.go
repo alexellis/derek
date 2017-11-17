@@ -1,52 +1,8 @@
 package main
 
 import (
-	"os"
 	"testing"
 )
-
-var envVarOptions = []struct {
-	title          string
-	envName        string
-	envConfigVal   string
-	envExpectedVal string
-}{
-	{
-		title:          "envvar correctly set",
-		envName:        "maintainers_file",
-		envConfigVal:   "DEREK",
-		envExpectedVal: "DEREK",
-	},
-	{
-		title:          "Misspelt envVar Name",
-		envName:        "maintainers_fill",
-		envConfigVal:   "DEREK",
-		envExpectedVal: "MAINTAINERS",
-	},
-	{
-		title:          "envVar doesnt exist",
-		envName:        "",
-		envConfigVal:   "",
-		envExpectedVal: "MAINTAINERS",
-	},
-}
-
-func Test_getEnv(t *testing.T) {
-
-	for _, test := range envVarOptions {
-		t.Run(test.title, func(t *testing.T) {
-
-			os.Setenv(test.envName, test.envConfigVal)
-
-			envvar := getEnv("maintainers_file", "MAINTAINERS")
-
-			if envvar != test.envExpectedVal {
-				t.Errorf("Maintainers File - wanted: %s, found %s", test.envExpectedVal, envvar)
-			}
-			os.Unsetenv(test.envName)
-		})
-	}
-}
 
 var actionOptions = []struct {
 	title          string
