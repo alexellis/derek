@@ -51,33 +51,33 @@ func Test_Parsing_OpenClose(t *testing.T) {
 	}
 }
 
-var labelOptions = []struct {
-	title        string
-	body         string
-	expectedType string
-	expectedVal  string
-}{
-	{ //this case replaces Test_Parsing_AddLabel
-		title:        "Add label of demo",
-		body:         "Derek add label: demo",
-		expectedType: "AddLabel",
-		expectedVal:  "demo",
-	},
-	{
-		title:        "Remove label of demo",
-		body:         "Derek remove label: demo",
-		expectedType: "RemoveLabel",
-		expectedVal:  "demo",
-	},
-	{
-		title:        "Invalid label action",
-		body:         "Derek peel label: demo",
-		expectedType: "",
-		expectedVal:  "",
-	},
-}
-
 func Test_Parsing_Labels(t *testing.T) {
+
+	var labelOptions = []struct {
+		title        string
+		body         string
+		expectedType string
+		expectedVal  string
+	}{
+		{ //this case replaces Test_Parsing_AddLabel
+			title:        "Add label of demo",
+			body:         "Derek add label: demo",
+			expectedType: "AddLabel",
+			expectedVal:  "demo",
+		},
+		{
+			title:        "Remove label of demo",
+			body:         "Derek remove label: demo",
+			expectedType: "RemoveLabel",
+			expectedVal:  "demo",
+		},
+		{
+			title:        "Invalid label action",
+			body:         "Derek peel label: demo",
+			expectedType: "",
+			expectedVal:  "",
+		},
+	}
 
 	for _, test := range labelOptions {
 		t.Run(test.title, func(t *testing.T) {
@@ -90,51 +90,51 @@ func Test_Parsing_Labels(t *testing.T) {
 	}
 }
 
-var assignmentOptions = []struct {
-	title        string
-	body         string
-	expectedType string
-	expectedVal  string
-}{
-	{
-		title:        "Assign to burt",
-		body:         "Derek assign: burt",
-		expectedType: "Assign",
-		expectedVal:  "burt",
-	},
-	{
-		title:        "Unassign burt",
-		body:         "Derek unassign: burt",
-		expectedType: "Unassign",
-		expectedVal:  "burt",
-	},
-	{
-		title:        "Assign to me",
-		body:         "Derek assign: me",
-		expectedType: "Assign",
-		expectedVal:  "me",
-	},
-	{
-		title:        "Unassign me",
-		body:         "Derek unassign: me",
-		expectedType: "Unassign",
-		expectedVal:  "me",
-	},
-	{
-		title:        "Invalid assignment action",
-		body:         "Derek consign: burt",
-		expectedType: "",
-		expectedVal:  "",
-	},
-	{
-		title:        "Unassign blank",
-		body:         "Derek unassign: ",
-		expectedType: "",
-		expectedVal:  "",
-	},
-}
-
 func Test_Parsing_Assignments(t *testing.T) {
+
+	var assignmentOptions = []struct {
+		title        string
+		body         string
+		expectedType string
+		expectedVal  string
+	}{
+		{
+			title:        "Assign to burt",
+			body:         "Derek assign: burt",
+			expectedType: "Assign",
+			expectedVal:  "burt",
+		},
+		{
+			title:        "Unassign burt",
+			body:         "Derek unassign: burt",
+			expectedType: "Unassign",
+			expectedVal:  "burt",
+		},
+		{
+			title:        "Assign to me",
+			body:         "Derek assign: me",
+			expectedType: "Assign",
+			expectedVal:  "me",
+		},
+		{
+			title:        "Unassign me",
+			body:         "Derek unassign: me",
+			expectedType: "Unassign",
+			expectedVal:  "me",
+		},
+		{
+			title:        "Invalid assignment action",
+			body:         "Derek consign: burt",
+			expectedType: "",
+			expectedVal:  "",
+		},
+		{
+			title:        "Unassign blank",
+			body:         "Derek unassign: ",
+			expectedType: "",
+			expectedVal:  "",
+		},
+	}
 
 	for _, test := range assignmentOptions {
 		t.Run(test.title, func(t *testing.T) {

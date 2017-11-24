@@ -13,7 +13,7 @@ import (
 	"github.com/alexellis/derek/types"
 )
 
-const defaultMaintFile = ".DEREK.yml"
+const configFile = ".DEREK.yml"
 
 func enabledFeature(attemptedFeature string, config *types.DerekConfig) bool {
 
@@ -46,7 +46,7 @@ func permittedUserFeature(attemptedFeature string, config *types.DerekConfig, us
 
 func getConfig(owner string, repository string) (*types.DerekConfig, error) {
 
-	maintainersFile := fmt.Sprintf("https://github.com/%s/%s/raw/master/%s", owner, repository, defaultMaintFile)
+	maintainersFile := fmt.Sprintf("https://github.com/%s/%s/raw/master/%s", owner, repository, configFile)
 
 	client := http.Client{
 		Timeout: 30 * time.Second,
