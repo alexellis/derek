@@ -5,11 +5,11 @@ WORKDIR /go/src/github.com/alexellis/derek
 COPY	.	.
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o derek .
 
-FROM alpine:3.5
+FROM alpine:3.6
 
 RUN apk --no-cache add curl ca-certificates \ 
     && echo "Pulling watchdog binary from Github." \
-    && curl -sSL https://github.com/alexellis/faas/releases/download/0.6.9/fwatchdog > /usr/bin/fwatchdog \
+    && curl -sSL https://github.com/alexellis/faas/releases/download/0.6.11/fwatchdog > /usr/bin/fwatchdog \
     && chmod +x /usr/bin/fwatchdog \
     && apk del curl --no-cache
 

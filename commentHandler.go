@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/google/go-github/github"
 	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/types"
+	"github.com/google/go-github/github"
 )
 
 const open = "open"
@@ -20,7 +20,11 @@ func makeClient(installation int) (*github.Client, context.Context) {
 
 	token := os.Getenv("access_token")
 	if len(token) == 0 {
-		newToken, tokenErr := auth.MakeAccessTokenForInstallation(os.Getenv("application"), installation, os.Getenv("private_key"))
+
+		applicationID := os.Getenv("application")
+		privateKeyPath := os.Getenv("private_key")
+
+		newToken, tokenErr := auth.MakeAccessTokenForInstallation(applicationID, installation, privateKeyPath)
 		if tokenErr != nil {
 			log.Fatalln(tokenErr.Error())
 		}
@@ -98,6 +102,7 @@ func handleComment(req types.IssueCommentOuter) {
 		if assignee == "me" {
 			assignee = req.Comment.User.Login
 		}
+
 		_, _, err := client.Issues.AddAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{assignee})
 		if err != nil {
 			log.Fatalln(err)
@@ -121,6 +126,7 @@ func handleComment(req types.IssueCommentOuter) {
 		fmt.Printf("%s unassigned successfully or already unassigned.\n", command.Value)
 
 		break
+
 	case "close", "reopen":
 		fmt.Printf("%s wants to %s issue #%d\n", req.Comment.User.Login, command.Type, req.Issue.Number)
 
@@ -176,7 +182,6 @@ func parse(body string) *types.CommentAction {
 }
 
 func isValidCommand(body string, trigger string) bool {
-
-	return (len(body) > len(trigger) && body[0:len(trigger)] == trigger) || (body == trigger && !strings.HasSuffix(trigger, ": "))
-
+	return (len(body) > len(trigger) && body[0:len(trigger)] == trigger) ||
+		(body == trigger && !strings.HasSuffix(trigger, ": "))
 }

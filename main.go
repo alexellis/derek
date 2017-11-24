@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -40,23 +41,30 @@ func main() {
 	// HMAC Validated or not turned on.
 	eventType := os.Getenv("Http_X_Github_Event")
 
+	if err := handleEvent(eventType, bytesIn); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func handleEvent(eventType string, bytesIn []byte) error {
+
 	switch eventType {
 	case "pull_request":
 		req := types.PullRequestOuter{}
 		if err := json.Unmarshal(bytesIn, &req); err != nil {
-			log.Fatalf("Cannot parse input %s", err.Error())
+			return fmt.Errorf("Cannot parse input %s", err.Error())
 		}
 
 		customer, err := auth.IsCustomer(req.Repository)
 		if err != nil {
-			log.Fatalf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
-		} else if !customer {
-			log.Fatalf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+			return fmt.Errorf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+		} else if customer == false {
+			return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
 		derekConfig, err := getConfig(req.Repository.Owner.Login, req.Repository.Name)
 		if err != nil {
-			log.Fatalf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
 		if enabledFeature(dcoCheck, derekConfig) {
@@ -67,19 +75,19 @@ func main() {
 	case "issue_comment":
 		req := types.IssueCommentOuter{}
 		if err := json.Unmarshal(bytesIn, &req); err != nil {
-			log.Fatalf("Cannot parse input %s", err.Error())
+			return fmt.Errorf("Cannot parse input %s", err.Error())
 		}
 
 		customer, err := auth.IsCustomer(req.Repository)
 		if err != nil {
-			log.Fatalf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
-		} else if !customer {
-			log.Fatalf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+			return fmt.Errorf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+		} else if customer == false {
+			return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
 		derekConfig, err := getConfig(req.Repository.Owner.Login, req.Repository.Name)
 		if err != nil {
-			log.Fatalf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
 		if permittedUserFeature(comments, derekConfig, req.Comment.User.Login) {
@@ -87,6 +95,8 @@ func main() {
 		}
 		break
 	default:
-		log.Fatalln("X_Github_Event want: ['pull_request', 'issue_comment'], got: " + eventType)
+		return fmt.Errorf("X_Github_Event want: ['pull_request', 'issue_comment'], got: " + eventType)
 	}
+
+	return nil
 }
