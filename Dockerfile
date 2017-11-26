@@ -3,6 +3,9 @@ FROM golang:1.9.2-alpine as build
 RUN mkdir -p /go/src/github.com/alexellis/derek
 WORKDIR /go/src/github.com/alexellis/derek
 COPY	.	.
+
+RUN go test $(go list ./...) -cover
+
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o derek .
 
 FROM alpine:3.6

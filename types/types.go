@@ -44,6 +44,9 @@ type IssueLabel struct {
 type Issue struct {
 	Labels []IssueLabel `json:"labels"`
 	Number int          `json:"number"`
+	Title  string       `json:"title"`
+	Locked bool         `json:"locked"`
+	State  string       `json:"state"`
 }
 
 type Comment struct {

@@ -13,6 +13,7 @@ import (
 
 const dcoCheck = "dco_check"
 const comments = "comments"
+const deleted = "deleted"
 
 func hmacValidation() bool {
 	val := os.Getenv("validate_hmac")
@@ -66,9 +67,10 @@ func handleEvent(eventType string, bytesIn []byte) error {
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
-
-		if enabledFeature(dcoCheck, derekConfig) {
-			handlePullRequest(req)
+		if req.Action != closed {
+			if enabledFeature(dcoCheck, derekConfig) {
+				handlePullRequest(req)
+			}
 		}
 		break
 
@@ -90,8 +92,10 @@ func handleEvent(eventType string, bytesIn []byte) error {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
-		if permittedUserFeature(comments, derekConfig, req.Comment.User.Login) {
-			handleComment(req)
+		if req.Action != deleted {
+			if permittedUserFeature(comments, derekConfig, req.Comment.User.Login) {
+				handleComment(req)
+			}
 		}
 		break
 	default:

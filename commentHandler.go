@@ -40,6 +40,7 @@ func makeClient(installation int) (*github.Client, context.Context) {
 func handleComment(req types.IssueCommentOuter) {
 
 	command := parse(req.Comment.Body)
+
 	switch command.Type {
 	case "AddLabel":
 
@@ -93,6 +94,7 @@ func handleComment(req types.IssueCommentOuter) {
 		fmt.Println("Label removed successfully or already removed.")
 
 		break
+
 	case "Assign":
 
 		fmt.Printf("%s wants to %s user %s to issue %d\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number)
@@ -110,11 +112,13 @@ func handleComment(req types.IssueCommentOuter) {
 		fmt.Printf("%s assigned successfully or already assigned.\n", command.Value)
 
 		break
+
 	case "Unassign":
 
 		fmt.Printf("%s wants to %s user %s from issue %d\n", req.Comment.User.Login, command.Type, command.Value, req.Issue.Number)
 
 		client, ctx := makeClient(req.Installation.ID)
+
 		assignee := command.Value
 		if assignee == "me" {
 			assignee = req.Comment.User.Login
@@ -130,16 +134,15 @@ func handleComment(req types.IssueCommentOuter) {
 	case "close", "reopen":
 		fmt.Printf("%s wants to %s issue #%d\n", req.Comment.User.Login, command.Type, req.Issue.Number)
 
-		client, ctx := makeClient(req.Installation.ID)
+		newState, validTransition := checkTransition(command.Type, req.Issue.State)
 
-		var state string
-
-		if command.Type == "close" {
-			state = closed
-		} else if command.Type == "reopen" {
-			state = open
+		if !validTransition {
+			fmt.Printf("Request to %s issue #%d by %s was invalid.\n", command.Type, req.Issue.Number, req.Comment.User.Login)
+			return
 		}
-		input := &github.IssueRequest{State: &state}
+
+		client, ctx := makeClient(req.Installation.ID)
+		input := &github.IssueRequest{State: &newState}
 
 		_, _, err := client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
 		if err != nil {
@@ -148,6 +151,67 @@ func handleComment(req types.IssueCommentOuter) {
 		fmt.Printf("Request to %s issue #%d by %s was successful.\n", command.Type, req.Issue.Number, req.Comment.User.Login)
 
 		break
+
+	case "SetTitle":
+
+		fmt.Printf("%s wants to set the title of issue #%d\n", req.Comment.User.Login, req.Issue.Number)
+
+		newTitle := command.Value
+
+		if newTitle == req.Issue.Title {
+			fmt.Printf("Setting the title of #%d by %s was unsuccessful as the new title was empty or unchanged.\n", req.Issue.Number, req.Comment.User.Login)
+			return
+		}
+
+		client, ctx := makeClient(req.Installation.ID)
+
+		input := &github.IssueRequest{Title: &newTitle}
+
+		_, _, err := client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		fmt.Printf("Request to set the title of issue #%d by %s was successful.\n", req.Issue.Number, req.Comment.User.Login)
+
+		break
+
+	case "Lock":
+		fmt.Printf("%s wants to lock issue #%d\n", req.Comment.User.Login, req.Issue.Number)
+
+		if req.Issue.Locked {
+			fmt.Printf("Issue #%d is already locked.\n", req.Issue.Number)
+			return
+		}
+
+		client, ctx := makeClient(req.Installation.ID)
+
+		_, err := client.Issues.Lock(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Printf("Request to lock issue #%d by %s was successful.\n", req.Issue.Number, req.Comment.User.Login)
+
+		break
+
+	case "Unlock":
+		fmt.Printf("%s wants to unlock issue #%d\n", req.Comment.User.Login, req.Issue.Number)
+
+		if !req.Issue.Locked {
+			fmt.Printf("Issue #%d is already unlocked\n", req.Issue.Number)
+			return
+		}
+
+		client, ctx := makeClient(req.Installation.ID)
+
+		_, err := client.Issues.Unlock(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Printf("Request to unlock issue #%d by %s was successful.\n", req.Issue.Number, req.Comment.User.Login)
+
+		break
+
 	default:
 		log.Fatalln("Unable to work with comment: " + req.Comment.Body)
 		break
@@ -165,6 +229,9 @@ func parse(body string) *types.CommentAction {
 		"Derek unassign: ":     "Unassign",
 		"Derek close":          "close",
 		"Derek reopen":         "reopen",
+		"Derek set title: ":    "SetTitle",
+		"Derek lock":           "Lock",
+		"Derek unlock":         "Unlock",
 	}
 
 	for trigger, commandType := range commands {
@@ -184,4 +251,20 @@ func parse(body string) *types.CommentAction {
 func isValidCommand(body string, trigger string) bool {
 	return (len(body) > len(trigger) && body[0:len(trigger)] == trigger) ||
 		(body == trigger && !strings.HasSuffix(trigger, ": "))
+}
+
+func checkTransition(requestedAction string, currentState string) (string, bool) {
+
+	desiredState := ""
+	validTransition := false
+
+	if requestedAction == "close" && currentState != closed {
+		desiredState = closed
+		validTransition = true
+	} else if requestedAction == "reopen" && currentState != open {
+		desiredState = open
+		validTransition = true
+	}
+
+	return desiredState, validTransition
 }
