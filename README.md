@@ -46,6 +46,12 @@ We are planning to add roles in the ROADMAP which will mean you can get even mor
 
 Example:
 
+* Titles
+
+```
+Derek set title: This is a more meaningful title
+```
+
 * Labels
 
 ```
@@ -64,14 +70,18 @@ Derek unassign: me
 
 ```
 Derek close
-Derek reopen 
+Derek reopen
+Derek lock
+Derek unlock
 ```
 
 Coming soon
 * [x] Derek as a managed GitHub App
-* [ ] Lock thread
-* [ ] Edit title
+* [x] Lock thread
+* [x] Edit title
 * [x] Toggle the DCO-feature
+* [ ] Add roles & actions
+* [ ] Branch Checking
 
 [Live demo here](https://twitter.com/alexellisuk/status/905694832445804544)
 

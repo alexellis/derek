@@ -146,3 +146,99 @@ func Test_Parsing_Assignments(t *testing.T) {
 		})
 	}
 }
+
+func Test_Parsing_Titles(t *testing.T) {
+
+	var titleOptions = []struct {
+		title        string
+		body         string
+		expectedType string
+		expectedVal  string
+	}{
+		{
+			title:        "Set Title",
+			body:         "Derek set title: This is a really great Title!",
+			expectedType: "SetTitle",
+			expectedVal:  "This is a really great Title!",
+		},
+		{
+			title:        "Mis-spelling of title",
+			body:         "Derek set titel: This is a really great Title!",
+			expectedType: "",
+			expectedVal:  "",
+		},
+		{
+			title:        "Empty Title",
+			body:         "Derek set title: ",
+			expectedType: "", //blank because it should fail isValidCommand
+			expectedVal:  "",
+		},
+		{
+			title:        "Empty Title (Double Space)",
+			body:         "Derek set title:  ",
+			expectedType: "SetTitle",
+			expectedVal:  "",
+		},
+	}
+
+	for _, test := range titleOptions {
+		t.Run(test.title, func(t *testing.T) {
+
+			action := parse(test.body)
+			if action.Type != test.expectedType || action.Value != test.expectedVal {
+				t.Errorf("\nAction - wanted: %s, got %s\nValue - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
+			}
+		})
+	}
+}
+
+func Test_assessState(t *testing.T) {
+
+	var stateOptions = []struct {
+		title            string
+		requestedAction  string
+		currentState     string
+		expectedNewState string
+		expectedBool     bool
+	}{
+		{
+			title:            "Currently Closed and trying to close",
+			requestedAction:  "close",
+			currentState:     "closed",
+			expectedNewState: "",
+			expectedBool:     false,
+		},
+		{
+			title:            "Currently Open and trying to reopen",
+			requestedAction:  "reopen",
+			currentState:     "open",
+			expectedNewState: "",
+			expectedBool:     false,
+		},
+		{
+			title:            "Currently Closed and trying to open",
+			requestedAction:  "reopen",
+			currentState:     "closed",
+			expectedNewState: "open",
+			expectedBool:     true,
+		},
+		{
+			title:            "Currently Open and trying to close",
+			requestedAction:  "close",
+			currentState:     "open",
+			expectedNewState: "closed",
+			expectedBool:     true,
+		},
+	}
+
+	for _, test := range stateOptions {
+		t.Run(test.title, func(t *testing.T) {
+
+			newState, validTransition := checkTransition(test.requestedAction, test.currentState)
+
+			if newState != test.expectedNewState || validTransition != test.expectedBool {
+				t.Errorf("\nStates - wanted: %s, got %s\nValidity - wanted: %t, got %t\n", test.expectedNewState, newState, test.expectedBool, validTransition)
+			}
+		})
+	}
+}
