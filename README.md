@@ -8,6 +8,8 @@ It's derek ![](https://avatars2.githubusercontent.com/in/4385?v=4&u=55bb4ce98267
 
 > Please show support for the project and **Star** the repo.
 
+From the team that bought you [OpenFaaS](https://www.openfaas.com) - Serverless Functions Made Simple.
+
 ## What can I do?
 
 * Check that commits are signed-off
