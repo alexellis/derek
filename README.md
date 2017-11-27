@@ -4,7 +4,7 @@
 [![OpenFaaS](https://img.shields.io/badge/openfaas-serverless-blue.svg)](https://www.openfaas.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-It's derek ![](https://avatars2.githubusercontent.com/in/4385?v=4&u=55bb4ce982675cb17680b7215e7e0d024b549324&s=24). Nice to meet you. I'd like to help you with Pull Requests and Issues on your GitHub project.
+It's derek ![](https://pbs.twimg.com/media/DPo4OyrWsAAOk_i.png). Nice to meet you. I'd like to help you with Pull Requests and Issues on your GitHub project.
 
 > Please show support for the project and **Star** the repo.
 
