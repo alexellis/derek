@@ -69,10 +69,20 @@ func getConfig(owner string, repository string) (*types.DerekConfig, error) {
 	bytesOut, _ := ioutil.ReadAll(res.Body)
 	var config types.DerekConfig
 
-	err := yaml.Unmarshal(bytesOut, &config)
+	err := parseConfig(bytesOut, &config)
 	if err != nil {
 		return nil, err
 	}
 
 	return &config, nil
+}
+
+func parseConfig(bytesOut []byte, config *types.DerekConfig) error {
+	err := yaml.Unmarshal(bytesOut, &config)
+
+	if len(config.Maintainers) == 0 && len(config.Curators) > 0 {
+		config.Maintainers = config.Curators
+	}
+
+	return err
 }

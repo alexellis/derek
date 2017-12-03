@@ -62,4 +62,5 @@ type CommentAction struct {
 type DerekConfig struct {
 	Features    []string
 	Maintainers []string
+	Curators    []string
 }

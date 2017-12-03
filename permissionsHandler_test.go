@@ -6,6 +6,30 @@ import (
 	"github.com/alexellis/derek/types"
 )
 
+func Test_maintainersparsed(t *testing.T) {
+	config := types.DerekConfig{}
+	parseConfig([]byte(`maintainers:
+- alexellis
+- rgee0
+`), &config)
+	actual := len(config.Maintainers)
+	if actual != 2 {
+		t.Errorf("want: %d maintainers, got: %d", 2, actual)
+	}
+}
+
+func Test_curatorequalsmaintainer(t *testing.T) {
+	config := types.DerekConfig{}
+	parseConfig([]byte(`curators:
+- alexellis
+- rgee0
+`), &config)
+	actual := len(config.Maintainers)
+	if actual != 2 {
+		t.Errorf("want: %d maintainers, got: %d", 2, actual)
+	}
+}
+
 func Test_enabledFeature(t *testing.T) {
 
 	var enableFeatureOpts = []struct {
