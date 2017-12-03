@@ -16,9 +16,17 @@ From the team that bought you [OpenFaaS](https://www.openfaas.com) - Serverless 
 
 When someone sends a PR without a sign-off, I'll apply a label `no-dco` and also send them a comment pointing them to the contributor guide. Most of the time when I've been helping the OpenFaaS project - people read my message and fix things up without you having to get involved.
 
-* Allow users in a specified MAINTAINERS file to manage issues and pull-requests
+* Allow users in a specified .DEREK.yml file to manage issues and pull-requests
 
-You don't have to give people full write access anymore to help you manage issues and pull-requests. I'll do that for you, just put them in a MAINTAINERS file in the root and when they comment on an issue then I'll use my granular permissions instead.
+You don't have to give people full write access anymore to help you manage issues and pull-requests. I'll do that for you, just put them in a .DEREK.yml file in the root and when they comment on an issue then I'll use my granular permissions instead.
+
+* Wait.. doesn't the term "maintainer" mean write access in GitHub?
+
+No - the GitHub UI doesn't use the term maintainer, it speaks of collaborators or team members with write access. Adding someone to a file called maintainers means they have opted to help you maintain the code by helpng curate, triage and chase up issues and PRs. Derek means you no longer have to grant full write-access to let people help you maintain the project.
+
+* What about roles?
+
+We are planning to add roles in the ROADMAP which will mean you can get even more granular and have folks who can only add labels but not close issues for instance. If you feel you need to make that distinction. It will also let you call the roles whatever you think makes sense. 
 
 > Note that the assign/unassign commands provides the shortcut `me` to assign to the commenter
 
