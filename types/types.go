@@ -60,7 +60,13 @@ type CommentAction struct {
 }
 
 type DerekConfig struct {
-	Features    []string
+
+	// Features can be turned on/off if needed.
+	Features []string
+
+	// Users who are enrolled to make use of Derek
 	Maintainers []string
-	Curators    []string
+
+	// Curators is an alias for Maintainers and is only used if the Maintainers list is empty.
+	Curators []string
 }
