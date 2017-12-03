@@ -22,7 +22,21 @@ You don't have to give people full write access anymore to help you manage issue
 
 * Wait.. doesn't the term "maintainer" mean write access in GitHub?
 
-No - the GitHub UI doesn't use the term maintainer, it speaks of collaborators or team members with write access. Adding someone to a file called maintainers means they have opted to help you maintain the code by helpng curate, triage and chase up issues and PRs. Derek means you no longer have to grant full write-access to let people help you maintain the project.
+No this is what Derek sets out to resolve. The users in your maintainers list have granular permissions which you'll see in detail when you add the app to your repo org.
+
+```
+maintainers:
+- alexellis
+- rgee0
+```
+
+You can use the alias "curators" instead for the exact same behaviour:
+
+```
+curators:
+- alexellis
+- rgee0
+```
 
 * What about roles?
 
