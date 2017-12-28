@@ -44,48 +44,76 @@ We are planning to add roles in the ROADMAP which will mean you can get even mor
 
 > Note that the assign/unassign commands provides the shortcut `me` to assign to the commenter
 
-Example:
+### Examples:
 
-* Titles
+* Update the title of a PR or issue
 
-```
-Derek set title: This is a more meaningful title
-```
-
-* Labels
+Let's say a user raised an issue with the title `I can't get it to work on my computer`
 
 ```
-Derek add label: awesome
-Derek remove label: awesome
+Derek set title: Question - does this work on Windows 10?
+```
+
+* Triage and organise work through labels
+
+Labels can be used to triage work or help sort it.
+
+```
+Derek add label: proposal
+Derek add label: help wanted
+Derek remove label: bug
 ```
 
 * Assign work
+
+You can assign work to people too
 
 ```
 Derek assign: alexellis
 Derek unassign: me
 ```
 
-* Manage issues and PRs
+* Open and close issues and PRs
+
+Sometimes you may want to close or re-open issues or Pull Requests:
 
 ```
 Derek close
 Derek reopen
+```
+
+* Lock/un-lock conversation/threads
+
+This is useful for when conversations are going off topic or an old thread receives a lot of comments that are better placed in a new issue.
+
+```
 Derek lock
 Derek unlock
 ```
 
-Coming soon
+### Backlog:
+
 * [x] Derek as a managed GitHub App
 * [x] Lock thread
 * [x] Edit title
 * [x] Toggle the DCO-feature
+
+Future work:
+
+* [ ] Caching of customers / .DEREK.yml file
+* [ ] Observability of GitHub API Token rate limit
 * [ ] Add roles & actions
 * [ ] Branch Checking
 
 [Live demo here](https://twitter.com/alexellisuk/status/905694832445804544)
 
-Example from a live project:
+Examples on real-world projects:
+
+Docker / Moby:
+
+https://github.com/moby/moby/issues/35736
+
+OpenFaaS CLI:
 
 https://github.com/openfaas/faas-cli/issues/85
 
@@ -111,11 +139,11 @@ Derek is active and operating 24/7 helping the award-winning OpenFaaS project!
 * http://github.com/openfaas/faas-netes
 * http://github.com/openfaas/faas-cli
 
-### Maintainers
+### Maintainers / contributors
 
 * Alex Ellis - author
 * Richard Gee (@rgee0) - co-maintainer
-* John Mccabe (@johnmccabe) - co-maintainer
+* John Mccabe (@johnmccabe) - contributor
 
 Alex Ellis created Derek to automate project maintainer duties around licensing and to help bring granular permissions back to GitHub. Derek has empowered contributors in the OpenFaaS community to run and maintain the project without needing full write access. OpenFaaS contributors continue to improve Derek so they can get the job done without fuss.
 
