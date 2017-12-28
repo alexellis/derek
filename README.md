@@ -135,6 +135,7 @@ The idea for a bot that could comment on issues or respond to activity is from t
 
 Derek is active and operating 24/7 helping the award-winning OpenFaaS project!
 
+* https://github.com/moby/moby
 * http://github.com/openfaas/faas
 * http://github.com/openfaas/faas-netes
 * http://github.com/openfaas/faas-cli
