@@ -1,6 +1,5 @@
 # derek
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/alexellis/derek)](https://goreportcard.com/report/github.com/alexellis/derek)
 [![Build Status](https://travis-ci.org/alexellis/derek.svg?branch=master)](https://travis-ci.org/alexellis/derek)
 [![OpenFaaS](https://img.shields.io/badge/openfaas-serverless-blue.svg)](https://www.openfaas.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
