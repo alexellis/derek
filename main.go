@@ -67,7 +67,7 @@ func handleEvent(eventType string, bytesIn []byte) error {
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
-		if req.Action != closed {
+		if req.Action != closedConstant {
 			if enabledFeature(dcoCheck, derekConfig) {
 				handlePullRequest(req)
 			}

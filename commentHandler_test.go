@@ -2,6 +2,8 @@ package main
 
 import (
 	"testing"
+
+	"github.com/alexellis/derek/types"
 )
 
 var actionOptions = []struct {
@@ -101,25 +103,25 @@ func Test_Parsing_Assignments(t *testing.T) {
 		{
 			title:        "Assign to burt",
 			body:         "Derek assign: burt",
-			expectedType: "Assign",
+			expectedType: assignConstant,
 			expectedVal:  "burt",
 		},
 		{
 			title:        "Unassign burt",
 			body:         "Derek unassign: burt",
-			expectedType: "Unassign",
+			expectedType: unassignConstant,
 			expectedVal:  "burt",
 		},
 		{
 			title:        "Assign to me",
 			body:         "Derek assign: me",
-			expectedType: "Assign",
+			expectedType: assignConstant,
 			expectedVal:  "me",
 		},
 		{
 			title:        "Unassign me",
 			body:         "Derek unassign: me",
-			expectedType: "Unassign",
+			expectedType: unassignConstant,
 			expectedVal:  "me",
 		},
 		{
@@ -158,7 +160,7 @@ func Test_Parsing_Titles(t *testing.T) {
 		{
 			title:        "Set Title",
 			body:         "Derek set title: This is a really great Title!",
-			expectedType: "SetTitle",
+			expectedType: setTitleConstant,
 			expectedVal:  "This is a really great Title!",
 		},
 		{
@@ -176,7 +178,7 @@ func Test_Parsing_Titles(t *testing.T) {
 		{
 			title:        "Empty Title (Double Space)",
 			body:         "Derek set title:  ",
-			expectedType: "SetTitle",
+			expectedType: setTitleConstant,
 			expectedVal:  "",
 		},
 	}
@@ -203,30 +205,30 @@ func Test_assessState(t *testing.T) {
 	}{
 		{
 			title:            "Currently Closed and trying to close",
-			requestedAction:  "close",
-			currentState:     "closed",
+			requestedAction:  closeConstant,
+			currentState:     closedConstant,
 			expectedNewState: "",
 			expectedBool:     false,
 		},
 		{
 			title:            "Currently Open and trying to reopen",
-			requestedAction:  "reopen",
-			currentState:     "open",
+			requestedAction:  reopenConstant,
+			currentState:     openConstant,
 			expectedNewState: "",
 			expectedBool:     false,
 		},
 		{
 			title:            "Currently Closed and trying to open",
-			requestedAction:  "reopen",
-			currentState:     "closed",
-			expectedNewState: "open",
+			requestedAction:  reopenConstant,
+			currentState:     closedConstant,
+			expectedNewState: openConstant,
 			expectedBool:     true,
 		},
 		{
 			title:            "Currently Open and trying to close",
-			requestedAction:  "close",
-			currentState:     "open",
-			expectedNewState: "closed",
+			requestedAction:  closeConstant,
+			currentState:     openConstant,
+			expectedNewState: closedConstant,
 			expectedBool:     true,
 		},
 	}
@@ -238,6 +240,159 @@ func Test_assessState(t *testing.T) {
 
 			if newState != test.expectedNewState || validTransition != test.expectedBool {
 				t.Errorf("\nStates - wanted: %s, got %s\nValidity - wanted: %t, got %t\n", test.expectedNewState, newState, test.expectedBool, validTransition)
+			}
+		})
+	}
+}
+
+func Test_validAction(t *testing.T) {
+
+	var stateOptions = []struct {
+		title           string
+		running         bool
+		requestedAction string
+		start           string
+		stop            string
+		expectedBool    bool
+	}{
+		{
+			title:           "Currently unlocked and trying to lock",
+			running:         false,
+			requestedAction: lockConstant,
+			start:           lockConstant,
+			stop:            unlockConstant,
+			expectedBool:    true,
+		},
+		{
+			title:           "Currently unlocked and trying to unlock",
+			running:         false,
+			requestedAction: unlockConstant,
+			start:           lockConstant,
+			stop:            unlockConstant,
+			expectedBool:    false,
+		},
+		{
+			title:           "Currently locked and trying to lock",
+			running:         true,
+			requestedAction: lockConstant,
+			start:           lockConstant,
+			stop:            unlockConstant,
+			expectedBool:    false,
+		},
+		{
+			title:           "Currently locked and trying to unlock",
+			running:         true,
+			requestedAction: unlockConstant,
+			start:           lockConstant,
+			stop:            unlockConstant,
+			expectedBool:    true,
+		},
+	}
+
+	for _, test := range stateOptions {
+		t.Run(test.title, func(t *testing.T) {
+
+			isValid := validAction(test.running, test.requestedAction, test.start, test.stop)
+
+			if isValid != test.expectedBool {
+				t.Errorf("\nActions - wanted: %t, got %t\n", test.expectedBool, isValid)
+			}
+		})
+	}
+}
+
+func Test_findLabel(t *testing.T) {
+
+	var stateOptions = []struct {
+		title         string
+		currentLabels []types.IssueLabel
+		cmdLabel      string
+		expectedFound bool
+	}{
+		{
+			title: "Label exists lowercase",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+			},
+			cmdLabel:      "rod",
+			expectedFound: true,
+		},
+		{
+			title: "Label exists case insensitive",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+			},
+			cmdLabel:      "Rod",
+			expectedFound: true,
+		},
+		{
+			title: "Label doesnt exist lowercase",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+			},
+			cmdLabel:      "derek",
+			expectedFound: false,
+		},
+		{
+			title: "Label doesnt exist case insensitive",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+			},
+			cmdLabel:      "Derek",
+			expectedFound: false,
+		},
+		{
+			title:         "no existing labels lowercase",
+			currentLabels: nil,
+			cmdLabel:      "derek",
+			expectedFound: false,
+		},
+		{title: "Label doesnt exist case insensitive",
+			currentLabels: nil,
+			cmdLabel:      "Derek",
+			expectedFound: false,
+		},
+	}
+
+	for _, test := range stateOptions {
+		t.Run(test.title, func(t *testing.T) {
+
+			labelFound := findLabel(test.currentLabels, test.cmdLabel)
+
+			if labelFound != test.expectedFound {
+				t.Errorf("Find Labels(%s) - wanted: %t, got %t\n", test.title, test.expectedFound, labelFound)
 			}
 		})
 	}
