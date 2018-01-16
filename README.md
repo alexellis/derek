@@ -53,6 +53,10 @@ Let's say a user raised an issue with the title `I can't get it to work on my co
 ```
 Derek set title: Question - does this work on Windows 10?
 ```
+or
+```
+Derek edit title: Question - does this work on Windows 10?
+```
 
 * Triage and organise work through labels
 
