@@ -6,6 +6,43 @@ import (
 	"github.com/google/go-github/github"
 )
 
+func Test_LintingResultGiven_WithLongSubject(t *testing.T) {
+
+	var testCases = []struct {
+		scenario   string
+		message    string
+		lintResult bool
+	}{
+		{
+			scenario:   "Commit subject over 50 chars",
+			message:    "This commit is necessary to make sure that all future commits conform to a certain set pattern\nSigned-off-by: Alex Ellis <alex@openfaas.com>",
+			lintResult: false,
+		},
+		{
+			scenario:   "Commit subject exactly 50 chars",
+			message:    "This commit subject falls well within the boundar\nSigned-off-by: Alex Ellis <alex@openfaas.com>",
+			lintResult: true,
+		},
+		{
+			scenario:   "Commit subject starts with lowercase",
+			message:    "has lowercase subject\nSigned-off-by: Alex Ellis <alex@openfaas.com>",
+			lintResult: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+
+		testMsg := testCase.message
+		result := lintCommit(&testMsg)
+
+		if result != testCase.lintResult {
+			t.Logf("scenario: %s - want linting: %v, but got: %v\n  message: %s", testCase.scenario, testCase.lintResult, result, testCase.message)
+			t.Fail()
+		}
+	}
+
+}
+
 func Test_isSigned(t *testing.T) {
 
 	var signOffOpts = []struct {
@@ -84,7 +121,7 @@ func Test_hasNoDcoLabel(t *testing.T) {
 
 			inputIssue := &github.Issue{Labels: ghLabels}
 
-			hasLabel := hasNoDcoLabel(inputIssue)
+			hasLabel := hasLabelAssigned("no-dco", inputIssue)
 
 			if hasLabel != test.expectedBool {
 				t.Errorf("Has no-dco label - wanted: %t, found %t", test.expectedBool, hasLabel)

@@ -49,7 +49,19 @@ maintainers:
 features:
  - dco_check
  - comments
+ - commit_linting
 ```
+
+Features:
+
+* `dco_check` - checks that each commit finishes with a "Signed-off-by:" statement
+* `comments` - allows `maintainers` to issue commands to Derek to add labels etc
+* `commit_linting` - applies linting rules to commit messages
+
+Commit linting ensures:
+
+* subjects start with a capital letter
+* subject lines are less than 50 characters
 
 **Testing**
 
