@@ -103,18 +103,43 @@ func findLabel(currentLabels []types.IssueLabel, cmdLabel string) bool {
 	return false
 }
 
+func classifyLabels(currentLabels []types.IssueLabel, labelAction string, labelValue string) ([]string, []string) {
+
+	var goodLabels, badLabels []string
+
+	labelValue = strings.Replace(labelValue, " ", "", -1)
+	requestedLabels := strings.Split(labelValue, ",")
+
+	for _, requestedLabel := range requestedLabels {
+
+		found := findLabel(currentLabels, requestedLabel)
+
+		if validAction(found, labelAction, addLabelConstant, removeLabelConstant) {
+			goodLabels = append(goodLabels, requestedLabel)
+		} else {
+			badLabels = append(badLabels, requestedLabel)
+		}
+
+	}
+	return goodLabels, badLabels
+}
+
 func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string) (string, error) {
 
 	var buffer bytes.Buffer
+
 	labelAction := strings.Replace(strings.ToLower(cmdType), "label", "", 1)
+	goodLabels, badLabels := classifyLabels(req.Issue.Labels, cmdType, labelValue)
+	buffer.WriteString(fmt.Sprintf("%s wants to %s label(s) of '%s' on issue #%d.\n", req.Comment.User.Login, labelAction, labelValue, req.Issue.Number))
 
-	buffer.WriteString(fmt.Sprintf("%s wants to %s label of '%s' on issue #%d \n", req.Comment.User.Login, labelAction, labelValue, req.Issue.Number))
+	if len(badLabels) > 0 {
 
-	found := findLabel(req.Issue.Labels, labelValue)
+		buffer.WriteString(fmt.Sprintf("Request to %s label(s) of '%s' on issue #%d was unnecessary.\n", labelAction, strings.Join(badLabels, ", "), req.Issue.Number))
 
-	if !validAction(found, cmdType, addLabelConstant, removeLabelConstant) {
-		buffer.WriteString(fmt.Sprintf("Request to %s label of '%s' on issue #%d was unnecessary.", labelAction, labelValue, req.Issue.Number))
-		return buffer.String(), nil
+		if len(goodLabels) == 0 {
+			buffer.WriteString(fmt.Sprintf("No further valid labels found - no action taken on issue #%d.\n", req.Issue.Number))
+			return buffer.String(), nil
+		}
 	}
 
 	client, ctx := makeClient(req.Installation.ID)
@@ -122,17 +147,28 @@ func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string)
 	var err error
 
 	if cmdType == addLabelConstant {
-		_, _, err = client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{labelValue})
+
+		_, _, err = client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, goodLabels)
+		if err != nil {
+			return buffer.String(), err
+		}
+
 	} else {
-		_, err = client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, labelValue)
+		//github API doesnt offer a RemoveLabels method
+		for _, goodLabel := range goodLabels {
+
+			_, err = client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, goodLabel)
+
+			if err != nil {
+				return buffer.String(), err
+			}
+		}
 	}
 
-	if err != nil {
-		return buffer.String(), err
-	}
+	buffer.WriteString(fmt.Sprintf("Request to %s label(s) of '%s' on issue #%d was successfully completed.\n", labelAction, strings.Join(goodLabels, ", "), req.Issue.Number))
 
-	buffer.WriteString(fmt.Sprintf("Request to %s label of '%s' on issue #%d was successfully completed.", labelAction, labelValue, req.Issue.Number))
 	return buffer.String(), nil
+
 }
 
 func manageTitle(req types.IssueCommentOuter, cmdType string, cmdValue string) (string, error) {

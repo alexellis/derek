@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/alexellis/derek/types"
@@ -64,13 +65,13 @@ func Test_Parsing_Labels(t *testing.T) {
 		{ //this case replaces Test_Parsing_AddLabel
 			title:        "Add label of demo",
 			body:         "Derek add label: demo",
-			expectedType: "AddLabel",
+			expectedType: addLabelConstant,
 			expectedVal:  "demo",
 		},
 		{
 			title:        "Remove label of demo",
 			body:         "Derek remove label: demo",
-			expectedType: "RemoveLabel",
+			expectedType: removeLabelConstant,
 			expectedVal:  "demo",
 		},
 		{
@@ -309,8 +310,7 @@ func Test_findLabel(t *testing.T) {
 		cmdLabel      string
 		expectedFound bool
 	}{
-		{
-			title: "Label exists lowercase",
+		{title: "Label exists lowercase",
 			currentLabels: []types.IssueLabel{
 				types.IssueLabel{
 					Name: "rod",
@@ -325,8 +325,7 @@ func Test_findLabel(t *testing.T) {
 			cmdLabel:      "rod",
 			expectedFound: true,
 		},
-		{
-			title: "Label exists case insensitive",
+		{title: "Label exists case insensitive",
 			currentLabels: []types.IssueLabel{
 				types.IssueLabel{
 					Name: "rod",
@@ -341,8 +340,7 @@ func Test_findLabel(t *testing.T) {
 			cmdLabel:      "Rod",
 			expectedFound: true,
 		},
-		{
-			title: "Label doesnt exist lowercase",
+		{title: "Label doesnt exist lowercase",
 			currentLabels: []types.IssueLabel{
 				types.IssueLabel{
 					Name: "rod",
@@ -357,8 +355,7 @@ func Test_findLabel(t *testing.T) {
 			cmdLabel:      "derek",
 			expectedFound: false,
 		},
-		{
-			title: "Label doesnt exist case insensitive",
+		{title: "Label doesnt exist case insensitive",
 			currentLabels: []types.IssueLabel{
 				types.IssueLabel{
 					Name: "rod",
@@ -373,8 +370,7 @@ func Test_findLabel(t *testing.T) {
 			cmdLabel:      "Derek",
 			expectedFound: false,
 		},
-		{
-			title:         "no existing labels lowercase",
+		{title: "no existing labels lowercase",
 			currentLabels: nil,
 			cmdLabel:      "derek",
 			expectedFound: false,
@@ -393,6 +389,140 @@ func Test_findLabel(t *testing.T) {
 
 			if labelFound != test.expectedFound {
 				t.Errorf("Find Labels(%s) - wanted: %t, got %t\n", test.title, test.expectedFound, labelFound)
+			}
+		})
+	}
+}
+
+func Test_classifyLabels(t *testing.T) {
+
+	var classifyOptions = []struct {
+		title         string
+		currentLabels []types.IssueLabel
+		cmdType       string
+		labelValue    string
+		expectedGL    []string
+		expectedBL    []string
+	}{
+		{title: "Add when all Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+			},
+			cmdType:    addLabelConstant,
+			labelValue: "rod, jane, freddie",
+			expectedGL: []string{},
+			expectedBL: []string{"rod", "jane", "freddie"},
+		},
+		{title: "Remove when all Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+			},
+			cmdType:    removeLabelConstant,
+			labelValue: "rod, jane, freddie",
+			expectedGL: []string{"rod", "jane", "freddie"},
+			expectedBL: []string{},
+		},
+		{title: "Add when no Labels exist",
+			currentLabels: []types.IssueLabel{},
+			cmdType:       addLabelConstant,
+			labelValue:    "rod, jane, freddie",
+			expectedGL:    []string{"rod", "jane", "freddie"},
+			expectedBL:    []string{},
+		},
+		{title: "Remove when no Labels exist",
+			currentLabels: []types.IssueLabel{},
+			cmdType:       removeLabelConstant,
+			labelValue:    "rod, jane, freddie",
+			expectedGL:    []string{},
+			expectedBL:    []string{"rod", "jane", "freddie"},
+		},
+		{title: "Add when subset of Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+			},
+			cmdType:    addLabelConstant,
+			labelValue: "rod, jane, freddie",
+			expectedGL: []string{"freddie"},
+			expectedBL: []string{"rod", "jane"},
+		},
+		{title: "Remove when subset of Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+			},
+			cmdType:    removeLabelConstant,
+			labelValue: "rod, jane, freddie",
+			expectedGL: []string{"rod", "jane"},
+			expectedBL: []string{"freddie"},
+		},
+		{title: "Add new value to set",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+			},
+			cmdType:    addLabelConstant,
+			labelValue: "freddie, burt",
+			expectedGL: []string{"freddie", "burt"},
+			expectedBL: []string{},
+		},
+		{title: "remove existing values from set",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+				types.IssueLabel{
+					Name: "burt",
+				},
+			},
+			cmdType:    removeLabelConstant,
+			labelValue: "rod, jane",
+			expectedGL: []string{"freddie", "burt"},
+			expectedBL: []string{},
+		},
+	}
+
+	for _, test := range classifyOptions {
+		t.Run(test.title, func(t *testing.T) {
+
+			goodLabels, badLabels := classifyLabels(test.currentLabels, test.cmdType, test.labelValue)
+
+			if len(goodLabels) != len(test.expectedGL) || len(badLabels) != len(test.expectedBL) {
+				t.Errorf("Label Classification (%s) - wanted: Good(%s) Bad(%s), got Good(%s) Bad(%s)\n", test.title, strings.Join(test.expectedGL, ", "), strings.Join(test.expectedBL, ", "), strings.Join(goodLabels, ", "), strings.Join(badLabels, ", "))
 			}
 		})
 	}
