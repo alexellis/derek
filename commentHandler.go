@@ -32,9 +32,8 @@ func makeClient(installation int) (*github.Client, context.Context) {
 	if len(token) == 0 {
 
 		applicationID := os.Getenv("application")
-		privateKeyPath := os.Getenv("private_key")
 
-		newToken, tokenErr := auth.MakeAccessTokenForInstallation(applicationID, installation, privateKeyPath)
+		newToken, tokenErr := auth.MakeAccessTokenForInstallation(applicationID, installation)
 		if tokenErr != nil {
 			log.Fatalln(tokenErr.Error())
 		}

@@ -21,18 +21,19 @@ func hmacValidation() bool {
 }
 
 func main() {
+
 	bytesIn, _ := ioutil.ReadAll(os.Stdin)
 
 	xHubSignature := os.Getenv("Http_X_Hub_Signature")
+
 	if hmacValidation() && len(xHubSignature) == 0 {
 		log.Fatal("must provide X_Hub_Signature")
 		return
 	}
 
 	if len(xHubSignature) > 0 {
-		secretKey := os.Getenv("secret_key")
 
-		err := auth.ValidateHMAC(bytesIn, xHubSignature, secretKey)
+		err := auth.ValidateHMAC(bytesIn, xHubSignature)
 		if err != nil {
 			log.Fatal(err.Error())
 			return
