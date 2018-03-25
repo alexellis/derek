@@ -3,15 +3,15 @@ provider:
   gateway: http://localhost:8080  # can be a remote server
 
 functions:
-  open-derek:
-    handler: ./
-    image: derek:0.1.1
+  derek:
+    handler: ./derek
+    image: derek
     lang: Dockerfile
     environment:
-      secret_key: secret_key_here
-      installation: installation_number
-      private_key: derek.pem
-      application: application_number
+      installation: <your_GH_installationID>
+      application: <your_GH_applicationID>
       validate_hmac: true
       debug: true
-
+    secrets:
+      - derek-secret-key
+      - derek-private-key

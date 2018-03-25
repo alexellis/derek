@@ -12,15 +12,12 @@ FROM alpine:3.6
 
 RUN apk --no-cache add curl ca-certificates \ 
     && echo "Pulling watchdog binary from Github." \
-    && curl -sSL https://github.com/alexellis/faas/releases/download/0.6.11/fwatchdog > /usr/bin/fwatchdog \
+    && curl -sSL https://github.com/alexellis/faas/releases/download/0.7.7/fwatchdog > /usr/bin/fwatchdog \
     && chmod +x /usr/bin/fwatchdog \
     && apk del curl --no-cache
 
 WORKDIR /root/
 COPY --from=build /go/src/github.com/alexellis/derek/derek derek
-
-# Replace this with a Swarm secret, so that the image can be pushed remotely.
-#COPY derek.pem	.
 
 ENV cgi_headers="true"
 ENV validate_hmac="true"

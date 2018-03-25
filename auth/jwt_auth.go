@@ -8,15 +8,14 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-// GetSignedJwtToken get a tokens signed with private key
-func GetSignedJwtToken(appID, keyPath string) (string, error) {
-	if len(keyPath) == 0 {
-		return "", fmt.Errorf("unable to read from empty keypath, try setting env: \"private_key\" to a filename and path")
-	}
+const privateKeyPath = "/run/secrets/derek-private-key"
 
-	keyBytes, err := ioutil.ReadFile(keyPath)
+// GetSignedJwtToken get a tokens signed with private key
+func GetSignedJwtToken(appID string) (string, error) {
+
+	keyBytes, err := ioutil.ReadFile(privateKeyPath)
 	if err != nil {
-		return "", fmt.Errorf("unable to read keypath: %s, error: %s", keyPath, err)
+		return "", fmt.Errorf("unable to read private key path: %s, error: %s", privateKeyPath, err)
 	}
 
 	key, keyErr := jwt.ParseRSAPrivateKeyFromPEM(keyBytes)

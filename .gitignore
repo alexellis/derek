@@ -21,3 +21,4 @@ auth/*.pem
 template
 build
 secrets.yml
+derek_*_key

@@ -8,44 +8,67 @@ Read on if you want to setup your own cluster, OpenFaaS and a private GitHub App
 
 * Setup [OpenFaaS](https://github.com/openfaas/faas) and the [faas-cli](https://github.com/openfaas/faas-cli)
 
-* Now get your publically-available URL for OpenFaaS (or one punched out with an ngrok.io tunnel)
+* Now get your publicly-available URL for OpenFaaS (or one punched out with an ngrok.io tunnel)
 
-* Install Derek as a Github app and get your private key, save it as "derek.pem" and put it into the auth folder.
+* Install Derek as a GitHub app and get your private key, save it as "derek.pem".
+
+* It is also recommended that you set a webhook secret within the GitHub application settings.
+
+### Add your secrets :
+  
+Using the method appropriate to the orchestrator chosen during the OpenFaaS setup add `derek.pem` and the GitHub webhook secret as `derek_private_key` and `derek_secret_key` respectively.
 
 ### Configure Docker image:
 
-We have to build a Docker image with your .pem file included
-
-We'll also set the symmetric key or secret that you got from GitHub as the `secret_key` environmental variable. Validating via a symmetric key is also known as HMAC. If you want to turn this off (to edit and debug) then set `validate_hmac="false"`
-
-Fill out the `application` variable with the ID of the registered Derek Github App, and the `installation` variable with the installation ID you got when adding Derek to your account.
-
-Set the following in your Dockerfile
-
-```
-ENV secret_key="docker"
-ENV application=4385
-ENV installation=45362
-ENV private_key="derek.pem"
-
-ENV validate_hmac="true"
-```
-
-Now, build and deploy Derek:
+Most of the configuration is outside of the image, the exception being the version of the OpenFaaS watchdog which is pulled from [GitHub](https://github.com/openfaas/faas/releases); check the desired version is being pulled into the image and go ahead and build:  
 
 ```
 $ docker build -t derek .
-$ faas-cli deploy --name derek --image derek --fprocess=./derek
 ```
 
-Finally configure the features that you want to enable within your GitHub repo by creating a `.DEREK.yml` file.
-The file should detail which features you wish to enable and the maintainer names; for example this repo would look as follows:
+### Configure stack.yml:
 
+This is where Derek finds the details he needs to do the work he does.  The main areas that will need to be updated are the installation and application variables.  The gateway value may also need amending if the gateway is remote.
+
+``` yml
+provider:
+  name: faas
+  gateway: http://localhost:8080  \# can be a remote server
+  
+functions:
+  derek:
+    handler: ./derek
+    image: derek
+    lang: Dockerfile
+  environment:
+    installation: <your_GH_installationID>
+    application: <your_GH_applicationID>
+    validate_hmac: true
+    debug: true
+  secrets:
+    - derek-secret-key
+    - derek-private-key
+```
+Fill out the `application` variable with the ID of the registered Derek GitHub App, and the `installation` variable with the installation ID received when adding Derek to your account.
+
+Validating via a symmetric key is also known as HMAC. If the webhook secret wasn't set earlier and you want to turn this off (to edit and debug) then set `validate_hmac="false"`
+
+Now deploy Derek:
+```
+$ faas-cli deploy
+```
+
+### Configure GitHub Repo:
+
+Finally configure the features that you want to enable within your GitHub repo by creating a `.DEREK.yml` file.
+
+The file should detail which features you wish to enable and the maintainer names; for example this repo would look as follows:
 ```yml
 maintainers:
  - alexellis
  - rgee0
  - johnmccabe
+
 features:
  - dco_check
  - comments
@@ -54,5 +77,5 @@ features:
 **Testing**
 
 Create a label of "no-dco" within every project you want Derek to help you with.
-
+ 
 Head over to your GitHub repository and raise a Pull Request from the web-UI for your README file. This will not sign-off the commit, so you'll have Derek on your case.
