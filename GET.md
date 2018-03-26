@@ -28,7 +28,7 @@ $ docker build -t derek .
 
 ### Configure stack.yml:
 
-This is where Derek finds the details he needs to do the work he does.  The main areas that will need to be updated are the installation and application variables.  The gateway value may also need amending if the gateway is remote.
+This is where Derek finds the details he needs to do the work he does.  The main area that will need to be updated is the application variable.  The gateway value may also need amending if the gateway is remote.
 
 ``` yml
 provider:
@@ -41,7 +41,6 @@ functions:
     image: derek
     lang: Dockerfile
   environment:
-    installation: <your_GH_installationID>
     application: <your_GH_applicationID>
     validate_hmac: true
     debug: true
@@ -49,7 +48,7 @@ functions:
     - derek-secret-key
     - derek-private-key
 ```
-Fill out the `application` variable with the ID of the registered Derek GitHub App, and the `installation` variable with the installation ID received when adding Derek to your account.
+Fill out the `application` variable with the ID of the registered Derek GitHub App.
 
 Validating via a symmetric key is also known as HMAC. If the webhook secret wasn't set earlier and you want to turn this off (to edit and debug) then set `validate_hmac="false"`
 

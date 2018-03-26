@@ -8,7 +8,6 @@ functions:
     image: derek
     lang: Dockerfile
     environment:
-      installation: <your_GH_installationID>
       application: <your_GH_applicationID>
       validate_hmac: true
       debug: true
