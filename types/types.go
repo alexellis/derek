@@ -4,8 +4,14 @@
 package types
 
 type Repository struct {
-	Owner Owner  `json:"owner"`
-	Name  string `json:"name"`
+	Owner         Owner  `json:"owner"`
+	Name          string `json:"name"`
+	DefaultBranch string `json:"default_branch"`
+}
+
+type Branch struct {
+	Repository Repository `json:"repository"`
+	Name       string     `json:"ref"`
 }
 
 type Owner struct {
@@ -17,6 +23,7 @@ type PullRequest struct {
 	Number            int    `json:"number"`
 	AuthorAssociation string `json:"author_association"`
 	Body              string `json:"body"`
+	State             string `json:"state"`
 }
 
 type InstallationRequest struct {
@@ -30,8 +37,33 @@ type ID struct {
 type PullRequestOuter struct {
 	Repository  Repository  `json:"repository"`
 	PullRequest PullRequest `json:"pull_request"`
+	BaseBranch  Branch      `json:"base"`
+	HeadBranch  Branch      `json:"head"`
 	Action      string      `json:"action"`
 	InstallationRequest
+}
+
+/*
+ * The default branch of a repository.
+ * Usually set to `master`
+ */
+func (req *PullRequestOuter) GetDefaultBranch() string {
+	return req.Repository.DefaultBranch
+}
+
+/*
+ * The branch a pull request is open against.
+ * It should be the default branch.
+ */
+func (req *PullRequestOuter) GetBaseBranch() string {
+	return req.BaseBranch.Name
+}
+
+/*
+ * The branch a pull request is open from
+ */
+func (req *PullRequestOuter) GetHeadBranch() string {
+	return req.HeadBranch.Name
 }
 
 type IssueCommentOuter struct {

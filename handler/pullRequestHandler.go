@@ -45,6 +45,33 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 		}
 	}
 
+	if validateBranch, validateBranchMessage, sourceBranchReviewLabel, targetBranchReviewLabel := validatePullRequestBranch(req); !validateBranch {
+
+		comment := &github.IssueComment{
+			Body: &validateBranchMessage,
+		}
+
+		comment, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, comment)
+		if err != nil {
+			log.Fatalf("Failed on branch validation: %s", err)
+			log.Fatal(err)
+		}
+		fmt.Println(comment, resp.Rate)
+
+		if len(sourceBranchReviewLabel) > 0 {
+			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{sourceBranchReviewLabel})
+			if assignLabelErr != nil {
+				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
+			}
+		}
+		if len(targetBranchReviewLabel) > 0 {
+			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{targetBranchReviewLabel})
+			if assignLabelErr != nil {
+				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
+			}
+		}
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	} else if hasUnsignedCommits {
@@ -199,4 +226,33 @@ func isSigned(msg string) bool {
 
 func hasDescription(pr types.PullRequest) bool {
 	return len(strings.TrimSpace(pr.Body)) > 0
+}
+
+func validatePullRequestBranch(req types.PullRequestOuter) (bool, string, string, string) {
+
+	validHeadBranch, messageFromHeadBranchValidation, sourceBranchReviewLabel := pullRequestIsNotOpenFromMasterBranch(req)
+	validBaseBranch, messageFromBaseBranchValidation, targetBranchReviewLabel := pullRequestIsOpenAgainstDefaultBranch(req)
+
+	return validHeadBranch && validBaseBranch, messageFromHeadBranchValidation + messageFromBaseBranchValidation, sourceBranchReviewLabel, targetBranchReviewLabel
+
+}
+
+func pullRequestIsOpenAgainstDefaultBranch(req types.PullRequestOuter) (bool, string, string) {
+	if req.GetDefaultBranch() != req.GetBaseBranch() {
+		message := fmt.Sprintf("Thank you for your contribution. It appears that you are submitting changes not against the default repository branch."+
+			"Please raise a new pull request againgst the default branch: %s\n", req.GetDefaultBranch())
+		label := "review/target-branch"
+		return false, message, label
+	}
+	return true, "", ""
+}
+
+func pullRequestIsNotOpenFromMasterBranch(req types.PullRequestOuter) (bool, string, string) {
+	if req.GetHeadBranch() == "master" {
+		message := "Thank you for your contribution. It appears that you are submitting changes directly from your master branch." +
+			"Please raise a new pull request from a named branch i.e. `git checkout -b my_feature`.\n"
+		label := "review/source-branch"
+		return false, message, label
+	}
+	return true, "", ""
 }

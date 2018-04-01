@@ -124,3 +124,132 @@ func Test_hasDescription(t *testing.T) {
 		}
 	}
 }
+
+func Test_validatePullRequestBranch(t *testing.T) {
+
+	pullBranchOptions := []struct {
+		title             string
+		headBranchName    string
+		baseBranchName    string
+		defaultBranchName string
+		expectedResult    bool
+		expectedMessage   string
+		expectedLabels    string
+	}{
+		{
+			title:             "Incorrectly named master head branch. Base branch equal to default.",
+			headBranchName:    "master",
+			baseBranchName:    "master",
+			defaultBranchName: "master",
+			expectedResult:    false,
+			expectedMessage: "Thank you for your contribution. It appears that you are submitting changes directly from your master branch." +
+				"Please raise a new pull request from a named branch i.e. `git checkout -b my_feature`.\n",
+			expectedLabels: "review/source-branch",
+		},
+		{
+			title:             "Correctly named non-master head branch. Base branch equal to default.",
+			headBranchName:    "test_branch",
+			baseBranchName:    "master",
+			defaultBranchName: "master",
+			expectedResult:    true,
+			expectedMessage:   "",
+			expectedLabels:    "",
+		},
+		{
+			title:             "Incorrectly named master head branch. Base branch not equal to default.",
+			headBranchName:    "master",
+			baseBranchName:    "master",
+			defaultBranchName: "development",
+			expectedResult:    false,
+			expectedMessage: "Thank you for your contribution. It appears that you are submitting changes directly from your master branch." +
+				"Please raise a new pull request from a named branch i.e. `git checkout -b my_feature`.\n" +
+				"Thank you for your contribution. It appears that you are submitting changes not against the default repository branch." +
+				"Please raise a new pull request againgst the default branch: development\n",
+			expectedLabels: "review/source-branchreview/target-branch",
+		},
+		{
+			title:             "Correctly named non-master head branch. Base branch not equal to default.",
+			headBranchName:    "test_branch",
+			baseBranchName:    "master",
+			defaultBranchName: "development",
+			expectedResult:    false,
+			expectedMessage: "Thank you for your contribution. It appears that you are submitting changes not against the default repository branch." +
+				"Please raise a new pull request againgst the default branch: development\n",
+			expectedLabels: "review/target-branch",
+		},
+		{
+			title:             "Correctly named non-master head branch. Base branch not equal to default.",
+			headBranchName:    "development",
+			baseBranchName:    "master",
+			defaultBranchName: "development",
+			expectedResult:    false,
+			expectedMessage: "Thank you for your contribution. It appears that you are submitting changes not against the default repository branch." +
+				"Please raise a new pull request againgst the default branch: development\n",
+			expectedLabels: "review/target-branch",
+		},
+		{
+			title:             "Correctly named non-master head branch. Base branch equal to default.",
+			headBranchName:    "development",
+			baseBranchName:    "development",
+			defaultBranchName: "development",
+			expectedResult:    true,
+			expectedMessage:   "",
+			expectedLabels:    "",
+		},
+		{
+			title:             "Incorrectly named master head branch. Base branch equal to default.",
+			headBranchName:    "master",
+			baseBranchName:    "development",
+			defaultBranchName: "development",
+			expectedResult:    false,
+			expectedMessage: "Thank you for your contribution. It appears that you are submitting changes directly from your master branch." +
+				"Please raise a new pull request from a named branch i.e. `git checkout -b my_feature`.\n",
+			expectedLabels: "review/source-branch",
+		},
+		{
+			title:             "Correctly named master head branch. Base branch equal to default.",
+			headBranchName:    "test_branch",
+			baseBranchName:    "development",
+			defaultBranchName: "development",
+			expectedResult:    true,
+			expectedMessage:   "",
+			expectedLabels:    "",
+		},
+	}
+	for _, test := range pullBranchOptions {
+		t.Run(test.title, func(t *testing.T) {
+			repo := types.Repository{
+				Name:          "test_repo",
+				DefaultBranch: test.defaultBranchName,
+			}
+			headBranch := types.Branch{
+				Repository: repo,
+				Name:       test.headBranchName,
+			}
+			baseBranch := types.Branch{
+				Repository: repo,
+				Name:       test.baseBranchName,
+			}
+			req := types.PullRequestOuter{
+				Repository: repo,
+				BaseBranch: baseBranch,
+				HeadBranch: headBranch,
+			}
+
+			validHeadAndBaseBranch, message, headBranchLabel, baseBranchLabel := validatePullRequestBranch(req)
+
+			if validHeadAndBaseBranch != test.expectedResult {
+				t.Errorf("Valid head and base branch check (head: %s, base: %s, default: %s) - want: %t, got %t",
+					test.headBranchName, test.baseBranchName, test.defaultBranchName, test.expectedResult, validHeadAndBaseBranch)
+			}
+			if message != test.expectedMessage {
+				t.Errorf("Valid head and base branch message check (head: %s, base: %s, default: %s) - want: %s, got %s",
+					test.headBranchName, test.baseBranchName, test.defaultBranchName, test.expectedMessage, message)
+			}
+			if headBranchLabel+baseBranchLabel != test.expectedLabels {
+				t.Errorf("Valid head and base branch message check (head: %s, base: %s, default: %s) - want: %s, got %s",
+					test.headBranchName, test.baseBranchName, test.defaultBranchName, test.expectedLabels, headBranchLabel+baseBranchLabel)
+			}
+		})
+	}
+}
