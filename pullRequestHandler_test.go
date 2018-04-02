@@ -14,18 +14,38 @@ func Test_LintingResultGiven_WithLongSubject(t *testing.T) {
 		lintResult bool
 	}{
 		{
-			scenario:   "Commit subject over 50 chars",
+			scenario:   "Commit subject over 72 chars",
 			message:    "This commit is necessary to make sure that all future commits conform to a certain set pattern\nSigned-off-by: Alex Ellis <alex@openfaas.com>",
 			lintResult: false,
 		},
 		{
-			scenario:   "Commit subject exactly 50 chars",
-			message:    "This commit subject falls well within the boundar\nSigned-off-by: Alex Ellis <alex@openfaas.com>",
+			scenario:   "Commit subject exactly 72 chars",
+			message:    "This commit subject falls well within the boundary with exactly the cor\nSigned-off-by: Alex Ellis <alex@openfaas.com>",
 			lintResult: true,
+		},
+		{
+			scenario:   "Commit subject ends in punctuation - (.)",
+			message:    "Fixes #7071.\nSigned-off-by: Alex Ellis <alex@openfaas.com>",
+			lintResult: false,
+		},
+		{
+			scenario:   "Commit subject ends in punctuation - (!)",
+			message:    "Fixes #7071!\nSigned-off-by: Alex Ellis <alex@openfaas.com>",
+			lintResult: false,
 		},
 		{
 			scenario:   "Commit subject starts with lowercase",
 			message:    "has lowercase subject\nSigned-off-by: Alex Ellis <alex@openfaas.com>",
+			lintResult: false,
+		},
+		{
+			scenario:   "Commit subject within length boundaries and punctuation (.) mid-way",
+			message:    "Fixes. #7071\nSigned-off-by: Alex Ellis <alex@openfaas.com>",
+			lintResult: true,
+		},
+		{
+			scenario:   "Empty message given",
+			message:    "",
 			lintResult: false,
 		},
 	}
@@ -71,6 +91,7 @@ func Test_isSigned(t *testing.T) {
 			expectedBool: false,
 		},
 	}
+
 	for _, test := range signOffOpts {
 		t.Run(test.title, func(t *testing.T) {
 

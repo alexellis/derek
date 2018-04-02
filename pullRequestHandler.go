@@ -13,6 +13,10 @@ import (
 	"github.com/google/go-github/github"
 )
 
+// maximumCommitSubjectLength is set this way because Chris beams advises
+// 50 but the GitHub UI will support 72
+const maximumCommitSubjectLength = 72
+
 func handlePullRequest(req types.PullRequestOuter, prFeatures types.PullRequestFeatures) {
 	ctx := context.Background()
 
@@ -154,22 +158,29 @@ func lintCommits(commits []*github.RepositoryCommit) bool {
 func lintCommit(message *string) bool {
 	var valid bool
 
-	if message == nil {
+	if message == nil || len(*message) == 0 {
 		return false
 	}
 
 	parts := strings.Split(*message, "\n")
 
 	if len(parts) > 0 {
-		lengthValid := len(parts[0]) <= 50
-		var startsWithUpper bool
+		firstLine := parts[0]
+		lengthValid := len(firstLine) <= maximumCommitSubjectLength
 
-		firstCharacter := getFirstCharacter(parts[0])
+		var startsWithUpper bool
+		var endsWithPunctuation bool
+
+		firstCharacter := getFirstCharacter(firstLine)
 		if firstCharacter != nil {
 			startsWithUpper = len(*firstCharacter) > 0 && strings.ToUpper(*firstCharacter) == *firstCharacter
 		}
 
-		valid = lengthValid && startsWithUpper
+		if len(firstLine) > 0 {
+			endsWithPunctuation = strings.LastIndexAny(firstLine, ".!") == len(firstLine)-1
+		}
+
+		valid = lengthValid && startsWithUpper && !endsWithPunctuation
 	}
 
 	return valid
@@ -207,11 +218,15 @@ func applyLintingLabel(req types.PullRequestOuter, client *github.Client, issue 
 			if assignLabelErr != nil {
 				actionErr = fmt.Errorf("addLabel: %s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
 			}
-			link := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", req.Repository.Owner.Login, req.Repository.Name)
+
+			link := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md#commit-messages", req.Repository.Owner.Login, req.Repository.Name)
 
 			body := `Please check that your commit messages fit within [these guidelines](` + link + `):
-- Commit subject should not exceed 50 characters
+- Commit subject should not exceed 72 characters
 - Commit subject should start with an uppercase letter
+- Commit subject should not end with punctuation
+
+Read [how to re-write commit history](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History).
 `
 
 			comment := &github.IssueComment{
