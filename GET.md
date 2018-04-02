@@ -12,11 +12,23 @@ Read on if you want to setup your own cluster, OpenFaaS and a private GitHub App
 
 * Install Derek as a GitHub app and get your private key, save it as "derek.pem".
 
-* It is also recommended that you set a webhook secret within the GitHub application settings.
+* It is also recommended that you set a webhook secret within the GitHub application settings. If applying secrets from files, store this in a file called "derek-secret-key".
 
 ### Add your secrets :
   
-Using the method appropriate to the orchestrator chosen during the OpenFaaS setup add `derek.pem` and the GitHub webhook secret as `derek_private_key` and `derek_secret_key` respectively.
+Using the method appropriate to the orchestrator chosen during the OpenFaaS setup add `derek.pem` and the GitHub webhook secret as `derek-private-key` and `derek-secret-key` respectively.
+
+Using Docker with files:
+```
+$ docker secret create derek-private-key derek.pem && \
+    docker secret create derek-secret-key derek-secret-key
+```
+
+Using Kubernetes:
+```
+$ kubectl create secret generic derek-private-key --from-file=path/to/derek.pem && \
+    kubectl create secret generic derek-secret-key --from-file=path/to/derek-secret-key
+```
 
 ### Configure Docker image:
 
