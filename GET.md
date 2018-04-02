@@ -58,10 +58,13 @@ Features:
 * `comments` - allows `maintainers` to issue commands to Derek to add labels etc
 * `commit_linting` - applies linting rules to commit messages
 
-Commit linting ensures:
+Commit linting rules:
 
-* subjects start with a capital letter
-* subject lines are less than 50 characters
+- Commit subject should not exceed 72 characters
+- Commit subject should start with an uppercase letter
+- Commit subject should not end with punctuation
+
+The linting rules are based upon a [blog post by Chris Beams](https://chris.beams.io/posts/git-commit/)
 
 **Testing**
 
