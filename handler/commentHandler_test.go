@@ -515,3 +515,44 @@ func Test_isDcoLabel(t *testing.T) {
 		})
 	}
 }
+
+func Test_Parsing_Reviewers(t *testing.T) {
+
+	var reviewersOptions = []struct {
+		title        string
+		body         string
+		expectedType string
+		expectedVal  string
+	}{
+		{
+			title:        "Parse request to assign reviewer with valid message",
+			body:         "set reviewer: john",
+			expectedType: "AssignReviewer",
+			expectedVal:  "john",
+		},
+		{
+			title:        "Parse request to unassign reviewer with valid message",
+			body:         "clear reviewer: john",
+			expectedType: "UnassignReviewer",
+			expectedVal:  "john",
+		},
+		{
+			title:        "Parse request to assign reviewer with invalid message",
+			body:         "random message: john",
+			expectedType: "",
+			expectedVal:  "",
+		},
+	}
+
+	for _, test := range reviewersOptions {
+		t.Run(test.title, func(t *testing.T) {
+
+			for _, trigger := range commandTriggers {
+				action := parse(trigger+test.body, trigger)
+				if action.Type != test.expectedType || action.Value != test.expectedVal {
+					t.Errorf("Action - wanted: %s, got %s\nResult - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
+				}
+			}
+		})
+	}
+}
