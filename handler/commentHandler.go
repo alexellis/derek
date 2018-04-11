@@ -19,19 +19,21 @@ import (
 )
 
 const (
-	openConstant            string = "open"
-	ClosedConstant          string = "closed"
-	closeConstant           string = "close"
-	reopenConstant          string = "reopen"
-	lockConstant            string = "Lock"
-	unlockConstant          string = "Unlock"
-	setTitleConstant        string = "SetTitle"
-	assignConstant          string = "Assign"
-	unassignConstant        string = "Unassign"
-	removeLabelConstant     string = "RemoveLabel"
-	addLabelConstant        string = "AddLabel"
-	setMilestoneConstant    string = "SetMilestone"
-	removeMilestoneConstant string = "RemoveMilestone"
+	openConstant             string = "open"
+	ClosedConstant           string = "closed"
+	closeConstant            string = "close"
+	reopenConstant           string = "reopen"
+	lockConstant             string = "Lock"
+	unlockConstant           string = "Unlock"
+	setTitleConstant         string = "SetTitle"
+	assignConstant           string = "Assign"
+	unassignConstant         string = "Unassign"
+	removeLabelConstant      string = "RemoveLabel"
+	addLabelConstant         string = "AddLabel"
+	setMilestoneConstant     string = "SetMilestone"
+	removeMilestoneConstant  string = "RemoveMilestone"
+	assignReviewerConstant   string = "AssignReviewer"
+	unassignReviewerConstant string = "UnassignReviewer"
 
 	commandTriggerDefault string = "Derek "
 	commandTriggerSlash   string = "/"
@@ -93,6 +95,20 @@ func HandleComment(req types.IssueCommentOuter, config config.Config) {
 	case setMilestoneConstant, removeMilestoneConstant:
 
 		feedback, err = updateMilestone(req, command.Type, command.Value, config)
+		break
+
+	case assignReviewerConstant, unassignReviewerConstant:
+
+		pr := types.PullRequest{
+			Number: req.Issue.Number,
+		}
+		prReq := types.PullRequestOuter{
+			Repository:          req.Repository,
+			PullRequest:         pr,
+			Action:              req.Action,
+			InstallationRequest: req.InstallationRequest,
+		}
+		feedback, err = editReviewers(prReq, command.Type, command.Value, config)
 		break
 
 	default:
@@ -205,6 +221,28 @@ func manageAssignment(req types.IssueCommentOuter, cmdType string, cmdValue stri
 	}
 
 	buffer.WriteString(fmt.Sprintf("%s %sed successfully or already %sed.\n", cmdValue, strings.ToLower(cmdType), strings.ToLower(cmdType)))
+	return buffer.String(), nil
+}
+
+func editReviewers(req types.PullRequestOuter, cmdType string, cmdValue string, config config.Config) (string, error) {
+	var buffer bytes.Buffer
+
+	client, ctx := makeClient(req.Installation.ID, config)
+
+	reviewer := github.ReviewersRequest{Reviewers: []string{cmdValue}}
+
+	var err error
+
+	if cmdType == unassignReviewerConstant {
+		_, err = client.PullRequests.RemoveReviewers(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, reviewer)
+	} else {
+		_, _, err = client.PullRequests.RequestReviewers(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, reviewer)
+	}
+
+	if err != nil {
+		return buffer.String(), err
+	}
+
 	return buffer.String(), nil
 }
 
@@ -332,6 +370,8 @@ func parse(body, commandTrigger string) *types.CommentAction {
 		commandTrigger + "unlock":             unlockConstant,
 		commandTrigger + "set milestone: ":    setMilestoneConstant,
 		commandTrigger + "remove milestone: ": removeMilestoneConstant,
+		commandTrigger + "set reviewer: ":     assignReviewerConstant,
+		commandTrigger + "clear reviewer: ":   unassignReviewerConstant,
 	}
 
 	for trigger, commandType := range commands {
