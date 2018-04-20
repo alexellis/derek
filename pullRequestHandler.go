@@ -81,6 +81,8 @@ That's something we need before your Pull Request can be merged. Please see our 
 				log.Fatal(err)
 			}
 			fmt.Println(comment, resp.Rate)
+			slackMessage := fmt.Sprintf("a no-dco label is added to PR #%d in repo %s", req.PullRequest.Number, req.Repository.Name)
+			handleSlackMessage(slackMessage)
 		}
 	} else {
 		fmt.Println("Things look OK right now.")
@@ -97,7 +99,12 @@ That's something we need before your Pull Request can be merged. Please see our 
 			if removeLabelErr != nil {
 				log.Fatal(removeLabelErr)
 			}
+			slackMessage := fmt.Sprintf("a no-dco label was removed to PR #%d in repo %s", req.PullRequest.Number, req.Repository.Name)
+			handleSlackMessage(slackMessage)
 		}
+
+		slackMessage := fmt.Sprintf("PR #%d in repo %s looks OK right now.", req.PullRequest.Number, req.Repository.Name)
+		handleSlackMessage(slackMessage)
 	}
 }
 

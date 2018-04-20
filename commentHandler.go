@@ -138,11 +138,13 @@ func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string)
 	client, ctx := makeClient(req.Installation.ID)
 
 	var err error
-
+	var slackAction string
 	if cmdType == addLabelConstant {
 		_, _, err = client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{labelValue})
+		slackAction = "added"
 	} else {
 		_, err = client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, labelValue)
+		slackAction = "removed"
 	}
 
 	if err != nil {
@@ -150,6 +152,10 @@ func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string)
 	}
 
 	buffer.WriteString(fmt.Sprintf("Request to %s label of '%s' on issue #%d was successfully completed.", labelAction, labelValue, req.Issue.Number))
+
+	slackMessage := fmt.Sprintf("a %s label was %s on issue #%d in repo %s by @%s", labelValue, slackAction, req.Issue.Number, req.Repository.Name, req.Comment.User.Login)
+	handleSlackMessage(slackMessage)
+
 	return buffer.String(), nil
 }
 
@@ -173,6 +179,9 @@ func manageTitle(req types.IssueCommentOuter, cmdType string, cmdValue string) (
 	if err != nil {
 		return buffer.String(), err
 	}
+
+	slackMessage := fmt.Sprintf("issue #%d was renamed to '%s' in repo %s by @%s", req.Issue.Number, newTitle, req.Repository.Name, req.Comment.User.Login)
+	handleSlackMessage(slackMessage)
 
 	buffer.WriteString(fmt.Sprintf("Request to set the title of issue #%d by %s was successful.\n", req.Issue.Number, req.Comment.User.Login))
 	return buffer.String(), nil
@@ -202,6 +211,9 @@ func manageAssignment(req types.IssueCommentOuter, cmdType string, cmdValue stri
 		return buffer.String(), err
 	}
 
+	slackMessage := fmt.Sprintf("%s %sed successfully or already %sed on issue #%d in repo %s", cmdValue, strings.ToLower(cmdType), strings.ToLower(cmdType), req.Issue.Number, req.Repository.Name)
+	handleSlackMessage(slackMessage)
+
 	buffer.WriteString(fmt.Sprintf("%s %sed successfully or already %sed.\n", cmdValue, strings.ToLower(cmdType), strings.ToLower(cmdType)))
 	return buffer.String(), nil
 }
@@ -226,6 +238,9 @@ func manageState(req types.IssueCommentOuter, cmdType string) (string, error) {
 	if err != nil {
 		return buffer.String(), err
 	}
+
+	slackMessage := fmt.Sprintf("Request to %s issue #%d by %s in repo %s was successful", cmdType, req.Issue.Number, req.Comment.User.Login, req.Repository.Name)
+	handleSlackMessage(slackMessage)
 
 	buffer.WriteString(fmt.Sprintf("Request to %s issue #%d by %s was successful.\n", cmdType, req.Issue.Number, req.Comment.User.Login))
 	return buffer.String(), nil
@@ -258,6 +273,9 @@ func manageLocking(req types.IssueCommentOuter, cmdType string) (string, error) 
 	if err != nil {
 		return buffer.String(), err
 	}
+
+	slackMessage := fmt.Sprintf("Request to %s issue #%d by %s in repo %s was successful", cmdType, req.Issue.Number, req.Comment.User.Login, req.Repository.Name)
+	handleSlackMessage(slackMessage)
 
 	buffer.WriteString(fmt.Sprintf("Request to %s issue #%d by %s was successful.\n", strings.ToLower(cmdType), req.Issue.Number, req.Comment.User.Login))
 	return buffer.String(), nil
