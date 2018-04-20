@@ -158,4 +158,7 @@ Please follow the [OpenFaaS contribution guide](https://github.com/openfaas/faas
 
 ## Get your own Derek robot
 
-You can host and manage your own Derek robot using [these instuctions](GET.md), or use our managed service. To use our managed service get in touch with [Alex Ellis](mailto:alex@openfaas.com) for more info.
+To use our managed service (recommended) get in touch with [Alex Ellis](mailto:alex@openfaas.com) for more info. Once you have installed the GitHub App you will need to send a PR to the [customers file](https://github.com/alexellis/derek/blob/master/.CUSTOMERS) with your username or organisation. The final step is to add your .DEREK.yml - you can use the file from this repository as an example.
+
+You can host and manage your own Derek robot using [these instuctions](GET.md), or use our managed service.
+
