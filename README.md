@@ -56,6 +56,24 @@ redirect: https://github.com/<some-user>/<some-repo>/.DEREK.yaml
 
 If this optional field is non-empty, Derek will read it's configuration from another location. This allows multiple projects to use the same configuration.
 Please note that redirection is only supported for GitHub repository URLs.
+* What about notifications?
+
+To receive Slack notifications you have to enable the feature in `.DEREK.yml` file i.e.
+```
+features:
+ ...
+ - slack
+```
+
+Also Slack setting of at least webhookURL need to be added to the `.DEREK.yml` file like so:
+
+```
+slack:
+ - webhookURL: "https://hooks.slack.com/a/b/c" # Is required. Get from Slack via the Incoming Webhooks App
+ - username: "Github" # Defaults to Derek if not set
+ - channel: "#notifications" # Defaults to an zero string which will go to the webhooks default channel
+ - iconURL: "http://via.placeholder.com/150x150" # override the default icon URL
+```
 
 ### Examples:
 
