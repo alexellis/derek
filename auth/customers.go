@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -8,6 +9,22 @@ import (
 
 	"github.com/alexellis/derek/types"
 )
+
+const defaultCustomersURL string = "https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS"
+const customersURLEnv string = "customers_url"
+
+func findCustomersURL() string {
+
+	if customURL, exists := os.LookupEnv(customersURLEnv); exists && (len(customURL) > 0) {
+
+		if !strings.HasPrefix(strings.ToLower(customURL), "http") {
+			customURL = fmt.Sprintf("https://%s", customURL)
+		}
+
+		return customURL
+	}
+	return defaultCustomersURL
+}
 
 func IsCustomer(repo types.Repository) (bool, error) {
 	validate := os.Getenv("validate_customers")
@@ -18,7 +35,8 @@ func IsCustomer(repo types.Repository) (bool, error) {
 	var err error
 	var found bool
 	c := http.Client{}
-	request, _ := http.NewRequest(http.MethodGet, "https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS", nil)
+	customersURL := findCustomersURL()
+	request, _ := http.NewRequest(http.MethodGet, customersURL, nil)
 	res, doErr := c.Do(request)
 	if err != nil {
 		err = doErr
