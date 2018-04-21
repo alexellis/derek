@@ -107,10 +107,11 @@ func classifyLabels(currentLabels []types.IssueLabel, labelAction string, labelV
 
 	var applicableLabels, unnecessaryLabels []string
 
-	labelValue = strings.Replace(labelValue, " ", "", -1)
 	requestedLabels := strings.Split(labelValue, ",")
 
 	for _, requestedLabel := range requestedLabels {
+
+		requestedLabel = strings.TrimSpace(requestedLabel)
 
 		found := findLabel(currentLabels, requestedLabel)
 

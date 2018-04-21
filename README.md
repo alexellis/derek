@@ -68,6 +68,12 @@ Derek add label: help wanted
 Derek remove label: bug
 ```
 
+Multiple labels can be applied with a single action.
+```
+Derek add label: proposal, help wanted, skill/intermediate
+Derek remove label: proposal, help wanted
+```
+
 * Assign work
 
 You can assign work to people too
