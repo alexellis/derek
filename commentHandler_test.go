@@ -397,12 +397,12 @@ func Test_findLabel(t *testing.T) {
 func Test_classifyLabels(t *testing.T) {
 
 	var classifyOptions = []struct {
-		title         string
-		currentLabels []types.IssueLabel
-		cmdType       string
-		labelValue    string
-		expectedGL    []string
-		expectedBL    []string
+		title               string
+		currentLabels       []types.IssueLabel
+		cmdType             string
+		labelValue          string
+		expectedApplicable  []string
+		expectedUnnecessary []string
 	}{
 		{title: "Add when all Labels exist",
 			currentLabels: []types.IssueLabel{
@@ -416,10 +416,10 @@ func Test_classifyLabels(t *testing.T) {
 					Name: "freddie",
 				},
 			},
-			cmdType:    addLabelConstant,
-			labelValue: "rod, jane, freddie",
-			expectedGL: []string{},
-			expectedBL: []string{"rod", "jane", "freddie"},
+			cmdType:             addLabelConstant,
+			labelValue:          "rod, jane, freddie",
+			expectedApplicable:  []string{},
+			expectedUnnecessary: []string{"rod", "jane", "freddie"},
 		},
 		{title: "Remove when all Labels exist",
 			currentLabels: []types.IssueLabel{
@@ -433,24 +433,24 @@ func Test_classifyLabels(t *testing.T) {
 					Name: "freddie",
 				},
 			},
-			cmdType:    removeLabelConstant,
-			labelValue: "rod, jane, freddie",
-			expectedGL: []string{"rod", "jane", "freddie"},
-			expectedBL: []string{},
+			cmdType:             removeLabelConstant,
+			labelValue:          "rod, jane, freddie",
+			expectedApplicable:  []string{"rod", "jane", "freddie"},
+			expectedUnnecessary: []string{},
 		},
 		{title: "Add when no Labels exist",
-			currentLabels: []types.IssueLabel{},
-			cmdType:       addLabelConstant,
-			labelValue:    "rod, jane, freddie",
-			expectedGL:    []string{"rod", "jane", "freddie"},
-			expectedBL:    []string{},
+			currentLabels:       []types.IssueLabel{},
+			cmdType:             addLabelConstant,
+			labelValue:          "rod, jane, freddie",
+			expectedApplicable:  []string{"rod", "jane", "freddie"},
+			expectedUnnecessary: []string{},
 		},
 		{title: "Remove when no Labels exist",
-			currentLabels: []types.IssueLabel{},
-			cmdType:       removeLabelConstant,
-			labelValue:    "rod, jane, freddie",
-			expectedGL:    []string{},
-			expectedBL:    []string{"rod", "jane", "freddie"},
+			currentLabels:       []types.IssueLabel{},
+			cmdType:             removeLabelConstant,
+			labelValue:          "rod, jane, freddie",
+			expectedApplicable:  []string{},
+			expectedUnnecessary: []string{"rod", "jane", "freddie"},
 		},
 		{title: "Add when subset of Labels exist",
 			currentLabels: []types.IssueLabel{
@@ -461,10 +461,10 @@ func Test_classifyLabels(t *testing.T) {
 					Name: "jane",
 				},
 			},
-			cmdType:    addLabelConstant,
-			labelValue: "rod, jane, freddie",
-			expectedGL: []string{"freddie"},
-			expectedBL: []string{"rod", "jane"},
+			cmdType:             addLabelConstant,
+			labelValue:          "rod, jane, freddie",
+			expectedApplicable:  []string{"freddie"},
+			expectedUnnecessary: []string{"rod", "jane"},
 		},
 		{title: "Remove when subset of Labels exist",
 			currentLabels: []types.IssueLabel{
@@ -475,10 +475,10 @@ func Test_classifyLabels(t *testing.T) {
 					Name: "jane",
 				},
 			},
-			cmdType:    removeLabelConstant,
-			labelValue: "rod, jane, freddie",
-			expectedGL: []string{"rod", "jane"},
-			expectedBL: []string{"freddie"},
+			cmdType:             removeLabelConstant,
+			labelValue:          "rod, jane, freddie",
+			expectedApplicable:  []string{"rod", "jane"},
+			expectedUnnecessary: []string{"freddie"},
 		},
 		{title: "Add new value to set",
 			currentLabels: []types.IssueLabel{
@@ -489,10 +489,10 @@ func Test_classifyLabels(t *testing.T) {
 					Name: "jane",
 				},
 			},
-			cmdType:    addLabelConstant,
-			labelValue: "freddie, burt",
-			expectedGL: []string{"freddie", "burt"},
-			expectedBL: []string{},
+			cmdType:             addLabelConstant,
+			labelValue:          "freddie, burt",
+			expectedApplicable:  []string{"freddie", "burt"},
+			expectedUnnecessary: []string{},
 		},
 		{title: "remove existing values from set",
 			currentLabels: []types.IssueLabel{
@@ -509,20 +509,20 @@ func Test_classifyLabels(t *testing.T) {
 					Name: "burt",
 				},
 			},
-			cmdType:    removeLabelConstant,
-			labelValue: "rod, jane",
-			expectedGL: []string{"freddie", "burt"},
-			expectedBL: []string{},
+			cmdType:             removeLabelConstant,
+			labelValue:          "rod, jane",
+			expectedApplicable:  []string{"freddie", "burt"},
+			expectedUnnecessary: []string{},
 		},
 	}
 
 	for _, test := range classifyOptions {
 		t.Run(test.title, func(t *testing.T) {
 
-			goodLabels, badLabels := classifyLabels(test.currentLabels, test.cmdType, test.labelValue)
+			applicableLabels, unnecessaryLabels := classifyLabels(test.currentLabels, test.cmdType, test.labelValue)
 
-			if len(goodLabels) != len(test.expectedGL) || len(badLabels) != len(test.expectedBL) {
-				t.Errorf("Label Classification (%s) - wanted: Good(%s) Bad(%s), got Good(%s) Bad(%s)\n", test.title, strings.Join(test.expectedGL, ", "), strings.Join(test.expectedBL, ", "), strings.Join(goodLabels, ", "), strings.Join(badLabels, ", "))
+			if len(applicableLabels) != len(test.expectedApplicable) || len(unnecessaryLabels) != len(test.expectedUnnecessary) {
+				t.Errorf("Label Classification (%s) - wanted: Good(%s) Bad(%s), got Good(%s) Bad(%s)\n", test.title, strings.Join(test.expectedApplicable, ", "), strings.Join(test.expectedUnnecessary, ", "), strings.Join(applicableLabels, ", "), strings.Join(unnecessaryLabels, ", "))
 			}
 		})
 	}
