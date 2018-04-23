@@ -48,6 +48,7 @@ We are planning to add roles in the ROADMAP which will mean you can get even mor
 
 > Note that the assign/unassign commands provides the shortcut `me` to assign to the commenter
 
+<<<<<<< HEAD
 * URL redirection of configuration files is supported via the "redirect" field:
 
 ```
@@ -75,6 +76,8 @@ slack:
  - iconURL: "http://via.placeholder.com/150x150" # override the default icon URL
 ```
 
+=======
+>>>>>>> Change Slack Notifications to pull from environment variables
 ### Examples:
 
 * Update the title of a PR or issue

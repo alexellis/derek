@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/alexellis/derek/types"
 )
@@ -13,20 +14,9 @@ const slack = "slack"
 const slackDefaultIconURL string = "https://camo.githubusercontent.com/cf0edcdaf482b61b065bde6ce7744f7fc3164d69/68747470733a2f2f7062732e7477696d672e636f6d2f6d656469612f44506f344f7972577341414f6b5f692e706e67"
 const slackDefaultUsername string = "Derek"
 
-var isSlackEnabled bool
-var slackSettings types.SlackSetting
-
-func setSlackSettings(config *types.DerekConfig) {
-	isSlackEnabled = enabledFeature(slack, config)
-	slackSettings = config.Slack
-}
-
 func handleSlackMessage(text string) error {
-	if isSlackEnabled != true {
-		return nil
-	}
+	url := os.Getenv("slack_webhook_url")
 
-	url := slackSettings.WebhookURL
 	if url == "" {
 		return fmt.Errorf("Slack Webhook Url not set in DerekConfig")
 	}
@@ -39,14 +29,14 @@ func handleSlackMessage(text string) error {
 	}
 
 	// Set Overrides
-	if slackSettings.Channel != "" {
-		payload.Channel = slackSettings.Channel
+	if channel := os.Getenv("slack_channel"); channel != "" {
+		payload.Channel = channel
 	}
-	if slackSettings.Username != "" {
-		payload.Username = slackSettings.Username
+	if username := os.Getenv("slack_username"); username != "" {
+		payload.Username = username
 	}
-	if slackSettings.IconURL != "" {
-		payload.IconURL = slackSettings.IconURL
+	if iconURL := os.Getenv("slack_iconURL"); iconURL != "" {
+		payload.IconURL = iconURL
 	}
 
 	body, err := json.Marshal(payload)

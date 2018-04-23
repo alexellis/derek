@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/alexellis/derek/types"
@@ -26,20 +27,27 @@ func Test_handleSlackMessage(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer ts.Close()
+	type slackTestConfig struct {
+		url      string
+		username string
+		iconURL  string
+		channel  string
+	}
+
 	var slackTestOpts = []struct {
 		title    string
 		username string
 		iconURL  string
 		channel  string
-		config   types.SlackSetting
+		config   slackTestConfig
 	}{
 		{
 			title:    "Should use Defaults values if no settings defined",
 			username: slackDefaultUsername,
 			iconURL:  slackDefaultIconURL,
 			channel:  "",
-			config: types.SlackSetting{
-				WebhookURL: ts.URL,
+			config: slackTestConfig{
+				url: ts.URL,
 			},
 		},
 		{
@@ -47,9 +55,9 @@ func Test_handleSlackMessage(t *testing.T) {
 			username: "Custom",
 			iconURL:  slackDefaultIconURL,
 			channel:  "",
-			config: types.SlackSetting{
-				WebhookURL: ts.URL,
-				Username:   "Custom",
+			config: slackTestConfig{
+				url:      ts.URL,
+				username: "Custom",
 			},
 		},
 		{
@@ -57,19 +65,19 @@ func Test_handleSlackMessage(t *testing.T) {
 			username: slackDefaultUsername,
 			iconURL:  "http://example.com",
 			channel:  "",
-			config: types.SlackSetting{
-				WebhookURL: ts.URL,
-				IconURL:    "http://example.com",
+			config: slackTestConfig{
+				url:     ts.URL,
+				iconURL: "http://example.com",
 			},
 		},
 		{
-			title:    "Should use Setting's custom Channel",
+			title:    "Should use Setting's custom channel",
 			username: slackDefaultUsername,
 			iconURL:  slackDefaultIconURL,
 			channel:  "#build",
-			config: types.SlackSetting{
-				WebhookURL: ts.URL,
-				Channel:    "#build",
+			config: slackTestConfig{
+				url:     ts.URL,
+				channel: "#build",
 			},
 		},
 		{
@@ -77,22 +85,22 @@ func Test_handleSlackMessage(t *testing.T) {
 			username: "Bob",
 			iconURL:  "http://example.com/image.png",
 			channel:  "#github",
-			config: types.SlackSetting{
-				WebhookURL: ts.URL,
-				Username:   "Bob",
-				IconURL:    "http://example.com/image.png",
-				Channel:    "#github",
+			config: slackTestConfig{
+				url:      ts.URL,
+				username: "Bob",
+				iconURL:  "http://example.com/image.png",
+				channel:  "#github",
 			},
 		},
 	}
 
 	for _, test := range slackTestOpts {
 		t.Run(test.title, func(t *testing.T) {
-			inputConfig := &types.DerekConfig{
-				Features: []string{slack},
-				Slack:    test.config,
-			}
-			setSlackSettings(inputConfig)
+			os.Setenv("slack_channel", test.config.channel)
+			os.Setenv("slack_username", test.config.username)
+			os.Setenv("slack_iconURL", test.config.iconURL)
+			os.Setenv("slack_webhook_url", test.config.url)
+
 			err := handleSlackMessage(test.title)
 			if err != nil {
 				t.Errorf("Expext Slack Message to successfully send")
@@ -101,14 +109,18 @@ func Test_handleSlackMessage(t *testing.T) {
 				t.Errorf("Expected Text to be the same - wanted: '%s', found '%s'", test.title, resp.Text)
 			}
 			if resp.Username != test.username {
-				t.Errorf("Expected Username to be the same - wanted: '%s', found '%s'", test.username, resp.Username)
+				t.Errorf("Expected username to be the same - wanted: '%s', found '%s'", test.username, resp.Username)
 			}
 			if resp.IconURL != test.iconURL {
 				t.Errorf("Expected iconURL to be the same - wanted: '%s', found '%s'", test.iconURL, resp.IconURL)
 			}
 			if resp.Channel != test.channel {
-				t.Errorf("Expected Username to be the same - wanted: '%s', found '%s'", test.channel, resp.Channel)
+				t.Errorf("Expected username to be the same - wanted: '%s', found '%s'", test.channel, resp.Channel)
 			}
+			os.Unsetenv("slack_channel")
+			os.Unsetenv("slack_username")
+			os.Unsetenv("slack_iconURL")
+			os.Unsetenv("slack_webhook_url")
 		})
 	}
 }

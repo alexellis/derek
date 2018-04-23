@@ -72,13 +72,6 @@ type CommentAction struct {
 	Value string
 }
 
-type SlackSetting struct {
-	WebhookURL string
-	Username   string
-	IconURL    string
-	Channel    string
-}
-
 type SlackPayload struct {
 	Text     string `json:"text,omitempty"`
 	Username string `json:"username,omitempty"`
@@ -99,9 +92,6 @@ type DerekConfig struct {
 
 	// Curators is an alias for Maintainers and is only used if the Maintainers list is empty.
 	Curators []string
-
-	// Slack related settings
-	Slack SlackSetting
 }
 
 func (p *PullRequest) FirstTimeContributor() bool {
