@@ -103,7 +103,7 @@ func Test_handleSlackMessage(t *testing.T) {
 
 			err := handleSlackMessage(test.title)
 			if err != nil {
-				t.Errorf("Expext Slack Message to successfully send")
+				t.Errorf("Expected Slack Message to successfully send")
 			}
 			if resp.Text != test.title {
 				t.Errorf("Expected Text to be the same - wanted: '%s', found '%s'", test.title, resp.Text)
@@ -122,5 +122,13 @@ func Test_handleSlackMessage(t *testing.T) {
 			os.Unsetenv("slack_iconURL")
 			os.Unsetenv("slack_webhook_url")
 		})
+	}
+}
+
+func Test_Missing_Url_handleSlackMessage(t *testing.T) {
+	os.Unsetenv("slack_webhook_url")
+	err := handleSlackMessage("missing webhook")
+	if err == nil {
+		t.Errorf("Expected to not attempt to send")
 	}
 }
