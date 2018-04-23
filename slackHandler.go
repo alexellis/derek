@@ -18,7 +18,7 @@ func handleSlackMessage(text string) error {
 	url := os.Getenv("slack_webhook_url")
 
 	if url == "" {
-		return fmt.Errorf("Slack Webhook Url not set in DerekConfig")
+		return fmt.Errorf("Slack Webhook Url not set via Environment Variable")
 	}
 
 	// Build with default values
@@ -48,7 +48,7 @@ func handleSlackMessage(text string) error {
 		return err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Slack didn’t respond 200 OK: %s", resp.Status)
+		return fmt.Errorf("Slack didn’t respond with 200 OK: %s", resp.Status)
 	}
 	defer resp.Body.Close()
 
