@@ -19,7 +19,7 @@ func handlePullRequest(req types.PullRequestOuter) {
 	token := os.Getenv("access_token")
 	if len(token) == 0 {
 
-		newToken, tokenErr := auth.MakeAccessTokenForInstallation(os.Getenv("application"), req.Installation.ID)
+		newToken, tokenErr := auth.MakeAccessTokenForInstallation(os.Getenv("application"), req.Installation.ID, useSecretKeyPath)
 
 		if tokenErr != nil {
 			log.Fatalln(tokenErr.Error())
