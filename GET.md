@@ -1,10 +1,14 @@
 ## Get your own Derek robot
 
-To use our managed Derek robot service get in touch with [Alex Ellis](mailto:alex@openfaas.com) for more info. (setup time 5 minutes)
+* The easy way
 
-Read on if you want to setup your own cluster, OpenFaaS and a private GitHub App. (est. setup time several hours)
+To use our hosted/managed Derek robot service for free then get in touch with [Alex Ellis](mailto:alex@openfaas.com) for more information. (setup time 5 minutes)
 
-### The hard way
+* The harder way
+
+Read on if you want to setup your own cluster, OpenFaaS and a private GitHub App. (est. setup time 30-60mins depending on your experience-level)
+
+### Ready.. Set.. Derek!
 
 * Setup [OpenFaaS](https://github.com/openfaas/faas) and the [faas-cli](https://github.com/openfaas/faas-cli)
 
