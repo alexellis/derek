@@ -13,28 +13,28 @@ var actionOptions = []struct {
 }{
 	{
 		title:          "Correct reopen command",
-		body:           "Derek reopen",
-		expectedAction: "reopen",
+		body:           Trigger + "reopen",
+		expectedAction: reopenConst,
 	},
 	{ //this case replaces Test_Parsing_Close
 		title:          "Correct close command",
-		body:           "Derek close",
-		expectedAction: "close",
+		body:           Trigger + "close",
+		expectedAction: closeConst,
 	},
 	{
 		title:          "invalid command",
-		body:           "Derek dance",
+		body:           Trigger + "dance",
 		expectedAction: "",
 	},
 	{
 		title:          "Longer reopen command",
-		body:           "Derek reopen: ",
-		expectedAction: "reopen",
+		body:           Trigger + "reopen: ",
+		expectedAction: reopenConst,
 	},
 	{
 		title:          "Longer close command",
-		body:           "Derek close: ",
-		expectedAction: "close",
+		body:           Trigger + "close: ",
+		expectedAction: closeConst,
 	},
 }
 
@@ -103,25 +103,25 @@ func Test_Parsing_Assignments(t *testing.T) {
 		{
 			title:        "Assign to burt",
 			body:         "Derek assign: burt",
-			expectedType: assignConstant,
+			expectedType: assignConst,
 			expectedVal:  "burt",
 		},
 		{
 			title:        "Unassign burt",
 			body:         "Derek unassign: burt",
-			expectedType: unassignConstant,
+			expectedType: unassignConst,
 			expectedVal:  "burt",
 		},
 		{
 			title:        "Assign to me",
 			body:         "Derek assign: me",
-			expectedType: assignConstant,
+			expectedType: assignConst,
 			expectedVal:  "me",
 		},
 		{
 			title:        "Unassign me",
 			body:         "Derek unassign: me",
-			expectedType: unassignConstant,
+			expectedType: unassignConst,
 			expectedVal:  "me",
 		},
 		{
@@ -160,7 +160,7 @@ func Test_Parsing_Titles(t *testing.T) {
 		{
 			title:        "Set Title",
 			body:         "Derek set title: This is a really great Title!",
-			expectedType: setTitleConstant,
+			expectedType: setTitleConst,
 			expectedVal:  "This is a really great Title!",
 		},
 		{
@@ -178,7 +178,7 @@ func Test_Parsing_Titles(t *testing.T) {
 		{
 			title:        "Empty Title (Double Space)",
 			body:         "Derek set title:  ",
-			expectedType: setTitleConstant,
+			expectedType: setTitleConst,
 			expectedVal:  "",
 		},
 	}
@@ -205,30 +205,30 @@ func Test_assessState(t *testing.T) {
 	}{
 		{
 			title:            "Currently Closed and trying to close",
-			requestedAction:  closeConstant,
-			currentState:     closedConstant,
+			requestedAction:  closeConst,
+			currentState:     closedConst,
 			expectedNewState: "",
 			expectedBool:     false,
 		},
 		{
 			title:            "Currently Open and trying to reopen",
-			requestedAction:  reopenConstant,
-			currentState:     openConstant,
+			requestedAction:  reopenConst,
+			currentState:     openConst,
 			expectedNewState: "",
 			expectedBool:     false,
 		},
 		{
 			title:            "Currently Closed and trying to open",
-			requestedAction:  reopenConstant,
-			currentState:     closedConstant,
-			expectedNewState: openConstant,
+			requestedAction:  reopenConst,
+			currentState:     closedConst,
+			expectedNewState: openConst,
 			expectedBool:     true,
 		},
 		{
 			title:            "Currently Open and trying to close",
-			requestedAction:  closeConstant,
-			currentState:     openConstant,
-			expectedNewState: closedConstant,
+			requestedAction:  closeConst,
+			currentState:     openConst,
+			expectedNewState: closedConst,
 			expectedBool:     true,
 		},
 	}
@@ -258,33 +258,33 @@ func Test_validAction(t *testing.T) {
 		{
 			title:           "Currently unlocked and trying to lock",
 			running:         false,
-			requestedAction: lockConstant,
-			start:           lockConstant,
-			stop:            unlockConstant,
+			requestedAction: lockConst,
+			start:           lockConst,
+			stop:            unlockConst,
 			expectedBool:    true,
 		},
 		{
 			title:           "Currently unlocked and trying to unlock",
 			running:         false,
-			requestedAction: unlockConstant,
-			start:           lockConstant,
-			stop:            unlockConstant,
+			requestedAction: unlockConst,
+			start:           lockConst,
+			stop:            unlockConst,
 			expectedBool:    false,
 		},
 		{
 			title:           "Currently locked and trying to lock",
 			running:         true,
-			requestedAction: lockConstant,
-			start:           lockConstant,
-			stop:            unlockConstant,
+			requestedAction: lockConst,
+			start:           lockConst,
+			stop:            unlockConst,
 			expectedBool:    false,
 		},
 		{
 			title:           "Currently locked and trying to unlock",
 			running:         true,
-			requestedAction: unlockConstant,
-			start:           lockConstant,
-			stop:            unlockConstant,
+			requestedAction: unlockConst,
+			start:           lockConst,
+			stop:            unlockConst,
 			expectedBool:    true,
 		},
 	}

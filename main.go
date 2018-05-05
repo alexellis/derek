@@ -6,14 +6,17 @@ import (
 	"io/ioutil"
 	"os"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/types"
+
+	log "github.com/Sirupsen/logrus"
 )
 
-const dcoCheck = "dco_check"
-const comments = "comments"
-const deleted = "deleted"
+const (
+	dcoCheck = "dco_check"
+	comments = "comments"
+	deleted  = "deleted"
+)
 
 func hmacValidation() bool {
 	val := os.Getenv("validate_hmac")
@@ -68,7 +71,7 @@ func handleEvent(eventType string, bytesIn []byte) error {
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
-		if req.Action != closedConstant {
+		if req.Action != closedConst {
 			if enabledFeature(dcoCheck, derekConfig) {
 				handlePullRequest(req)
 			}
