@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	yaml "gopkg.in/yaml.v2"
+	"github.com/alexellis/derek/types"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/alexellis/derek/types"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const configFile = ".DEREK.yml"

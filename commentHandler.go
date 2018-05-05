@@ -7,23 +7,29 @@ import (
 	"os"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/types"
+
+	log "github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
 )
 
-const openConstant string = "open"
-const closedConstant string = "closed"
-const closeConstant string = "close"
-const reopenConstant string = "reopen"
-const lockConstant string = "Lock"
-const unlockConstant string = "Unlock"
-const setTitleConstant string = "SetTitle"
-const assignConstant string = "Assign"
-const unassignConstant string = "Unassign"
-const removeLabelConstant string = "RemoveLabel"
-const addLabelConstant string = "AddLabel"
+const (
+	openConst        string = "open"
+	closedConst      string = "closed"
+	closeConst       string = "close"
+	reopenConst      string = "reopen"
+	lockConst        string = "Lock"
+	unlockConst      string = "Unlock"
+	setTitleConst    string = "SetTitle"
+	assignConst      string = "Assign"
+	unassignConst    string = "Unassign"
+	removeLabelConst string = "RemoveLabel"
+	addLabelConst    string = "AddLabel"
+)
+
+// Trigger is the text that trigger action from this bot.
+const Trigger = "Derek "
 
 func makeClient(installation int) (*github.Client, context.Context) {
 	ctx := context.Background()
@@ -55,27 +61,27 @@ func handleComment(req types.IssueCommentOuter) {
 
 	switch command.Type {
 
-	case addLabelConstant, removeLabelConstant:
+	case addLabelConst, removeLabelConst:
 
 		feedback, err = manageLabel(req, command.Type, command.Value)
 		break
 
-	case assignConstant, unassignConstant:
+	case assignConst, unassignConst:
 
 		feedback, err = manageAssignment(req, command.Type, command.Value)
 		break
 
-	case closeConstant, reopenConstant:
+	case closeConst, reopenConst:
 
 		feedback, err = manageState(req, command.Type)
 		break
 
-	case setTitleConstant:
+	case setTitleConst:
 
 		feedback, err = manageTitle(req, command.Type, command.Value)
 		break
 
-	case lockConstant, unlockConstant:
+	case lockConst, unlockConst:
 
 		feedback, err = manageLocking(req, command.Type)
 		break
@@ -112,7 +118,7 @@ func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string)
 
 	found := findLabel(req.Issue.Labels, labelValue)
 
-	if !validAction(found, cmdType, addLabelConstant, removeLabelConstant) {
+	if !validAction(found, cmdType, addLabelConst, removeLabelConst) {
 		buffer.WriteString(fmt.Sprintf("Request to %s label of '%s' on issue #%d was unnecessary.", labelAction, labelValue, req.Issue.Number))
 		return buffer.String(), nil
 	}
@@ -121,7 +127,7 @@ func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string)
 
 	var err error
 
-	if cmdType == addLabelConstant {
+	if cmdType == addLabelConst {
 		_, _, err = client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{labelValue})
 	} else {
 		_, err = client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, labelValue)
@@ -174,7 +180,7 @@ func manageAssignment(req types.IssueCommentOuter, cmdType string, cmdValue stri
 
 	var err error
 
-	if cmdType == unassignConstant {
+	if cmdType == unassignConst {
 		_, _, err = client.Issues.RemoveAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{cmdValue})
 	} else {
 		_, _, err = client.Issues.AddAssignees(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{cmdValue})
@@ -220,7 +226,7 @@ func manageLocking(req types.IssueCommentOuter, cmdType string) (string, error) 
 
 	buffer.WriteString(fmt.Sprintf("%s wants to %s issue #%d\n", req.Comment.User.Login, strings.ToLower(cmdType), req.Issue.Number))
 
-	if !validAction(req.Issue.Locked, cmdType, lockConstant, unlockConstant) {
+	if !validAction(req.Issue.Locked, cmdType, lockConst, unlockConst) {
 
 		buffer.WriteString(fmt.Sprintf("Issue #%d is already %sed\n", req.Issue.Number, strings.ToLower(cmdType)))
 
@@ -231,7 +237,7 @@ func manageLocking(req types.IssueCommentOuter, cmdType string) (string, error) 
 
 	var err error
 
-	if cmdType == lockConstant {
+	if cmdType == lockConst {
 		_, err = client.Issues.Lock(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number)
 	} else {
 		_, err = client.Issues.Unlock(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number)
@@ -250,16 +256,16 @@ func parse(body string) *types.CommentAction {
 	commentAction := types.CommentAction{}
 
 	commands := map[string]string{
-		"Derek add label: ":    addLabelConstant,
-		"Derek remove label: ": removeLabelConstant,
-		"Derek assign: ":       assignConstant,
-		"Derek unassign: ":     unassignConstant,
-		"Derek close":          closeConstant,
-		"Derek reopen":         reopenConstant,
-		"Derek set title: ":    setTitleConstant,
-		"Derek edit title: ":   setTitleConstant,
-		"Derek lock":           lockConstant,
-		"Derek unlock":         unlockConstant,
+		Trigger + "add label: ":    addLabelConst,
+		Trigger + "remove label: ": removeLabelConst,
+		Trigger + "assign: ":       assignConst,
+		Trigger + "unassign: ":     unassignConst,
+		Trigger + "close":          closeConst,
+		Trigger + "reopen":         reopenConst,
+		Trigger + "set title: ":    setTitleConst,
+		Trigger + "edit title: ":   setTitleConst,
+		Trigger + "lock":           lockConst,
+		Trigger + "unlock":         unlockConst,
 	}
 
 	for trigger, commandType := range commands {
@@ -289,10 +295,10 @@ func validAction(running bool, requestedAction string, start string, stop string
 
 func checkTransition(requestedAction string, currentState string) (string, bool) {
 
-	if requestedAction == closeConstant && currentState != closedConstant {
-		return closedConstant, true
-	} else if requestedAction == reopenConstant && currentState != openConstant {
-		return openConstant, true
+	if requestedAction == closeConst && currentState != closedConst {
+		return closedConst, true
+	} else if requestedAction == reopenConst && currentState != openConst {
+		return openConst, true
 	}
 
 	return "", false

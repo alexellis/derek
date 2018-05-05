@@ -40,7 +40,7 @@ curators:
 
 * What about roles?
 
-We are planning to add roles in the ROADMAP which will mean you can get even more granular and have folks who can only add labels but not close issues for instance. If you feel you need to make that distinction. It will also let you call the roles whatever you think makes sense. 
+We are planning to add roles in the ROADMAP which will mean you can get even more granular and have folks who can only add labels but not close issues for instance. If you feel you need to make that distinction. It will also let you call the roles whatever you think makes sense.
 
 > Note that the assign/unassign commands provides the shortcut `me` to assign to the commenter
 
@@ -161,4 +161,3 @@ Please follow the [OpenFaaS contribution guide](https://github.com/openfaas/faas
 To use our managed service (recommended) get in touch with [Alex Ellis](mailto:alex@openfaas.com) for more info. Once you have installed the GitHub App you will need to send a PR to the [customers file](https://github.com/alexellis/derek/blob/master/.CUSTOMERS) with your username or organisation. The final step is to add your .DEREK.yml - you can use the file from this repository as an example.
 
 You can host and manage your own Derek robot using [these instuctions](GET.md), or use our managed service.
-
