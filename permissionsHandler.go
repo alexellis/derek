@@ -44,15 +44,8 @@ func permittedUserFeature(attemptedFeature string, config *types.DerekConfig, us
 	return permitted
 }
 
-func getConfig(owner string, repository string) (*types.DerekConfig, error) {
-
-	maintainersFile := fmt.Sprintf("https://github.com/%s/%s/raw/master/%s", owner, repository, configFile)
-
-	client := http.Client{
-		Timeout: 30 * time.Second,
-	}
-
-	req, _ := http.NewRequest(http.MethodGet, maintainersFile, nil)
+func readConfigFromURL(client http.Client, url string) []byte {
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
 
 	res, resErr := client.Do(req)
 	if resErr != nil {
@@ -60,18 +53,38 @@ func getConfig(owner string, repository string) (*types.DerekConfig, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		log.Fatalln(fmt.Sprintf("HTTP Status code: %d while fetching maintainers list (%s)", res.StatusCode, maintainersFile))
-	}
-	if res.Body != nil {
-		defer res.Body.Close()
+		log.Fatalln(fmt.Sprintf("HTTP Status code: %d while fetching config (%s)", res.StatusCode, url))
 	}
 
-	bytesOut, _ := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
+	bytesOut, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return bytesOut
+}
+
+func getConfig(owner string, repository string) (*types.DerekConfig, error) {
 	var config types.DerekConfig
 
-	err := parseConfig(bytesOut, &config)
+	client := http.Client{
+		Timeout: 30 * time.Second,
+	}
+	configFile := fmt.Sprintf("https://github.com/%s/%s/raw/master/%s", owner, repository, configFile)
+	bytesConfig := readConfigFromURL(client, configFile)
+
+	err := parseConfig(bytesConfig, &config)
 	if err != nil {
 		return nil, err
+	}
+
+	// The config contains a redirect URL. Load the config from there.
+	if len(config.Redirect) > 0 {
+		bytesConfig = readConfigFromURL(client, config.Redirect)
+		err = parseConfig(bytesConfig, &config)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &config, nil
