@@ -64,6 +64,9 @@ type CommentAction struct {
 
 type DerekConfig struct {
 
+	// A redirect URL to load the config from another location.
+	Redirect string
+
 	// Features can be turned on/off if needed.
 	Features []string
 
