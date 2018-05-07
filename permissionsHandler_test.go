@@ -18,6 +18,17 @@ func Test_maintainersparsed(t *testing.T) {
 	}
 }
 
+func Test_redirectparsed(t *testing.T) {
+	url := "some-url"
+	config := types.DerekConfig{}
+	parseConfig([]byte(`redirect: `+url), &config)
+	actual := len(config.Redirect)
+	lenURL := len(url)
+	if actual != lenURL {
+		t.Errorf("want: redirect URL of size %d, got: %d", lenURL, actual)
+	}
+}
+
 func Test_curatorequalsmaintainer(t *testing.T) {
 	config := types.DerekConfig{}
 	parseConfig([]byte(`curators:
