@@ -5,6 +5,7 @@
 Here are a few guidelines for contributing:
 
 * If you would like to contribute to the codebase **please raise an issue to propose the change**
+* Do not mix feature changes or fixes with refactoring - it makes the code harder to review and means there is more for the maintainers (with limited time) to test
 
 * If you have found a bug please raise an issue and fill out the whole template.
 * Don't raise PRs for typos, these aren't necessary - just raise an Issue
