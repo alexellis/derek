@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
-	"os"
-
-	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/types"
+
+	log "github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
 )
 
