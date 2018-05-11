@@ -64,6 +64,19 @@ func readConfigFromURL(client http.Client, url string) []byte {
 	return bytesOut
 }
 
+func getValidRedirectDomains() []string {
+	return []string{"github.com", "www.github.com", "raw.githubusercontent.com"}
+}
+
+func validateRedirectURL(url string) error {
+	for _, d := range getValidRedirectDomains() {
+		if strings.HasPrefix(url, d) || strings.HasPrefix(url, "http://"+d) || strings.HasPrefix(url, "https://"+d) {
+			return nil
+		}
+	}
+	return fmt.Errorf("the redirect URL doesn't seem to be GitHub based")
+}
+
 func getConfig(owner string, repository string) (*types.DerekConfig, error) {
 	var config types.DerekConfig
 
@@ -80,6 +93,10 @@ func getConfig(owner string, repository string) (*types.DerekConfig, error) {
 
 	// The config contains a redirect URL. Load the config from there.
 	if len(config.Redirect) > 0 {
+		err = validateRedirectURL(config.Redirect)
+		if err != nil {
+			return nil, err
+		}
 		bytesConfig = readConfigFromURL(client, config.Redirect)
 		err = parseConfig(bytesConfig, &config)
 		if err != nil {
