@@ -18,6 +18,42 @@ func Test_maintainersparsed(t *testing.T) {
 	}
 }
 
+func Test_validateRedirectURL(t *testing.T) {
+	type redirectURLTest struct {
+		URL         string
+		expectedErr bool
+	}
+	// append invalid domain tests
+	tests := []redirectURLTest{
+		redirectURLTest{
+			URL:         "http://somedomain.com",
+			expectedErr: true,
+		},
+		redirectURLTest{
+			URL:         "www.somedomain.com",
+			expectedErr: true,
+		},
+		redirectURLTest{
+			URL:         "www.somedomain.com/github.com",
+			expectedErr: true,
+		},
+	}
+	// append valid domain tests
+	for _, d := range getValidRedirectDomains() {
+		tests = append(tests,
+			redirectURLTest{URL: d, expectedErr: false},
+			redirectURLTest{URL: "http://" + d, expectedErr: false},
+			redirectURLTest{URL: "https://" + d, expectedErr: false},
+		)
+	}
+	for _, test := range tests {
+		err := validateRedirectURL(test.URL)
+		if (err != nil) != test.expectedErr {
+			t.Fatalf("URL: %q, expected error: %v, got: %v", test.URL, err != nil, test.expectedErr)
+		}
+	}
+}
+
 func Test_redirectparsed(t *testing.T) {
 	url := "some-url"
 	config := types.DerekConfig{}
