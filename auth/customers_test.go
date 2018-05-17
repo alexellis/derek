@@ -34,7 +34,7 @@ func Test_findCustomerURL(t *testing.T) {
 
 			os.Setenv(customersURLEnv, test.envVar)
 
-			customersURL := findCustomersURL()
+			customersURL := buildCustomerURL()
 
 			os.Unsetenv(customersURLEnv)
 

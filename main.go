@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 
 	log "github.com/Sirupsen/logrus"
@@ -57,7 +58,7 @@ func handleEvent(eventType string, bytesIn []byte) error {
 			return fmt.Errorf("Cannot parse input %s", err.Error())
 		}
 
-		customer, err := auth.IsCustomer(req.Repository)
+		customer, err := auth.IsCustomer(req.Repository.Owner.Login, &http.Client{})
 		if err != nil {
 			return fmt.Errorf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		} else if customer == false {
@@ -81,7 +82,7 @@ func handleEvent(eventType string, bytesIn []byte) error {
 			return fmt.Errorf("Cannot parse input %s", err.Error())
 		}
 
-		customer, err := auth.IsCustomer(req.Repository)
+		customer, err := auth.IsCustomer(req.Repository.Owner.Login, &http.Client{})
 		if err != nil {
 			return fmt.Errorf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		} else if customer == false {

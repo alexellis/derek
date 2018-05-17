@@ -3,17 +3,16 @@ package auth
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strings"
-
-	"github.com/alexellis/derek/types"
 )
 
 const defaultCustomersURL string = "https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS"
 const customersURLEnv string = "customers_url"
 
-func findCustomersURL() string {
+func buildCustomerURL() string {
 
 	if customURL, exists := os.LookupEnv(customersURLEnv); exists && (len(customURL) > 0) {
 
@@ -26,19 +25,25 @@ func findCustomersURL() string {
 	return defaultCustomersURL
 }
 
-func IsCustomer(repo types.Repository) (bool, error) {
+// IsCustomer returns true if a customer is listed in the customers file.
+// The validation is controlled by the 'validate_customers' env-var
+func IsCustomer(ownerLogin string, c *http.Client) (bool, error) {
 	validate := os.Getenv("validate_customers")
+
 	if len(validate) == 0 || (validate == "false" || validate == "0") {
+
 		return true, nil
 	}
 
 	var err error
 	var found bool
-	c := http.Client{}
-	customersURL := findCustomersURL()
+
+	customersURL := buildCustomerURL()
+
 	request, _ := http.NewRequest(http.MethodGet, customersURL, nil)
+
 	res, doErr := c.Do(request)
-	if err != nil {
+	if doErr != nil {
 		err = doErr
 		// Not sure how I feel about goto, but seems OK here (Alex Ellis)
 		goto DO_RETURN
@@ -55,13 +60,15 @@ func IsCustomer(repo types.Repository) (bool, error) {
 		lines := strings.Split(strings.TrimSpace(string(body)), "\n")
 
 		for _, line := range lines {
-			if line == repo.Owner.Login {
+			if line == ownerLogin {
 				found = true
+				log.Println(ownerLogin, line, lines)
 				break
 			}
 		}
 	}
 
 DO_RETURN:
+
 	return found, err
 }
