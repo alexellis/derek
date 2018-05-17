@@ -4,7 +4,7 @@ RUN mkdir -p /go/src/github.com/alexellis/derek
 WORKDIR /go/src/github.com/alexellis/derek
 COPY	.	.
 
-RUN go test $(go list ./...) -cover
+RUN go test $(go list ./... | grep -v /vendor/) -cover
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o derek .
 
