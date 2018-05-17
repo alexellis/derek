@@ -24,7 +24,8 @@ const assignConstant string = "Assign"
 const unassignConstant string = "Unassign"
 const removeLabelConstant string = "RemoveLabel"
 const addLabelConstant string = "AddLabel"
-const useSecretKeyPath = ""
+
+const privateKeyPath = "/run/secrets/derek-private-key"
 
 func makeClient(installation int) (*github.Client, context.Context) {
 	ctx := context.Background()
@@ -34,7 +35,7 @@ func makeClient(installation int) (*github.Client, context.Context) {
 
 		applicationID := os.Getenv("application")
 
-		newToken, tokenErr := auth.MakeAccessTokenForInstallation(applicationID, installation, useSecretKeyPath)
+		newToken, tokenErr := auth.MakeAccessTokenForInstallation(applicationID, installation, privateKeyPath)
 		if tokenErr != nil {
 			log.Fatalln(tokenErr.Error())
 		}

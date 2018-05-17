@@ -8,14 +8,8 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-const secretKeyPath = "/run/secrets/derek-private-key"
-
 // GetSignedJwtToken get a tokens signed with private key
 func GetSignedJwtToken(appID string, privateKeyPath string) (string, error) {
-
-	if privateKeyPath == "" {
-		privateKeyPath = secretKeyPath
-	}
 
 	keyBytes, err := ioutil.ReadFile(privateKeyPath)
 	if err != nil {

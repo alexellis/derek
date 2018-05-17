@@ -5,12 +5,15 @@ provider:
 functions:
   the-derek:
     handler: ./
-    image: derek:2.0
+    image: derek:0.5.0
     lang: Dockerfile
     environment:
-      private_key: derek.pem
-      validate_hmac: false
       debug: true
+      customers_url: https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS
+      validate_hmac: false
+      validate_customers: true
     environment_file:
       - secrets.yml
       # See secrets.example.yml
+
+# Private key needs to be mounted at: /run/secrets/derek-private-key
