@@ -12,14 +12,7 @@ import (
 	"github.com/alexellis/derek/types"
 )
 
-const dcoCheck = "dco_check"
-const comments = "comments"
 const deleted = "deleted"
-
-func hmacValidation() bool {
-	val := os.Getenv("validate_hmac")
-	return len(val) > 0 && (val == "1" || val == "true")
-}
 
 func main() {
 
@@ -55,7 +48,7 @@ func handleEvent(eventType string, bytesIn []byte) error {
 	case "pull_request":
 		req := types.PullRequestOuter{}
 		if err := json.Unmarshal(bytesIn, &req); err != nil {
-			return fmt.Errorf("Cannot parse input %s", err.Error())
+			return fmt.Errorf("pull_request handler, cannot parse input: %s", err.Error())
 		}
 
 		customer, err := auth.IsCustomer(req.Repository.Owner.Login, &http.Client{})
@@ -69,11 +62,18 @@ func handleEvent(eventType string, bytesIn []byte) error {
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
+
 		if req.Action != closedConstant {
-			if enabledFeature(dcoCheck, derekConfig) {
-				handlePullRequest(req)
+			prFeatures := types.PullRequestFeatures{
+				CommitLintingFeature: enabledFeature(types.CommitLintingFeature, derekConfig),
+				DCOCheckFeature:      enabledFeature(types.DCOCheckFeature, derekConfig),
+			}
+
+			if prFeatures.Enabled() {
+				handlePullRequest(req, prFeatures)
 			}
 		}
+
 		break
 
 	case "issue_comment":
@@ -95,14 +95,21 @@ func handleEvent(eventType string, bytesIn []byte) error {
 		}
 
 		if req.Action != deleted {
-			if permittedUserFeature(comments, derekConfig, req.Comment.User.Login) {
+			if permittedUserFeature(types.CommentFeature, derekConfig, req.Comment.User.Login) {
 				handleComment(req)
 			}
 		}
+
 		break
+
 	default:
 		return fmt.Errorf("X_Github_Event want: ['pull_request', 'issue_comment'], got: " + eventType)
 	}
 
 	return nil
+}
+
+func hmacValidation() bool {
+	val := os.Getenv("validate_hmac")
+	return len(val) > 0 && (val == "1" || val == "true")
 }

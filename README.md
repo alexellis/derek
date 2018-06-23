@@ -110,6 +110,7 @@ Derek unlock
 * [x] Lock thread
 * [x] Edit title
 * [x] Toggle the DCO-feature
+* [x] Add commit message linting feature
 
 Future work:
 

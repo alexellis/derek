@@ -90,7 +90,22 @@ maintainers:
 features:
  - dco_check
  - comments
+ - commit_linting
 ```
+
+Features:
+
+* `dco_check` - checks that each commit finishes with a "Signed-off-by:" statement
+* `comments` - allows `maintainers` to issue commands to Derek to add labels etc
+* `commit_linting` - applies linting rules to commit messages
+
+Commit linting rules:
+
+- Commit subject should not exceed 72 characters
+- Commit subject should start with an uppercase letter
+- Commit subject should not end with punctuation
+
+The linting rules are based upon a [blog post by Chris Beams](https://chris.beams.io/posts/git-commit/)
 
 **Testing**
 
