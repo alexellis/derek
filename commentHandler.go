@@ -16,17 +16,19 @@ import (
 	"github.com/google/go-github/github"
 )
 
-const openConstant string = "open"
-const closedConstant string = "closed"
-const closeConstant string = "close"
-const reopenConstant string = "reopen"
-const lockConstant string = "Lock"
-const unlockConstant string = "Unlock"
-const setTitleConstant string = "SetTitle"
-const assignConstant string = "Assign"
-const unassignConstant string = "Unassign"
-const removeLabelConstant string = "RemoveLabel"
-const addLabelConstant string = "AddLabel"
+const (
+	openConstant        string = "open"
+	closedConstant      string = "closed"
+	closeConstant       string = "close"
+	reopenConstant      string = "reopen"
+	lockConstant        string = "Lock"
+	unlockConstant      string = "Unlock"
+	setTitleConstant    string = "SetTitle"
+	assignConstant      string = "Assign"
+	unassignConstant    string = "Unassign"
+	removeLabelConstant string = "RemoveLabel"
+	addLabelConstant    string = "AddLabel"
+)
 
 const privateKeyPath = "/run/secrets/derek-private-key"
 

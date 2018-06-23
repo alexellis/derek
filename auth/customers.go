@@ -12,8 +12,10 @@ import (
 	"strings"
 )
 
-const defaultCustomersURL string = "https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS"
-const customersURLEnv string = "customers_url"
+const (
+	defaultCustomersURL string = "https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS"
+	customersURLEnv     string = "customers_url"
+)
 
 func buildCustomerURL() string {
 

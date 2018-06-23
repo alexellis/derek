@@ -15,9 +15,11 @@ import (
 	"github.com/alexellis/derek/types"
 )
 
-const dcoCheck = "dco_check"
-const comments = "comments"
-const deleted = "deleted"
+const (
+	dcoCheck = "dco_check"
+	comments = "comments"
+	deleted  = "deleted"
+)
 
 func hmacValidation() bool {
 	val := os.Getenv("validate_hmac")
