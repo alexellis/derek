@@ -1,3 +1,6 @@
+// Copyright (c) Derek Author(s) 2017. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 package main
 
 import (
@@ -19,7 +22,10 @@ func handlePullRequest(req types.PullRequestOuter) {
 	token := os.Getenv("access_token")
 	if len(token) == 0 {
 
-		newToken, tokenErr := auth.MakeAccessTokenForInstallation(os.Getenv("application"), req.Installation.ID)
+		newToken, tokenErr := auth.MakeAccessTokenForInstallation(
+			os.Getenv("application"),
+			req.Installation.ID,
+			privateKeyPath)
 
 		if tokenErr != nil {
 			log.Fatalln(tokenErr.Error())

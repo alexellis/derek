@@ -1,3 +1,6 @@
+// Copyright (c) Derek Author(s) 2017. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 package auth
 
 import (
@@ -19,8 +22,9 @@ type JwtAuth struct {
 }
 
 // MakeAccessTokenForInstallation makes an access token for an installation / private key
-func MakeAccessTokenForInstallation(appID string, installation int) (string, error) {
-	signed, err := GetSignedJwtToken(appID)
+func MakeAccessTokenForInstallation(appID string, installation int, privateKeyPath string) (string, error) {
+
+	signed, err := GetSignedJwtToken(appID, privateKeyPath)
 
 	if err == nil {
 		c := http.Client{}

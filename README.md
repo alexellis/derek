@@ -44,6 +44,15 @@ We are planning to add roles in the ROADMAP which will mean you can get even mor
 
 > Note that the assign/unassign commands provides the shortcut `me` to assign to the commenter
 
+* URL redirection of configuration files is supported via the "redirect" field:
+
+```
+redirect: https://github.com/<some-user>/<some-repo>/.DEREK.yaml
+```
+
+If this optional field is non-empty, Derek will read it's configuration from another location. This allows multiple projects to use the same configuration.
+Please note that redirection is only supported for GitHub repository URLs.
+
 ### Examples:
 
 * Update the title of a PR or issue

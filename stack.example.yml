@@ -1,6 +1,6 @@
 provider:
   name: faas
-  gateway: http://localhost:8080  # can be a remote server
+  gateway: http://127.0.0.1:8080  # can be a remote server
 
 functions:
   derek:
@@ -9,8 +9,10 @@ functions:
     lang: Dockerfile
     environment:
       application: <your_GH_applicationID>
-      validate_hmac: true
       debug: true
+      customers_url: https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS
+      validate_hmac: false
+      validate_customers: true
     secrets:
       - derek-secret-key
       - derek-private-key

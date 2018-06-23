@@ -1,9 +1,13 @@
+// Copyright (c) Derek Author(s) 2017. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 package main
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 
 	"github.com/alexellis/derek/auth"
@@ -60,7 +64,7 @@ func handleEvent(eventType string, bytesIn []byte) error {
 			return fmt.Errorf("Cannot parse input %s", err.Error())
 		}
 
-		customer, err := auth.IsCustomer(req.Repository)
+		customer, err := auth.IsCustomer(req.Repository.Owner.Login, &http.Client{})
 		if err != nil {
 			return fmt.Errorf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		} else if customer == false {
@@ -84,7 +88,7 @@ func handleEvent(eventType string, bytesIn []byte) error {
 			return fmt.Errorf("Cannot parse input %s", err.Error())
 		}
 
-		customer, err := auth.IsCustomer(req.Repository)
+		customer, err := auth.IsCustomer(req.Repository.Owner.Login, &http.Client{})
 		if err != nil {
 			return fmt.Errorf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		} else if customer == false {

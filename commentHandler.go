@@ -1,3 +1,6 @@
+// Copyright (c) Derek Author(s) 2017. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 package main
 
 import (
@@ -31,6 +34,8 @@ const (
 // Trigger is the text that trigger action from this bot.
 const Trigger = "Derek "
 
+const privateKeyPath = "/run/secrets/derek-private-key"
+
 func makeClient(installation int) (*github.Client, context.Context) {
 	ctx := context.Background()
 
@@ -39,7 +44,7 @@ func makeClient(installation int) (*github.Client, context.Context) {
 
 		applicationID := os.Getenv("application")
 
-		newToken, tokenErr := auth.MakeAccessTokenForInstallation(applicationID, installation)
+		newToken, tokenErr := auth.MakeAccessTokenForInstallation(applicationID, installation, privateKeyPath)
 		if tokenErr != nil {
 			log.Fatalln(tokenErr.Error())
 		}
