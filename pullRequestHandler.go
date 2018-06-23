@@ -25,7 +25,7 @@ func handlePullRequest(req types.PullRequestOuter) {
 		newToken, tokenErr := auth.MakeAccessTokenForInstallation(
 			os.Getenv("application"),
 			req.Installation.ID,
-			privateKeyPath)
+			privateKey)
 
 		if tokenErr != nil {
 			log.Fatalln(tokenErr.Error())

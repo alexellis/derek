@@ -10,9 +10,30 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 )
 
-const derekSecretKey = "/run/secrets/derek-secret-key"
+const derekSecretKey = "derek-secret-key"
+
+func getSecret(secretName string) (secretBytes []byte, err error) {
+
+	secretPaths := []string{"/var/openfaas/secrets/", "/run/secrets/"}
+
+	secretDir := filepath.Dir(secretName)
+	if len(secretDir) > 0 {
+		secretPaths = append([]string{secretDir}, secretPaths...)
+	}
+
+	secretName = filepath.Base(secretName)
+
+	for _, path := range secretPaths {
+		secretFile := filepath.Join(path, secretName)
+		if secret, err := ioutil.ReadFile(secretFile); err == nil {
+			return secret, nil
+		}
+	}
+	return nil, fmt.Errorf("unable to read secret: %s", secretName)
+}
 
 // CheckMAC verifies hash checksum
 func CheckMAC(message, messageMAC, key []byte) bool {
@@ -28,10 +49,10 @@ func ValidateHMAC(bytesIn []byte, xHubSignature string) error {
 
 	var validated error
 
-	secretKey, err := ioutil.ReadFile(derekSecretKey)
+	secretKey, err := getSecret(derekSecretKey)
 
 	if err != nil {
-		return fmt.Errorf("unable to read GitHub symmetrical secret: %s, error: %s", derekSecretKey, err)
+		return fmt.Errorf("unable to read GitHub symmetrical secret, error: %s", err)
 	}
 
 	if len(xHubSignature) > 5 {
