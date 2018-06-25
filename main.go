@@ -12,6 +12,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
+	"github.com/alexellis/hmac"
+
 	"github.com/alexellis/derek/types"
 )
 
@@ -20,6 +22,8 @@ const (
 	comments = "comments"
 	deleted  = "deleted"
 )
+
+const derekSecretKey = "/run/secrets/derek-secret-key"
 
 func hmacValidation() bool {
 	val := os.Getenv("validate_hmac")
@@ -39,7 +43,15 @@ func main() {
 
 	if len(xHubSignature) > 0 {
 
-		err := auth.ValidateHMAC(bytesIn, xHubSignature)
+		secretKey, readErr := ioutil.ReadFile(derekSecretKey)
+
+		if readErr != nil {
+			msg := fmt.Errorf("unable to read GitHub symmetrical secret: %s, error: %s", secretKey, readErr)
+			os.Stderr.Write([]byte(msg.Error()))
+			os.Exit(1)
+		}
+
+		err := hmac.Validate(bytesIn, xHubSignature, string(secretKey))
 		if err != nil {
 			log.Fatal(err.Error())
 			return
