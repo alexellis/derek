@@ -4,54 +4,79 @@
 package main
 
 import (
+	"os"
 	"testing"
 
 	"github.com/alexellis/derek/types"
 )
 
-var actionOptions = []struct {
-	title          string
-	body           string
-	expectedAction string
-}{
-	{
-		title:          "Correct reopen command",
-		body:           "Derek reopen",
-		expectedAction: "reopen",
-	},
-	{ //this case replaces Test_Parsing_Close
-		title:          "Correct close command",
-		body:           "Derek close",
-		expectedAction: "close",
-	},
-	{
-		title:          "invalid command",
-		body:           "Derek dance",
-		expectedAction: "",
-	},
-	{
-		title:          "Longer reopen command",
-		body:           "Derek reopen: ",
-		expectedAction: "reopen",
-	},
-	{
-		title:          "Longer close command",
-		body:           "Derek close: ",
-		expectedAction: "close",
-	},
+var commandTriggers = []string{commandTriggerDefault, commandTriggerSlash}
+
+func Test_getCommandTrigger(t *testing.T) {
+	const (
+		envVar       = "use_slash_trigger"
+		errorMessage = "expected trigger to be: %s, got: %s"
+	)
+	var trigger string
+
+	// test default trigger
+	os.Unsetenv(envVar)
+	trigger = getCommandTrigger()
+	if trigger != commandTriggerDefault {
+		t.Errorf(errorMessage, commandTriggerDefault, trigger)
+	}
+
+	// test slash trigger
+	os.Setenv(envVar, "true")
+	trigger = getCommandTrigger()
+	if trigger != commandTriggerSlash {
+		t.Errorf(errorMessage, commandTriggerSlash, trigger)
+	}
 }
 
 func Test_Parsing_OpenClose(t *testing.T) {
 
+	var actionOptions = []struct {
+		title          string
+		body           string
+		expectedAction string
+	}{
+		{
+			title:          "Correct reopen command",
+			body:           "reopen",
+			expectedAction: "reopen",
+		},
+		{ //this case replaces Test_Parsing_Close
+			title:          "Correct close command",
+			body:           "close",
+			expectedAction: "close",
+		},
+		{
+			title:          "invalid command",
+			body:           "dance",
+			expectedAction: "",
+		},
+		{
+			title:          "Longer reopen command",
+			body:           "reopen: ",
+			expectedAction: "reopen",
+		},
+		{
+			title:          "Longer close command",
+			body:           "close: ",
+			expectedAction: "close",
+		},
+	}
+
 	for _, test := range actionOptions {
 		t.Run(test.title, func(t *testing.T) {
 
-			action := parse(test.body)
-
-			if action.Type != test.expectedAction {
-				t.Errorf("Action - want: %s, got %s", test.expectedAction, action.Type)
+			for _, trigger := range commandTriggers {
+				action := parse(trigger+test.body, trigger)
+				if action.Type != test.expectedAction {
+					t.Errorf("Action - want: %s, got %s", test.expectedAction, action.Type)
+				}
 			}
-
 		})
 	}
 }
@@ -66,19 +91,19 @@ func Test_Parsing_Labels(t *testing.T) {
 	}{
 		{ //this case replaces Test_Parsing_AddLabel
 			title:        "Add label of demo",
-			body:         "Derek add label: demo",
+			body:         "add label: demo",
 			expectedType: "AddLabel",
 			expectedVal:  "demo",
 		},
 		{
 			title:        "Remove label of demo",
-			body:         "Derek remove label: demo",
+			body:         "remove label: demo",
 			expectedType: "RemoveLabel",
 			expectedVal:  "demo",
 		},
 		{
 			title:        "Invalid label action",
-			body:         "Derek peel label: demo",
+			body:         "peel label: demo",
 			expectedType: "",
 			expectedVal:  "",
 		},
@@ -87,9 +112,11 @@ func Test_Parsing_Labels(t *testing.T) {
 	for _, test := range labelOptions {
 		t.Run(test.title, func(t *testing.T) {
 
-			action := parse(test.body)
-			if action.Type != test.expectedType || action.Value != test.expectedVal {
-				t.Errorf("Action - wanted: %s, got %s\nLabel - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
+			for _, trigger := range commandTriggers {
+				action := parse(trigger+test.body, trigger)
+				if action.Type != test.expectedType || action.Value != test.expectedVal {
+					t.Errorf("Action - wanted: %s, got %s\nLabel - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
+				}
 			}
 		})
 	}
@@ -105,37 +132,37 @@ func Test_Parsing_Assignments(t *testing.T) {
 	}{
 		{
 			title:        "Assign to burt",
-			body:         "Derek assign: burt",
+			body:         "assign: burt",
 			expectedType: assignConstant,
 			expectedVal:  "burt",
 		},
 		{
 			title:        "Unassign burt",
-			body:         "Derek unassign: burt",
+			body:         "unassign: burt",
 			expectedType: unassignConstant,
 			expectedVal:  "burt",
 		},
 		{
 			title:        "Assign to me",
-			body:         "Derek assign: me",
+			body:         "assign: me",
 			expectedType: assignConstant,
 			expectedVal:  "me",
 		},
 		{
 			title:        "Unassign me",
-			body:         "Derek unassign: me",
+			body:         "unassign: me",
 			expectedType: unassignConstant,
 			expectedVal:  "me",
 		},
 		{
 			title:        "Invalid assignment action",
-			body:         "Derek consign: burt",
+			body:         "consign: burt",
 			expectedType: "",
 			expectedVal:  "",
 		},
 		{
 			title:        "Unassign blank",
-			body:         "Derek unassign: ",
+			body:         "unassign: ",
 			expectedType: "",
 			expectedVal:  "",
 		},
@@ -144,9 +171,11 @@ func Test_Parsing_Assignments(t *testing.T) {
 	for _, test := range assignmentOptions {
 		t.Run(test.title, func(t *testing.T) {
 
-			action := parse(test.body)
-			if action.Type != test.expectedType || action.Value != test.expectedVal {
-				t.Errorf("Action - wanted: %s, got %s\nMaintainer - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
+			for _, trigger := range commandTriggers {
+				action := parse(trigger+test.body, trigger)
+				if action.Type != test.expectedType || action.Value != test.expectedVal {
+					t.Errorf("Action - wanted: %s, got %s\nMaintainer - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
+				}
 			}
 		})
 	}
@@ -162,25 +191,25 @@ func Test_Parsing_Titles(t *testing.T) {
 	}{
 		{
 			title:        "Set Title",
-			body:         "Derek set title: This is a really great Title!",
+			body:         "set title: This is a really great Title!",
 			expectedType: setTitleConstant,
 			expectedVal:  "This is a really great Title!",
 		},
 		{
 			title:        "Mis-spelling of title",
-			body:         "Derek set titel: This is a really great Title!",
+			body:         "set titel: This is a really great Title!",
 			expectedType: "",
 			expectedVal:  "",
 		},
 		{
 			title:        "Empty Title",
-			body:         "Derek set title: ",
+			body:         "set title: ",
 			expectedType: "", //blank because it should fail isValidCommand
 			expectedVal:  "",
 		},
 		{
 			title:        "Empty Title (Double Space)",
-			body:         "Derek set title:  ",
+			body:         "set title:  ",
 			expectedType: setTitleConstant,
 			expectedVal:  "",
 		},
@@ -189,9 +218,11 @@ func Test_Parsing_Titles(t *testing.T) {
 	for _, test := range titleOptions {
 		t.Run(test.title, func(t *testing.T) {
 
-			action := parse(test.body)
-			if action.Type != test.expectedType || action.Value != test.expectedVal {
-				t.Errorf("\nAction - wanted: %s, got %s\nValue - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
+			for _, trigger := range commandTriggers {
+				action := parse(trigger+test.body, trigger)
+				if action.Type != test.expectedType || action.Value != test.expectedVal {
+					t.Errorf("\nAction - wanted: %s, got %s\nValue - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
+				}
 			}
 		})
 	}
@@ -411,19 +442,19 @@ func Test_Parsing_Milestones(t *testing.T) {
 	}{
 		{
 			title:        "Right set milestone",
-			body:         "Derek set milestone: demo",
+			body:         "set milestone: demo",
 			expectedType: "SetMilestone",
 			expectedVal:  "demo",
 		},
 		{
 			title:        "Right remove milestone",
-			body:         "Derek remove milestone: demo",
+			body:         "remove milestone: demo",
 			expectedType: "RemoveMilestone",
 			expectedVal:  "demo",
 		},
 		{
 			title:        "Wrong set milestone",
-			body:         "Derek you ok label: demo",
+			body:         "you ok label: demo",
 			expectedType: "",
 			expectedVal:  "",
 		},
@@ -431,9 +462,12 @@ func Test_Parsing_Milestones(t *testing.T) {
 
 	for _, test := range milestonesOptions {
 		t.Run(test.title, func(t *testing.T) {
-			action := parse(test.body)
-			if action.Type != test.expectedType || action.Value != test.expectedVal {
-				t.Errorf("Action - wanted: %s, got %s\nLabel - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
+
+			for _, trigger := range commandTriggers {
+				action := parse(trigger+test.body, trigger)
+				if action.Type != test.expectedType || action.Value != test.expectedVal {
+					t.Errorf("Action - wanted: %s, got %s\nLabel - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
+				}
 			}
 		})
 	}

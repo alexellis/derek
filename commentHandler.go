@@ -31,7 +31,18 @@ const (
 	addLabelConstant        string = "AddLabel"
 	setMilestoneConstant    string = "SetMilestone"
 	removeMilestoneConstant string = "RemoveMilestone"
+
+	commandTriggerDefault string = "Derek "
+	commandTriggerSlash   string = "/"
 )
+
+func getCommandTrigger() string {
+	commandTrigger := commandTriggerDefault
+	if os.Getenv("use_slash_trigger") == "true" {
+		commandTrigger = commandTriggerSlash
+	}
+	return commandTrigger
+}
 
 func makeClient(installation int) (*github.Client, context.Context) {
 	ctx := context.Background()
@@ -65,7 +76,7 @@ func handleComment(req types.IssueCommentOuter) {
 	var feedback string
 	var err error
 
-	command := parse(req.Comment.Body)
+	command := parse(req.Comment.Body, getCommandTrigger())
 
 	switch command.Type {
 
@@ -319,23 +330,23 @@ func updateMilestone(req types.IssueCommentOuter, cmdType string, cmdValue strin
 	return buffer.String(), nil
 }
 
-func parse(body string) *types.CommentAction {
+func parse(body, commandTrigger string) *types.CommentAction {
 
 	commentAction := types.CommentAction{}
 
 	commands := map[string]string{
-		"Derek add label: ":        addLabelConstant,
-		"Derek remove label: ":     removeLabelConstant,
-		"Derek assign: ":           assignConstant,
-		"Derek unassign: ":         unassignConstant,
-		"Derek close":              closeConstant,
-		"Derek reopen":             reopenConstant,
-		"Derek set title: ":        setTitleConstant,
-		"Derek edit title: ":       setTitleConstant,
-		"Derek lock":               lockConstant,
-		"Derek unlock":             unlockConstant,
-		"Derek set milestone: ":    setMilestoneConstant,
-		"Derek remove milestone: ": removeMilestoneConstant,
+		commandTrigger + "add label: ":        addLabelConstant,
+		commandTrigger + "remove label: ":     removeLabelConstant,
+		commandTrigger + "assign: ":           assignConstant,
+		commandTrigger + "unassign: ":         unassignConstant,
+		commandTrigger + "close":              closeConstant,
+		commandTrigger + "reopen":             reopenConstant,
+		commandTrigger + "set title: ":        setTitleConstant,
+		commandTrigger + "edit title: ":       setTitleConstant,
+		commandTrigger + "lock":               lockConstant,
+		commandTrigger + "unlock":             unlockConstant,
+		commandTrigger + "set milestone: ":    setMilestoneConstant,
+		commandTrigger + "remove milestone: ": removeMilestoneConstant,
 	}
 
 	for trigger, commandType := range commands {

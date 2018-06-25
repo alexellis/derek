@@ -57,6 +57,10 @@ redirect: https://github.com/<some-user>/<some-repo>/.DEREK.yaml
 If this optional field is non-empty, Derek will read it's configuration from another location. This allows multiple projects to use the same configuration.
 Please note that redirection is only supported for GitHub repository URLs.
 
+* Command triggers
+
+By default, Derek commands can be called with `Derek <some-command>`. The prefix `Derek ` is the default trigger, but the bot also supports the `/` trigger which can be enabled by setting the `use_slash_trigger` environment variable to `true`.
+
 ### Examples:
 
 * Update the title of a PR or issue
