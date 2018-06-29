@@ -14,7 +14,8 @@ type Owner struct {
 }
 
 type PullRequest struct {
-	Number int `json:"number"`
+	Number            int    `json:"number"`
+	AuthorAssociation string `json:"author_association"`
 }
 
 type InstallationRequest struct {
