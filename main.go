@@ -23,7 +23,19 @@ const (
 	deleted  = "deleted"
 )
 
-const derekSecretKey = "/run/secrets/derek-secret-key"
+const derekSecretKeyFile = "derek-secret-key"
+const privateKeyFile = "derek-private-key"
+
+func getSecretPath() (string, error) {
+	secretPath := os.Getenv("secret_path")
+
+	if len(secretPath) == 0 {
+		return "", fmt.Errorf("secret_path not set, this must be /var/openfaas/secrets or /run/secrets")
+
+	}
+
+	return secretPath, nil
+}
 
 func hmacValidation() bool {
 	val := os.Getenv("validate_hmac")
@@ -41,17 +53,23 @@ func main() {
 		return
 	}
 
-	if len(xHubSignature) > 0 {
+	keyPath, pathErr := getSecretPath()
+	if pathErr != nil {
+		os.Stderr.Write([]byte(pathErr.Error()))
+		os.Exit(1)
+	}
 
-		secretKey, readErr := ioutil.ReadFile(derekSecretKey)
+	if len(xHubSignature) > 0 {
+		secretKeyBytes, readErr := ioutil.ReadFile(keyPath + derekSecretKeyFile)
 
 		if readErr != nil {
-			msg := fmt.Errorf("unable to read GitHub symmetrical secret: %s, error: %s", secretKey, readErr)
+			msg := fmt.Errorf("unable to read GitHub symmetrical secret: %s, error: %s",
+				keyPath+derekSecretKeyFile, readErr)
 			os.Stderr.Write([]byte(msg.Error()))
 			os.Exit(1)
 		}
 
-		err := hmac.Validate(bytesIn, xHubSignature, string(secretKey))
+		err := hmac.Validate(bytesIn, xHubSignature, string(secretKeyBytes))
 		if err != nil {
 			log.Fatal(err.Error())
 			return

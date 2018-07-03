@@ -30,8 +30,6 @@ const (
 	addLabelConstant    string = "AddLabel"
 )
 
-const privateKeyPath = "/run/secrets/derek-private-key"
-
 func makeClient(installation int) (*github.Client, context.Context) {
 	ctx := context.Background()
 
@@ -40,7 +38,13 @@ func makeClient(installation int) (*github.Client, context.Context) {
 
 		applicationID := os.Getenv("application")
 
-		newToken, tokenErr := auth.MakeAccessTokenForInstallation(applicationID, installation, privateKeyPath)
+		secretPath := os.Getenv("secret_path")
+
+		if len(secretPath) == 0 {
+			log.Printf("Must supply a value for env-var %s\n", "secret_path")
+		}
+
+		newToken, tokenErr := auth.MakeAccessTokenForInstallation(applicationID, installation, secretPath+privateKeyFile)
 		if tokenErr != nil {
 			log.Fatalln(tokenErr.Error())
 		}

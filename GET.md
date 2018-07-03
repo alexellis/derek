@@ -66,17 +66,25 @@ Before deploying Derek create two secrets:
 
 For Docker:
 
-```
+```sh
 $ docker secret create derek-private-key derek-private-key
 $ docker secret create derek-secret-key derek-secret-key
 ```
 
 For Kubernetes:
 
-```
+```sh
 $ kubectl create secret generic derek-private-key --from-file=./derek-private-key
 $ kubectl create secret generic derek-secret-key --from-file=./derek-secret-key
 ```
+
+Create secrets.yml:
+
+```sh
+cp secrets.example.yml secrets.yml
+```
+
+Then populate your own values in the file - set `application` to your GitHub application ID and set `secret_key` to the same value of the `derek-secret-key` file.
 
 ### Configure Docker image:
 
@@ -92,7 +100,7 @@ This will build a Docker image in your local library, now push it to the Docker 
 
 ```
 $ docker login
-$ faas-cli push
+$ faas-cli push -f derek.yml
 ```
 
 ### Configure stack.yml:
@@ -116,6 +124,7 @@ functions:
       validate_hmac: true
       debug: true
       write_debug: false
+      secret_path: /var/openfaas/secrets/
     secrets:
       - derek-secret-key
       - derek-private-key
@@ -139,7 +148,6 @@ $ faas-cli deploy
 * `validate_hmac` - Validate all incoming webhooks are signed with the secret `derek-secret-key` that you enter in the GitHub UI
 * `write_debug` - Dump the incoming request to the function logs. This is not needed since the request can be viewed in the advanced tab of the GitHub App UI
 
-
 ### Configure GitHub Repo:
 
 Finally configure the features that you want to enable within your GitHub repo by creating a `.DEREK.yml` file.
@@ -156,8 +164,14 @@ features:
  - comments
 ```
 
-**Testing**
+### Testing and troubleshooting
+
+To test: 
 
 Create a label of "no-dco" within every project you want Derek to help you with.
  
 Head over to your GitHub repository and raise a Pull Request from the web-UI for your README file. This will not sign-off the commit, so you'll have Derek on your case.
+
+If you're not sure if things are working right then Click on the GitHub App via your account settings and then click "Advanced" and "Recent Deliveries". This will show you all the incoming messages and their responses.
+
+You can tweak your environment and then hit "Redeliver" to send the message again.
