@@ -5,18 +5,17 @@ provider:
 functions:
   derek:
     handler: ./
-    image: alexellis/derek:0.5.0
+    image: alexellis/derek:0.5.1-rc1
     lang: dockerfile
     environment:
       debug: true
       customers_url: https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS
       validate_hmac: false
       validate_customers: true
+      secret_path: /var/openfaas/secrets/ # use /run/secrets/ for older OpenFaaS versions
     environment_file:
       - secrets.yml
       # See secrets.example.yml
     secrets:
       - derek-secret-key
       - derek-private-key
-
-# Private key needs to be mounted at: /run/secrets/derek-private-key

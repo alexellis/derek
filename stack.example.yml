@@ -13,6 +13,7 @@ functions:
       customers_url: https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS
       validate_hmac: false
       validate_customers: true
+      secret_path: /var/openfaas/secrets/ # use /run/secrets/ for older OpenFaaS versions
     secrets:
       - derek-secret-key
       - derek-private-key
