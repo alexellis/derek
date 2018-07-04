@@ -109,19 +109,15 @@ func Test_firstTimeContributor(t *testing.T) {
 			expectedBool: false,
 		},
 		{
-			label:        "CONTRIBUTOR",
+			label:        "OWNER",
 			expectedBool: false,
-		},
-		{
-			label:        "NONE",
-			expectedBool: true,
 		},
 	}
 	for _, test := range authorLabel {
 		t.Run(test.label, func(t *testing.T) {
 			isFirstTime := firstTimeContributor(test.label)
 			if isFirstTime != test.expectedBool {
-				t.Errorf("First time contributor - %s - wanted %t, found %t", test.label, test.expectedBool, isFirstTime)
+				t.Errorf("First time contributor - %s - want %t, got %t", test.label, test.expectedBool, isFirstTime)
 			}
 		})
 	}
