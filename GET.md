@@ -137,7 +137,7 @@ Validating via a symmetric key is also known as HMAC. If the webhook secret wasn
 
 Now deploy Derek:
 ```
-$ faas-cli deploy
+$ faas-cli deploy -f derek.yml
 ```
 
 * Config environmental options
