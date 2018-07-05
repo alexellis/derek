@@ -95,30 +95,3 @@ func Test_hasNoDcoLabel(t *testing.T) {
 		})
 	}
 }
-func Test_firstTimeContributor(t *testing.T) {
-	var authorLabel = []struct {
-		label        string
-		expectedBool bool
-	}{
-		{
-			label:        "NONE",
-			expectedBool: true,
-		},
-		{
-			label:        "CONTRIBUTOR",
-			expectedBool: false,
-		},
-		{
-			label:        "OWNER",
-			expectedBool: false,
-		},
-	}
-	for _, test := range authorLabel {
-		t.Run(test.label, func(t *testing.T) {
-			isFirstTime := firstTimeContributor(test.label)
-			if isFirstTime != test.expectedBool {
-				t.Errorf("First time contributor - %s - want %t, got %t", test.label, test.expectedBool, isFirstTime)
-			}
-		})
-	}
-}

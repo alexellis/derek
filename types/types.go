@@ -80,3 +80,7 @@ type DerekConfig struct {
 	// Curators is an alias for Maintainers and is only used if the Maintainers list is empty.
 	Curators []string
 }
+
+func (p *PullRequest) FirstTimeContributor() bool {
+	return p.AuthorAssociation == "NONE"
+}
