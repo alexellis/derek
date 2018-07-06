@@ -43,7 +43,7 @@ func hmacValidation() bool {
 	return len(val) > 0 && (val == "1" || val == "true")
 }
 
-func removeNewLine(secret []byte) []byte {
+func getFirstLine(secret []byte) []byte {
 	stringSecret := string(secret)
 	if newLine := strings.Index(stringSecret, "\n"); newLine != -1 {
 		secret = secret[:newLine]
@@ -78,7 +78,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		secretKeyBytes = removeNewLine(secretKeyBytes)
+		secretKeyBytes = getFirstLine(secretKeyBytes)
 
 		err := hmac.Validate(bytesIn, xHubSignature, string(secretKeyBytes))
 		if err != nil {

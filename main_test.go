@@ -2,7 +2,7 @@ package main
 
 import "testing"
 
-func Test_removeNewLine(t *testing.T) {
+func Test_getFirstLine(t *testing.T) {
 	var exampleSecrets = []struct {
 		secret       string
 		expectedByte string
@@ -32,7 +32,7 @@ func Test_removeNewLine(t *testing.T) {
 	for _, test := range exampleSecrets {
 
 		t.Run(string(test.secret), func(t *testing.T) {
-			stringNoLines := removeNewLine([]byte(test.secret))
+			stringNoLines := getFirstLine([]byte(test.secret))
 			if test.expectedByte != string(stringNoLines) {
 				t.Errorf("String after removal - wanted: \"%s\", got \"%s\"", test.expectedByte, test.secret)
 			}
