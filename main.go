@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
@@ -67,6 +68,10 @@ func main() {
 				keyPath+derekSecretKeyFile, readErr)
 			os.Stderr.Write([]byte(msg.Error()))
 			os.Exit(1)
+		}
+
+		if newLine := strings.Index(string(secretKeyBytes), "\n"); newLine != -1 {
+			secretKeyBytes = secretKeyBytes[:newLine]
 		}
 
 		err := hmac.Validate(bytesIn, xHubSignature, string(secretKeyBytes))
