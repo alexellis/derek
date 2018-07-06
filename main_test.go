@@ -8,17 +8,17 @@ func Test_removeNewLine(t *testing.T) {
 		expectedByte string
 	}{
 		{
-			secret:       "nline \n",
-			expectedByte: "nline ",
+			secret:       "New-line \n",
+			expectedByte: "New-line ",
 		},
 		{
-			secret: `newline
+			secret: `Newline and text 
 			`,
-			expectedByte: "newline",
+			expectedByte: "Newline and text ",
 		},
 		{
-			secret:       `noline`,
-			expectedByte: `noline`,
+			secret:       `Example secret2 `,
+			expectedByte: `Example secret2 `,
 		},
 		{
 			secret:       "",
