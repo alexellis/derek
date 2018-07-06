@@ -21,6 +21,10 @@ func Test_removeNewLine(t *testing.T) {
 			expectedByte: `Example secret2 `,
 		},
 		{
+			secret:       "\n",
+			expectedByte: "",
+		},
+		{
 			secret:       "",
 			expectedByte: "",
 		},
