@@ -17,17 +17,19 @@ import (
 )
 
 const (
-	openConstant        string = "open"
-	closedConstant      string = "closed"
-	closeConstant       string = "close"
-	reopenConstant      string = "reopen"
-	lockConstant        string = "Lock"
-	unlockConstant      string = "Unlock"
-	setTitleConstant    string = "SetTitle"
-	assignConstant      string = "Assign"
-	unassignConstant    string = "Unassign"
-	removeLabelConstant string = "RemoveLabel"
-	addLabelConstant    string = "AddLabel"
+	openConstant            string = "open"
+	closedConstant          string = "closed"
+	closeConstant           string = "close"
+	reopenConstant          string = "reopen"
+	lockConstant            string = "Lock"
+	unlockConstant          string = "Unlock"
+	setTitleConstant        string = "SetTitle"
+	assignConstant          string = "Assign"
+	unassignConstant        string = "Unassign"
+	removeLabelConstant     string = "RemoveLabel"
+	addLabelConstant        string = "AddLabel"
+	setMilestoneConstant    string = "SetMilestone"
+	removeMilestoneConstant string = "RemoveMilestone"
 )
 
 func makeClient(installation int) (*github.Client, context.Context) {
@@ -89,6 +91,11 @@ func handleComment(req types.IssueCommentOuter) {
 	case lockConstant, unlockConstant:
 
 		feedback, err = manageLocking(req, command.Type)
+		break
+
+	case setMilestoneConstant, removeMilestoneConstant:
+
+		feedback, err = manageMilestone(req, command.Type, command.Value)
 		break
 
 	default:
@@ -256,21 +263,73 @@ func manageLocking(req types.IssueCommentOuter, cmdType string) (string, error) 
 	return buffer.String(), nil
 }
 
+func manageMilestone(req types.IssueCommentOuter, cmdType string, cmdValue string) (string, error) {
+
+	milestoneValue := cmdValue
+
+	var buffer bytes.Buffer
+
+	milestoneAction := strings.Replace(strings.ToLower(cmdType), "milestone", "", 1)
+
+	buffer.WriteString(fmt.Sprintf("%s wants to %s milestone of '%s' on issue #%d \n", req.Comment.User.Login, milestoneAction, milestoneValue, req.Issue.Number))
+
+	client, ctx := makeClient(req.Installation.ID)
+
+	allMilestones := &github.MilestoneListOptions{}
+	var milestoneNumber *int
+	var err error
+
+	theMilestones, _, milErr := client.Issues.ListMilestones(ctx, req.Repository.Owner.Login, req.Repository.Name, allMilestones)
+
+	if milErr != nil {
+		return buffer.String(), milErr
+	}
+
+	if cmdType == setMilestoneConstant {
+		for _, mil := range theMilestones {
+			if *mil.Title == milestoneValue {
+				milestoneNumber = mil.Number
+			}
+		}
+		input := &github.IssueRequest{
+			Milestone: milestoneNumber,
+		}
+
+		_, _, err = client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
+	} else {
+		_, err = nilMilestone(client, ctx, req.Issue.URL)
+
+		if err != nil {
+			return buffer.String(), err
+		}
+	}
+
+	if err != nil {
+		return buffer.String(), err
+	}
+
+	buffer.WriteString(fmt.Sprintf("Request to %s milestone of '%s' on issue #%d was successfully completed.", milestoneAction, milestoneValue, req.Issue.Number))
+
+	return buffer.String(), nil
+}
+
 func parse(body string) *types.CommentAction {
 
 	commentAction := types.CommentAction{}
 
 	commands := map[string]string{
-		"Derek add label: ":    addLabelConstant,
-		"Derek remove label: ": removeLabelConstant,
-		"Derek assign: ":       assignConstant,
-		"Derek unassign: ":     unassignConstant,
-		"Derek close":          closeConstant,
-		"Derek reopen":         reopenConstant,
-		"Derek set title: ":    setTitleConstant,
-		"Derek edit title: ":   setTitleConstant,
-		"Derek lock":           lockConstant,
-		"Derek unlock":         unlockConstant,
+		"Derek add label: ":        addLabelConstant,
+		"Derek remove label: ":     removeLabelConstant,
+		"Derek assign: ":           assignConstant,
+		"Derek unassign: ":         unassignConstant,
+		"Derek close":              closeConstant,
+		"Derek reopen":             reopenConstant,
+		"Derek set title: ":        setTitleConstant,
+		"Derek edit title: ":       setTitleConstant,
+		"Derek lock":               lockConstant,
+		"Derek unlock":             unlockConstant,
+		"Derek set milestone: ":    setMilestoneConstant,
+		"Derek remove milestone: ": removeMilestoneConstant,
 	}
 
 	for trigger, commandType := range commands {
@@ -307,4 +366,18 @@ func checkTransition(requestedAction string, currentState string) (string, bool)
 	}
 
 	return "", false
+}
+
+func nilMilestone(client *github.Client, ctx context.Context, URL string) (string, error) {
+	req, err := client.NewRequest("PATCH", URL, &struct {
+		Milestone interface{} `json:"milestone"`
+	}{})
+	if err != nil {
+		return "", err
+	}
+	_, err = client.Do(ctx, req, nil)
+	if err != nil {
+		return "", err
+	}
+	return "", nil
 }

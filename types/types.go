@@ -46,6 +46,7 @@ type IssueLabel struct {
 }
 
 type Issue struct {
+	URL    string       `json:"url"`
 	Labels []IssueLabel `json:"labels"`
 	Number int          `json:"number"`
 	Title  string       `json:"title"`
