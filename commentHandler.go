@@ -286,16 +286,21 @@ func manageMilestone(req types.IssueCommentOuter, cmdType string, cmdValue strin
 	}
 
 	if cmdType == setMilestoneConstant {
-		for _, mil := range theMilestones {
-			if *mil.Title == milestoneValue {
-				milestoneNumber = mil.Number
+		if req.Issue.Milestone.Title != cmdValue && cmdType != "" {
+			for _, mil := range theMilestones {
+				if *mil.Title == milestoneValue {
+					milestoneNumber = mil.Number
+				}
 			}
-		}
-		input := &github.IssueRequest{
-			Milestone: milestoneNumber,
-		}
+			input := &github.IssueRequest{
+				Milestone: milestoneNumber,
+			}
 
-		_, _, err = client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
+			_, _, err = client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
+		} else {
+			buffer.WriteString(fmt.Sprintf("Setting the milestone of #%d by %s was unnecessary.\n", req.Issue.Number, req.Comment.User.Login))
+			return buffer.String(), nil
+		}
 	} else {
 		_, err = nilMilestone(client, ctx, req.Issue.URL)
 

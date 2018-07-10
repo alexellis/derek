@@ -400,3 +400,42 @@ func Test_findLabel(t *testing.T) {
 		})
 	}
 }
+
+func Test_Parsing_Milestones(t *testing.T) {
+
+	var milestonesOptions = []struct {
+		title        string
+		body         string
+		expectedType string
+		expectedVal  string
+	}{
+		{
+			title:        "Right set milestone",
+			body:         "Derek set milestone: demo",
+			expectedType: "SetMilestone",
+			expectedVal:  "demo",
+		},
+		{
+			title:        "Right remove milestone",
+			body:         "Derek remove milestone: demo",
+			expectedType: "RemoveMilestone",
+			expectedVal:  "demo",
+		},
+		{
+			title:        "Wrong set milestone",
+			body:         "Derek you ok label: demo",
+			expectedType: "",
+			expectedVal:  "",
+		},
+	}
+
+	for _, test := range milestonesOptions {
+		t.Run(test.title, func(t *testing.T) {
+
+			action := parse(test.body)
+			if action.Type != test.expectedType || action.Value != test.expectedVal {
+				t.Errorf("Action - wanted: %s, got %s\nLabel - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
+			}
+		})
+	}
+}
