@@ -266,21 +266,16 @@ func manageLocking(req types.IssueCommentOuter, cmdType string) (string, error) 
 func manageMilestone(req types.IssueCommentOuter, cmdType string, cmdValue string) (string, error) {
 
 	milestoneValue := cmdValue
-
 	var buffer bytes.Buffer
-
 	milestoneAction := strings.Replace(strings.ToLower(cmdType), "milestone", "", 1)
-
 	buffer.WriteString(fmt.Sprintf("%s wants to %s milestone of '%s' on issue #%d \n", req.Comment.User.Login, milestoneAction, milestoneValue, req.Issue.Number))
-
-	client, ctx := makeClient(req.Installation.ID)
 
 	allMilestones := &github.MilestoneListOptions{}
 	var milestoneNumber *int
 	var err error
 
+	client, ctx := makeClient(req.Installation.ID)
 	theMilestones, _, milErr := client.Issues.ListMilestones(ctx, req.Repository.Owner.Login, req.Repository.Name, allMilestones)
-
 	if milErr != nil {
 		return buffer.String(), milErr
 	}
@@ -295,26 +290,21 @@ func manageMilestone(req types.IssueCommentOuter, cmdType string, cmdValue strin
 			input := &github.IssueRequest{
 				Milestone: milestoneNumber,
 			}
-
 			_, _, err = client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
 		} else {
 			buffer.WriteString(fmt.Sprintf("Setting the milestone of #%d by %s was unnecessary.\n", req.Issue.Number, req.Comment.User.Login))
 			return buffer.String(), nil
 		}
 	} else {
-		_, err = nilMilestone(client, ctx, req.Issue.URL)
-
-		if err != nil {
-			return buffer.String(), err
+		if err = removeMilestone(client, ctx, req.Issue.URL); err != nil {
+			return buffer.String(), nil
 		}
 	}
-
 	if err != nil {
 		return buffer.String(), err
 	}
 
 	buffer.WriteString(fmt.Sprintf("Request to %s milestone of '%s' on issue #%d was successfully completed.", milestoneAction, milestoneValue, req.Issue.Number))
-
 	return buffer.String(), nil
 }
 
@@ -373,16 +363,18 @@ func checkTransition(requestedAction string, currentState string) (string, bool)
 	return "", false
 }
 
-func nilMilestone(client *github.Client, ctx context.Context, URL string) (string, error) {
+func removeMilestone(client *github.Client, ctx context.Context, URL string) error {
 	req, err := client.NewRequest("PATCH", URL, &struct {
 		Milestone interface{} `json:"milestone"`
 	}{})
 	if err != nil {
-		return "", err
+		return err
 	}
+
 	_, err = client.Do(ctx, req, nil)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return "", nil
+
+	return nil
 }

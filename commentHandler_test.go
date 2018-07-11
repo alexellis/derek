@@ -431,7 +431,6 @@ func Test_Parsing_Milestones(t *testing.T) {
 
 	for _, test := range milestonesOptions {
 		t.Run(test.title, func(t *testing.T) {
-
 			action := parse(test.body)
 			if action.Type != test.expectedType || action.Value != test.expectedVal {
 				t.Errorf("Action - wanted: %s, got %s\nLabel - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)

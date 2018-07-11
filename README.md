@@ -77,6 +77,15 @@ Derek add label: help wanted
 Derek remove label: bug
 ```
 
+* Set milestones for issues
+
+You can organize your issues in groups through existing milestones
+
+```
+Derek set milestone: example
+Derek remove milestone: example
+```
+
 * Assign work
 
 You can assign work to people too
