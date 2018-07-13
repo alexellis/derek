@@ -46,13 +46,13 @@ type IssueLabel struct {
 }
 
 type Issue struct {
-	Milestone Milestone    `json:"milestone"`
-	URL       string       `json:"url"`
 	Labels    []IssueLabel `json:"labels"`
 	Number    int          `json:"number"`
 	Title     string       `json:"title"`
 	Locked    bool         `json:"locked"`
 	State     string       `json:"state"`
+	Milestone Milestone    `json:"milestone"`
+	URL       string       `json:"url"`
 }
 
 type Milestone struct {

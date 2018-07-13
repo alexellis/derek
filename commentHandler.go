@@ -279,29 +279,58 @@ func manageMilestone(req types.IssueCommentOuter, cmdType string, cmdValue strin
 	if milErr != nil {
 		return buffer.String(), milErr
 	}
-
-	if cmdType == setMilestoneConstant {
-		if req.Issue.Milestone.Title != cmdValue && cmdType != "" {
-			for _, mil := range theMilestones {
-				if *mil.Title == milestoneValue {
-					milestoneNumber = mil.Number
+	/*
+		if cmdType == setMilestoneConstant {
+			if req.Issue.Milestone.Title != cmdValue && cmdType != "" {
+				for _, mil := range theMilestones {
+					if *mil.Title == milestoneValue {
+						milestoneNumber = mil.Number
+					}
 				}
+				input := &github.IssueRequest{
+					Milestone: milestoneNumber,
+				}
+				_, _, err = client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
+			} else {
+				buffer.WriteString(fmt.Sprintf("Setting the milestone of #%d by %s was unnecessary.\n", req.Issue.Number, req.Comment.User.Login))
+				return buffer.String(), nil
 			}
-			input := &github.IssueRequest{
-				Milestone: milestoneNumber,
-			}
-			_, _, err = client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
 		} else {
+			if err = removeMilestone(client, ctx, req.Issue.URL); err != nil {
+				return buffer.String(), nil
+			}
+		}
+		if err != nil {
+			return buffer.String(), err
+		}
+	*/
+
+	switch cmdType { // let's use a switch here; you can google "golang switch / case" for more info
+	case setMilestoneConstant:
+		if req.Issue.Milestone.Title == cmdValue { // notice how i moved/changed this condition here to remove the need to indendt the bellow logic with a `{` block
 			buffer.WriteString(fmt.Sprintf("Setting the milestone of #%d by %s was unnecessary.\n", req.Issue.Number, req.Comment.User.Login))
 			return buffer.String(), nil
 		}
-	} else {
-		if err = removeMilestone(client, ctx, req.Issue.URL); err != nil {
-			return buffer.String(), nil
+		for _, mil := range theMilestones {
+			if *mil.Title == milestoneValue {
+				milestoneNumber = mil.Number
+				break // you can add break after you found a match
+			}
 		}
-	}
-	if err != nil {
-		return buffer.String(), err
+		input := &github.IssueRequest{
+			Milestone: milestoneNumber,
+		}
+		_, _, err = client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
+		if err != nil { // handle err here
+			return buffer.String(), err
+		}
+	case removeMilestoneConstant:
+		if err = removeMilestone(client, ctx, req.Issue.URL); err != nil {
+			return buffer.String(), err // handle err here
+		}
+	default:
+		buffer.WriteString(fmt.Sprintf("Unknown milestone action %q on issue #%d.", milestoneAction, req.Issue.Number))
+		return buffer.String(), nil
 	}
 
 	buffer.WriteString(fmt.Sprintf("Request to %s milestone of '%s' on issue #%d was successfully completed.", milestoneAction, milestoneValue, req.Issue.Number))
@@ -363,6 +392,8 @@ func checkTransition(requestedAction string, currentState string) (string, bool)
 	return "", false
 }
 
+//Function set milestones field to interface{} aka. null since library does not support that
+//Ref to issue - https://github.com/google/go-github/issues/236
 func removeMilestone(client *github.Client, ctx context.Context, URL string) error {
 	req, err := client.NewRequest("PATCH", URL, &struct {
 		Milestone interface{} `json:"milestone"`
@@ -370,11 +401,8 @@ func removeMilestone(client *github.Client, ctx context.Context, URL string) err
 	if err != nil {
 		return err
 	}
-
-	_, err = client.Do(ctx, req, nil)
-	if err != nil {
+	if _, err = client.Do(ctx, req, nil); err != nil {
 		return err
 	}
-
 	return nil
 }
