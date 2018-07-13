@@ -95,7 +95,7 @@ func handleComment(req types.IssueCommentOuter) {
 
 	case setMilestoneConstant, removeMilestoneConstant:
 
-		feedback, err = manageMilestone(req, command.Type, command.Value)
+		feedback, err = updateMilestone(req, command.Type, command.Value)
 		break
 
 	default:
@@ -263,7 +263,7 @@ func manageLocking(req types.IssueCommentOuter, cmdType string) (string, error) 
 	return buffer.String(), nil
 }
 
-func manageMilestone(req types.IssueCommentOuter, cmdType string, cmdValue string) (string, error) {
+func updateMilestone(req types.IssueCommentOuter, cmdType string, cmdValue string) (string, error) {
 
 	milestoneValue := cmdValue
 	var buffer bytes.Buffer
@@ -287,7 +287,7 @@ func manageMilestone(req types.IssueCommentOuter, cmdType string, cmdValue strin
 			return buffer.String(), nil
 		}
 		for _, mil := range theMilestones {
-			if *mil.Title == milestoneValue {
+			if mil != nil && *mil.Title == milestoneValue {
 				milestoneNumber = mil.Number
 				break
 			}
@@ -367,7 +367,7 @@ func checkTransition(requestedAction string, currentState string) (string, bool)
 	return "", false
 }
 
-//Function set milestones field to interface{} aka. null since library does not support that
+//removeMilestone sets milestones field to interface{} aka. null since library does not support that
 //Reference to issue - https://github.com/google/go-github/issues/236
 func removeMilestone(client *github.Client, ctx context.Context, URL string) error {
 	req, err := client.NewRequest("PATCH", URL, &struct {
