@@ -24,7 +24,7 @@ features:
  - comments
 ```
 
-This file enables Derek usage for `rgee0` and `alexellis`, it also turns on all features available. If you specifically do not want the commenting or `dco_check` feature then comment out the line or remove it from your file. At least one feature is required to be of use.
+This file enables Derek usage for `rgee0` and `alexellis`, it also turns on all features available. If you specifically do not want the commenting or `dco_check` feature then comment out the line or remove it from your file. At least one feature is required for Derek to be of use.
 
 ### Notes on usage
 
@@ -83,7 +83,11 @@ Labels can be used to triage work or help sort it.
 
 ```
 Derek add label: proposal
+```
+```
 Derek add label: help wanted
+```
+```
 Derek remove label: bug
 ```
 
@@ -93,6 +97,8 @@ You can organize your issues in groups through existing milestones
 
 ```
 Derek set milestone: example
+```
+```
 Derek remove milestone: example
 ```
 
@@ -102,10 +108,12 @@ You can assign work to people too
 
 ```
 Derek assign: alexellis
+```
+```
 Derek unassign: me
 ```
 
-> Note: This relies on the target user being a member of your GitHub organisation or for a personal project, they must be a collaborator with write-acecss.
+> Note: This relies on the target user being a member of your GitHub organisation or for a personal project, they must be a collaborator with write-access.
 
 
 #### Open and close issues and PRs
@@ -114,7 +122,18 @@ Sometimes you may want to close or re-open issues or Pull Requests:
 
 ```
 Derek close
+```
+```
 Derek reopen
+```
+
+A reason can also be added if further explanation is appropriate:
+
+```
+Derek close: not an issue
+```
+```
+Derek reopen: work incomplete
 ```
 
 #### Lock/un-lock conversation/threads
@@ -123,6 +142,8 @@ This is useful for when conversations are going off topic or an old thread recei
 
 ```
 Derek lock
+```
+```
 Derek unlock
 ```
 
