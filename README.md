@@ -10,6 +10,10 @@ It's derek ![](https://pbs.twimg.com/media/DPo4OyrWsAAOk_i.png). Nice to meet yo
 
 From the team that bought you [OpenFaaS](https://www.openfaas.com) - Serverless Functions Made Simple.
 
+### Looking for the User Guide?
+
+Existing users of Derek can read the [user-guide here](./USER_GUIDE.md).
+
 ## What can I do?
 
 * Check that commits are signed-off
