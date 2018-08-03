@@ -5,7 +5,7 @@ provider:
 functions:
   derek:
     handler: ./
-    image: alexellis/derek:0.5.2
+    image: alexellis/derek:0.6.0
     lang: dockerfile
     environment:
       debug: true
@@ -13,6 +13,9 @@ functions:
       validate_hmac: false
       validate_customers: true
       secret_path: /var/openfaas/secrets/ # use /run/secrets/ for older OpenFaaS versions
+      application: 10167
+      write_debug: true
+      combined_output: false
     environment_file:
       - secrets.yml
       # See secrets.example.yml

@@ -16,16 +16,14 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func handlePullRequest(req types.PullRequestOuter) {
-	ctx := context.Background()
-
+func getAccessToken(installationID int) string {
 	token := os.Getenv("access_token")
 	if len(token) == 0 {
 		keyPath, _ := getSecretPath()
 
 		newToken, tokenErr := auth.MakeAccessTokenForInstallation(
 			os.Getenv("application"),
-			req.Installation.ID,
+			installationID,
 			keyPath+privateKeyFile)
 
 		if tokenErr != nil {
@@ -34,6 +32,13 @@ func handlePullRequest(req types.PullRequestOuter) {
 
 		token = newToken
 	}
+	return token
+}
+
+func handlePullRequest(req types.PullRequestOuter) {
+	ctx := context.Background()
+
+	token := getAccessToken(req.Installation.ID)
 
 	client := auth.MakeClient(ctx, token)
 

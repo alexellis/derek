@@ -27,30 +27,6 @@ const (
 const derekSecretKeyFile = "derek-secret-key"
 const privateKeyFile = "derek-private-key"
 
-func getSecretPath() (string, error) {
-	secretPath := os.Getenv("secret_path")
-
-	if len(secretPath) == 0 {
-		return "", fmt.Errorf("secret_path not set, this must be /var/openfaas/secrets or /run/secrets")
-
-	}
-
-	return secretPath, nil
-}
-
-func hmacValidation() bool {
-	val := os.Getenv("validate_hmac")
-	return len(val) > 0 && (val == "1" || val == "true")
-}
-
-func getFirstLine(secret []byte) []byte {
-	stringSecret := string(secret)
-	if newLine := strings.Index(stringSecret, "\n"); newLine != -1 {
-		secret = secret[:newLine]
-	}
-	return secret
-}
-
 func main() {
 
 	bytesIn, _ := ioutil.ReadAll(os.Stdin)
@@ -151,4 +127,28 @@ func handleEvent(eventType string, bytesIn []byte) error {
 	}
 
 	return nil
+}
+
+func getSecretPath() (string, error) {
+	secretPath := os.Getenv("secret_path")
+
+	if len(secretPath) == 0 {
+		return "", fmt.Errorf("secret_path not set, this must be /var/openfaas/secrets or /run/secrets")
+
+	}
+
+	return secretPath, nil
+}
+
+func hmacValidation() bool {
+	val := os.Getenv("validate_hmac")
+	return len(val) > 0 && (val == "1" || val == "true")
+}
+
+func getFirstLine(secret []byte) []byte {
+	stringSecret := string(secret)
+	if newLine := strings.Index(stringSecret, "\n"); newLine != -1 {
+		secret = secret[:newLine]
+	}
+	return secret
 }

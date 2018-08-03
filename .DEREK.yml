@@ -5,4 +5,7 @@ curators:
 features:
  - dco_check
  - comments
- 
+ - merge
+
+mergers:
+ - alexellis

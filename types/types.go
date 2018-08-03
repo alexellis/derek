@@ -38,7 +38,12 @@ type IssueCommentOuter struct {
 	Comment    Comment    `json:"comment"`
 	Action     string     `json:"action"`
 	Issue      Issue      `json:"issue"`
+
 	InstallationRequest
+}
+
+type PullRequestIssueLink struct {
+	URL string `json:"url"`
 }
 
 type IssueLabel struct {
@@ -46,13 +51,14 @@ type IssueLabel struct {
 }
 
 type Issue struct {
-	Labels    []IssueLabel `json:"labels"`
-	Number    int          `json:"number"`
-	Title     string       `json:"title"`
-	Locked    bool         `json:"locked"`
-	State     string       `json:"state"`
-	Milestone Milestone    `json:"milestone"`
-	URL       string       `json:"url"`
+	Labels      []IssueLabel          `json:"labels"`
+	Number      int                   `json:"number"`
+	Title       string                `json:"title"`
+	Locked      bool                  `json:"locked"`
+	State       string                `json:"state"`
+	Milestone   Milestone             `json:"milestone"`
+	URL         string                `json:"url"`
+	PullRequest *PullRequestIssueLink `json:"pull_request"`
 }
 
 type Milestone struct {

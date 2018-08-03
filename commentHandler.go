@@ -30,6 +30,7 @@ const (
 	addLabelConstant        string = "AddLabel"
 	setMilestoneConstant    string = "SetMilestone"
 	removeMilestoneConstant string = "RemoveMilestone"
+	mergePRConstant         string = "Merge"
 )
 
 func makeClient(installation int) (*github.Client, context.Context) {
@@ -97,6 +98,10 @@ func handleComment(req types.IssueCommentOuter) {
 
 		feedback, err = updateMilestone(req, command.Type, command.Value)
 		break
+
+	case mergePRConstant:
+		merger := merge{}
+		feedback, err = merger.Merge(req, command.Type, command.Value)
 
 	default:
 		feedback = "Unable to work with comment: " + req.Comment.Body
@@ -329,6 +334,7 @@ func parse(body string) *types.CommentAction {
 		"Derek unlock":             unlockConstant,
 		"Derek set milestone: ":    setMilestoneConstant,
 		"Derek remove milestone: ": removeMilestoneConstant,
+		"Derek merge":              mergePRConstant,
 	}
 
 	for trigger, commandType := range commands {
