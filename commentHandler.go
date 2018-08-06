@@ -142,7 +142,12 @@ func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string)
 	if cmdType == addLabelConstant {
 		_, _, err = client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{labelValue})
 	} else {
-		_, err = client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, labelValue)
+		if isDcoLabel(labelValue) {
+			buffer.WriteString(fmt.Sprintf("%s the request is not allowed.Label `%s` can be removed by owner or by signing out the commit.", req.Repository.Owner.Login, labelValue))
+			return buffer.String(), nil
+		} else {
+			_, err = client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, labelValue)
+		}
 	}
 
 	if err != nil {
@@ -380,4 +385,8 @@ func removeMilestone(client *github.Client, ctx context.Context, URL string) err
 		return err
 	}
 	return nil
+}
+
+func isDcoLabel(labelValue string) bool {
+	return strings.ToLower(labelValue) == "no-dco"
 }

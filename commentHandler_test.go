@@ -438,3 +438,46 @@ func Test_Parsing_Milestones(t *testing.T) {
 		})
 	}
 }
+
+func Test_isDcoLabel(t *testing.T) {
+	dcoLabel := []struct {
+		title        string
+		label        string
+		expectedBool bool
+	}{
+		{
+			title:        "Counts as no-dco - case insensitivity",
+			label:        "NO-DCO",
+			expectedBool: true,
+		},
+		{
+			title:        "Normal no-dco case",
+			label:        "no-dco",
+			expectedBool: true,
+		},
+		{
+			title:        "Counts as no-dco - case insensitivity",
+			label:        "No-Dco",
+			expectedBool: true,
+		},
+		{
+			title:        "Does not follow no-dco so it counts as normal label",
+			label:        "nodco",
+			expectedBool: false,
+		},
+		{
+			title:        "Normal label",
+			label:        "randomlabel",
+			expectedBool: false,
+		},
+	}
+
+	for _, test := range dcoLabel {
+		t.Run(test.label, func(t *testing.T) {
+			itsDco := isDcoLabel(test.label)
+			if itsDco != test.expectedBool {
+				t.Errorf("Wanted `%s` to return: %t but it returned:  %t.", test.label, test.expectedBool, itsDco)
+			}
+		})
+	}
+}
