@@ -6,7 +6,6 @@ package auth
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -62,12 +61,12 @@ func IsCustomer(ownerLogin string, c *http.Client) (bool, error) {
 			goto DO_RETURN
 		}
 
-		lines := strings.Split(strings.TrimSpace(string(body)), "\n")
+		trimmedBody := strings.TrimSpace(string(body))
+		lines := strings.Split(trimmedBody, "\n")
 
 		for _, line := range lines {
 			if line == ownerLogin {
 				found = true
-				log.Println(ownerLogin, line, lines)
 				break
 			}
 		}

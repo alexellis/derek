@@ -11,6 +11,33 @@ import (
 	"testing"
 )
 
+func Test_isCustomer_EmptyCustomer_No(t *testing.T) {
+	os.Setenv("validate_customers", "true")
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, `alex
+richard
+`)
+	})
+
+	server := httptest.NewServer(handler)
+	defer server.Close()
+	os.Setenv("customers_url", server.URL+"/CUSTOMERS")
+
+	owner := ""
+	isCustomer, err := IsCustomer(owner, server.Client())
+	if err != nil {
+		t.Errorf("want no error, but got one: %s", err)
+		t.Fail()
+	}
+
+	want := false
+	if isCustomer != want {
+		t.Errorf("want %s customer value %t but got %t", owner, want, isCustomer)
+		t.Fail()
+	}
+}
+
 func Test_isCustomer_Yes(t *testing.T) {
 	os.Setenv("validate_customers", "true")
 
