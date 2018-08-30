@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/types"
@@ -16,63 +15,78 @@ type merge struct {
 func (m *merge) Merge(req types.IssueCommentOuter, cmdType string, cmdValue string) (string, error) {
 	result := ""
 
-	if req.Issue.PullRequest != nil && len(req.Issue.PullRequest.URL) > 0 {
-		log.Println("Wants to merge a PR")
+	if req.Issue.PullRequest == nil {
+		return "can't merge a non-PR issue", nil
+	}
 
-		token := getAccessToken(req.Installation.ID)
-		client := auth.MakeClient(context.Background(), token)
-		pr, _, err := client.PullRequests.Get(context.Background(), req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number)
-		if err != nil {
+	token := getAccessToken(req.Installation.ID)
+	client := auth.MakeClient(context.Background(), token)
+	pr, _, err := client.PullRequests.Get(context.Background(), req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number)
+	if err != nil {
+		return "unable to get pull request", err
+	}
 
-			if pr.GetMerged() == false {
-				if pr.GetMergeable() == true {
+	if pr.GetMerged() == false {
 
-					pullRequestOptions := github.PullRequestOptions{
-						MergeMethod: "rebase",
-						CommitTitle: fmt.Sprintf("Merge PR #%d", req.Issue.Number),
-					}
-					mergeRes, _, err := client.PullRequests.Merge(context.Background(),
-						req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number,
-						fmt.Sprintf(`Merging PR #%d by Derek
+		if pr.GetMergeable() == true {
+
+			if validMergePolicy(req) == false {
+				sendComment(client, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number,
+					"I am unable to merge this PR due to merge-policy exception(s)")
+
+				return "invalid merge policy", nil
+			}
+
+			pullRequestOptions := github.PullRequestOptions{
+				MergeMethod: "rebase",
+				CommitTitle: fmt.Sprintf("Merge PR #%d", req.Issue.Number),
+			}
+			mergeRes, _, err := client.PullRequests.Merge(context.Background(),
+				req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number,
+				fmt.Sprintf(`Merging PR #%d by Derek
 This is an automated merge by the bot Derek, find more
 https://github.com/alexellis/derek/
 
 Signed-off-by: derek@openfaas.com`, req.Issue.Number), &pullRequestOptions)
 
-					if err != nil {
+			if err != nil {
 
-						body := fmt.Sprintf(`I have been unable to merge the requested PR: %s`, err.Error())
-						comment := &github.IssueComment{
-							Body: &body,
-						}
+				body := fmt.Sprintf(`I have been unable to merge the requested PR: %s`, err.Error())
 
-						client.Issues.CreateComment(context.Background(),
-							req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, comment)
+				sendComment(client, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number,
+					body)
 
-						return fmt.Sprintf("Merge issue: %s, %t", mergeRes.GetMessage(), mergeRes.GetMerged()), err
-					}
-
-					body := `I have merged the pull request using the rebase strategy.`
-					comment := &github.IssueComment{
-						Body: &body,
-					}
-
-					_, _, commentErr := client.Issues.CreateComment(context.Background(),
-						req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, comment)
-
-					if commentErr != nil {
-						return "Unable to create successful merge comment", commentErr
-					}
-
-				}
+				return fmt.Sprintf("Merge issue: %s, %t", mergeRes.GetMessage(), mergeRes.GetMerged()), err
 			}
 
-			return result, err
+			sendComment(client, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number,
+				`I have merged the pull request using the rebase strategy.`)
+		} else {
+			sendComment(client, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number,
+				"This pull request cannot be merged. Rebase your work and try again.")
 		}
-
-	} else {
-		log.Println("Can't merge a non-PR issue")
 	}
 
-	return result, nil
+	return result, err
+}
+
+func sendComment(client *github.Client, login string, repo string, issue int, comment string) {
+
+	issueComment := &github.IssueComment{
+		Body: &comment,
+	}
+	client.Issues.CreateComment(context.Background(),
+		login, repo, issue, issueComment)
+}
+
+func validMergePolicy(req types.IssueCommentOuter) bool {
+	validDCO := true
+	for _, label := range req.Issue.Labels {
+		if label.Name == "no-dco" {
+			validDCO = false
+			break
+		}
+	}
+
+	return validDCO
 }
