@@ -12,6 +12,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
+	"github.com/alexellis/derek/factory"
 	"github.com/alexellis/derek/types"
 	"github.com/google/go-github/github"
 )
@@ -54,7 +55,7 @@ func makeClient(installation int) (*github.Client, context.Context) {
 		token = newToken
 	}
 
-	client := auth.MakeClient(ctx, token)
+	client := factory.MakeClient(ctx, token)
 
 	return client, ctx
 }
@@ -255,7 +256,8 @@ func manageLocking(req types.IssueCommentOuter, cmdType string) (string, error) 
 	var err error
 
 	if cmdType == lockConstant {
-		_, err = client.Issues.Lock(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number)
+		_, err = client.Issues.Lock(ctx, req.Repository.Owner.Login, req.Repository.Name,
+			req.Issue.Number, &github.LockIssueOptions{})
 	} else {
 		_, err = client.Issues.Unlock(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number)
 	}
