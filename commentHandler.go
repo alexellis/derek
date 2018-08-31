@@ -12,6 +12,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
+	"github.com/alexellis/derek/factory"
 	"github.com/alexellis/derek/types"
 	"github.com/google/go-github/github"
 )
@@ -54,7 +55,7 @@ func makeClient(installation int) (*github.Client, context.Context) {
 		token = newToken
 	}
 
-	client := auth.MakeClient(ctx, token)
+	client := factory.MakeClient(ctx, token)
 
 	return client, ctx
 }

@@ -12,6 +12,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
+	"github.com/alexellis/derek/factory"
 	"github.com/alexellis/derek/types"
 	"github.com/google/go-github/github"
 )
@@ -35,7 +36,7 @@ func handlePullRequest(req types.PullRequestOuter) {
 		token = newToken
 	}
 
-	client := auth.MakeClient(ctx, token)
+	client := factory.MakeClient(ctx, token)
 
 	hasUnsignedCommits, err := hasUnsigned(req, client)
 
