@@ -17,7 +17,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func handlePullRequest(req types.PullRequestOuter) {
+func handlePullRequest(req types.PullRequestOuter, contributingURL string) {
 	ctx := context.Background()
 
 	token := os.Getenv("access_token")
@@ -68,9 +68,8 @@ func handlePullRequest(req types.PullRequestOuter) {
 				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
 			}
 
-			link := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", req.Repository.Owner.Login, req.Repository.Name)
 			body := `Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off.
-That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + link + `).`
+That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).`
 
 			comment := &github.IssueComment{
 				Body: &body,

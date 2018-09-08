@@ -117,7 +117,8 @@ func handleEvent(eventType string, bytesIn []byte) error {
 		}
 		if req.Action != closedConstant {
 			if enabledFeature(dcoCheck, derekConfig) {
-				handlePullRequest(req)
+				contributingURL := getContributingURL(derekConfig.ContributingURL, req.Repository.Owner.Login, req.Repository.Name)
+				handlePullRequest(req, contributingURL)
 			}
 		}
 		break
@@ -151,4 +152,11 @@ func handleEvent(eventType string, bytesIn []byte) error {
 	}
 
 	return nil
+}
+
+func getContributingURL(contributingURL, owner, repositoryName string) string {
+	if len(contributingURL) == 0 {
+		contributingURL = fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", owner, repositoryName)
+	}
+	return contributingURL
 }
