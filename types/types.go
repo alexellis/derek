@@ -85,6 +85,9 @@ type DerekConfig struct {
 
 	// Curators is an alias for Maintainers and is only used if the Maintainers list is empty.
 	Curators []string
+
+	//ContributingURL url to contribution guide
+	ContributingURL string `yaml:"contributing_url"`
 }
 
 func (p *PullRequest) FirstTimeContributor() bool {
