@@ -1,44 +1,9 @@
 package main
 
-import "testing"
-
-func Test_getFirstLine(t *testing.T) {
-	var exampleSecrets = []struct {
-		secret       string
-		expectedByte string
-	}{
-		{
-			secret:       "New-line \n",
-			expectedByte: "New-line ",
-		},
-		{
-			secret: `Newline and text 
-			`,
-			expectedByte: "Newline and text ",
-		},
-		{
-			secret:       `Example secret2 `,
-			expectedByte: `Example secret2 `,
-		},
-		{
-			secret:       "\n",
-			expectedByte: "",
-		},
-		{
-			secret:       "",
-			expectedByte: "",
-		},
-	}
-	for _, test := range exampleSecrets {
-
-		t.Run(string(test.secret), func(t *testing.T) {
-			stringNoLines := getFirstLine([]byte(test.secret))
-			if test.expectedByte != string(stringNoLines) {
-				t.Errorf("String after removal - wanted: \"%s\", got \"%s\"", test.expectedByte, test.secret)
-			}
-		})
-	}
-}
+import (
+	"os"
+	"testing"
+)
 
 func Test_getContributingURL(t *testing.T) {
 	var TestCases = []struct {
@@ -69,5 +34,15 @@ func Test_getContributingURL(t *testing.T) {
 		if actualContrinbutingURL != test.ExpectedOuptput {
 			t.Errorf("Testcase %s failed. want - %s, got - %s", test.Name, test.ExpectedOuptput, actualContrinbutingURL)
 		}
+	}
+}
+
+func Test_hmacValidationDefault(t *testing.T) {
+	os.Setenv("hmac_validation", "")
+	enabled := hmacValidation()
+	want := false
+	if enabled != want {
+		t.Errorf("want %t got %t", want, enabled)
+		t.Fail()
 	}
 }

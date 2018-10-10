@@ -43,8 +43,8 @@ func GetSignedJwtToken(appID string, privateKeyPath string) (string, error) {
 	return string(signedVal), nil
 }
 
-// JwtAuth token issued by Github in response to signed JWT Token
-type JwtAuth struct {
+// JWTAuth token issued by Github in response to signed JWT Token
+type JWTAuth struct {
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
@@ -68,7 +68,8 @@ func MakeAccessTokenForInstallation(appID string, installation int, privateKeyPa
 			if readErr != nil {
 				return "", readErr
 			}
-			jwtAuth := JwtAuth{}
+
+			jwtAuth := JWTAuth{}
 			jsonErr := json.Unmarshal(bytesOut, &jwtAuth)
 			if jsonErr != nil {
 				return "", jsonErr

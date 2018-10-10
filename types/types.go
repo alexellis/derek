@@ -72,7 +72,8 @@ type CommentAction struct {
 	Value string
 }
 
-type DerekConfig struct {
+// DerekRepoConfig is a config for a Derek-enabled repository
+type DerekRepoConfig struct {
 
 	// A redirect URL to load the config from another location.
 	Redirect string
@@ -90,6 +91,7 @@ type DerekConfig struct {
 	ContributingURL string `yaml:"contributing_url"`
 }
 
+// FirstTimeContributor whether the contributor is new to the repo
 func (p *PullRequest) FirstTimeContributor() bool {
 	return p.AuthorAssociation == "NONE"
 }
