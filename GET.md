@@ -84,7 +84,7 @@ Create secrets.yml:
 cp secrets.example.yml secrets.yml
 ```
 
-Then populate your own values in the file - set `application` to your GitHub application ID and set `secret_key` to the same value of the `derek-secret-key` file.
+Then populate your own values in the file - set `application_id` to your GitHub application ID and set `secret_key` to the same value of the `derek-secret-key` file.
 
 ### Configure Docker image:
 
@@ -105,7 +105,7 @@ $ faas-cli push -f derek.yml
 
 ### Configure stack.yml:
 
-This is where Derek finds the details he needs to do the work he does.  The main areas that will need to be updated are the `application` and `customer_url` variables.  The gateway value may also need amending if the gateway is remote.
+This is where Derek finds the details he needs to do the work he does.  The main areas that will need to be updated are the `application_id` and `customer_url` variables.  The gateway value may also need amending if the gateway is remote.
 
 ```yaml
 provider:
@@ -118,7 +118,7 @@ functions:
     image: derek
     lang: Dockerfile
     environment:
-      application: <github_application_id>
+      application_id: <github_application_id>
       customer_url: <your_customers_file_url>
       validate_customers: true
       validate_hmac: true
@@ -142,7 +142,7 @@ $ faas-cli deploy -f derek.yml
 
 * Config environmental options
 
-* `application` - ID provided in UI for GitHub App
+* `application_id` - ID provided in UI for GitHub App
 * `customer_url` - A text file of valid repos which can use your Derek installation, separated by new-lines normally `CUSTOMERS`
 * `validate_customers` - If set to false then the `customer_url` is ignored
 * `validate_hmac` - Validate all incoming webhooks are signed with the secret `derek-secret-key` that you enter in the GitHub UI
@@ -175,3 +175,9 @@ Head over to your GitHub repository and raise a Pull Request from the web-UI for
 If you're not sure if things are working right then Click on the GitHub App via your account settings and then click "Advanced" and "Recent Deliveries". This will show you all the incoming messages and their responses.
 
 You can tweak your environment and then hit "Redeliver" to send the message again.
+
+### Appendix
+
+#### Personal Access Tokens
+
+> Note: you may be able to use a Personal Access Token generated through your *Developer Settings* page instead of a GitHub App. If you wish to do this then set the `personal_access_token` environmental variable. It is not recommended since the granularity is much more coarse meaning you must grant more privileges to the bot. The bot will also report as your own GitHub user account.

@@ -10,7 +10,7 @@ import (
 )
 
 func Test_maintainersparsed(t *testing.T) {
-	config := types.DerekConfig{}
+	config := types.DerekRepoConfig{}
 	parseConfig([]byte(`maintainers:
 - alexellis
 - rgee0
@@ -59,7 +59,7 @@ func Test_validateRedirectURL(t *testing.T) {
 
 func Test_redirectparsed(t *testing.T) {
 	url := "some-url"
-	config := types.DerekConfig{}
+	config := types.DerekRepoConfig{}
 	parseConfig([]byte(`redirect: `+url), &config)
 	actual := len(config.Redirect)
 	lenURL := len(url)
@@ -69,7 +69,7 @@ func Test_redirectparsed(t *testing.T) {
 }
 
 func Test_curatorequalsmaintainer(t *testing.T) {
-	config := types.DerekConfig{}
+	config := types.DerekRepoConfig{}
 	parseConfig([]byte(`curators:
 - alexellis
 - rgee0
@@ -134,7 +134,7 @@ func Test_enabledFeature(t *testing.T) {
 	for _, test := range enableFeatureOpts {
 		t.Run(test.title, func(t *testing.T) {
 
-			inputConfig := &types.DerekConfig{Features: test.configFeatures}
+			inputConfig := &types.DerekRepoConfig{Features: test.configFeatures}
 
 			featureEnabled := enabledFeature(test.attemptedFeature, inputConfig)
 
@@ -151,14 +151,14 @@ func Test_permittedUserFeature(t *testing.T) {
 		title            string
 		attemptedFeature string
 		user             string
-		config           types.DerekConfig
+		config           types.DerekRepoConfig
 		expectedVal      bool
 	}{
 		{
 			title:            "Valid feature with valid maintainer",
 			attemptedFeature: "comment",
 			user:             "Burt",
-			config: types.DerekConfig{
+			config: types.DerekRepoConfig{
 				Features:    []string{"comment"},
 				Maintainers: []string{"Burt", "Tarquin", "Blanche"},
 			},
@@ -168,7 +168,7 @@ func Test_permittedUserFeature(t *testing.T) {
 			title:            "Valid feature with valid maintainer case insensitive",
 			attemptedFeature: "comment",
 			user:             "burt",
-			config: types.DerekConfig{
+			config: types.DerekRepoConfig{
 				Features:    []string{"comment"},
 				Maintainers: []string{"Burt", "Tarquin", "Blanche"},
 			},
@@ -178,7 +178,7 @@ func Test_permittedUserFeature(t *testing.T) {
 			title:            "Valid feature with invalid maintainer",
 			attemptedFeature: "comment",
 			user:             "ernie",
-			config: types.DerekConfig{
+			config: types.DerekRepoConfig{
 				Features:    []string{"comment"},
 				Maintainers: []string{"Burt", "Tarquin", "Blanche"},
 			},
@@ -188,7 +188,7 @@ func Test_permittedUserFeature(t *testing.T) {
 			title:            "Valid feature with invalid maintainer case insensitive",
 			attemptedFeature: "Comment",
 			user:             "ernie",
-			config: types.DerekConfig{
+			config: types.DerekRepoConfig{
 				Features:    []string{"comment"},
 				Maintainers: []string{"Burt", "Tarquin", "Blanche"},
 			},
@@ -198,7 +198,7 @@ func Test_permittedUserFeature(t *testing.T) {
 			title:            "Invalid feature with valid maintainer",
 			attemptedFeature: "invalid",
 			user:             "Burt",
-			config: types.DerekConfig{
+			config: types.DerekRepoConfig{
 				Features:    []string{"comment"},
 				Maintainers: []string{"Burt", "Tarquin", "Blanche"},
 			},
@@ -208,7 +208,7 @@ func Test_permittedUserFeature(t *testing.T) {
 			title:            "Invalid feature with valid maintainer case insensitive",
 			attemptedFeature: "invalid",
 			user:             "burt",
-			config: types.DerekConfig{
+			config: types.DerekRepoConfig{
 				Features:    []string{"comment"},
 				Maintainers: []string{"Burt", "Tarquin", "Blanche"},
 			},

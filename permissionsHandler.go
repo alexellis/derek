@@ -18,7 +18,7 @@ import (
 
 const configFile = ".DEREK.yml"
 
-func enabledFeature(attemptedFeature string, config *types.DerekConfig) bool {
+func enabledFeature(attemptedFeature string, config *types.DerekRepoConfig) bool {
 
 	featureEnabled := false
 
@@ -31,7 +31,7 @@ func enabledFeature(attemptedFeature string, config *types.DerekConfig) bool {
 	return featureEnabled
 }
 
-func permittedUserFeature(attemptedFeature string, config *types.DerekConfig, user string) bool {
+func permittedUserFeature(attemptedFeature string, config *types.DerekRepoConfig, user string) bool {
 
 	permitted := false
 
@@ -80,8 +80,8 @@ func validateRedirectURL(url string) error {
 	return fmt.Errorf("the redirect URL doesn't seem to be GitHub based")
 }
 
-func getConfig(owner string, repository string) (*types.DerekConfig, error) {
-	var config types.DerekConfig
+func getRepoConfig(owner string, repository string) (*types.DerekRepoConfig, error) {
+	var config types.DerekRepoConfig
 
 	client := http.Client{
 		Timeout: 30 * time.Second,
@@ -110,7 +110,7 @@ func getConfig(owner string, repository string) (*types.DerekConfig, error) {
 	return &config, nil
 }
 
-func parseConfig(bytesOut []byte, config *types.DerekConfig) error {
+func parseConfig(bytesOut []byte, config *types.DerekRepoConfig) error {
 	err := yaml.Unmarshal(bytesOut, &config)
 
 	if len(config.Maintainers) == 0 && len(config.Curators) > 0 {

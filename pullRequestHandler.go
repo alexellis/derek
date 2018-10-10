@@ -12,22 +12,22 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
+	"github.com/alexellis/derek/config"
 	"github.com/alexellis/derek/factory"
 	"github.com/alexellis/derek/types"
 	"github.com/google/go-github/github"
 )
 
-func handlePullRequest(req types.PullRequestOuter, contributingURL string) {
+func handlePullRequest(req types.PullRequestOuter, contributingURL string, config config.Config) {
 	ctx := context.Background()
 
-	token := os.Getenv("access_token")
+	token := os.Getenv("personal_access_token")
 	if len(token) == 0 {
-		keyPath, _ := getSecretPath()
 
 		newToken, tokenErr := auth.MakeAccessTokenForInstallation(
-			os.Getenv("application"),
+			config.ApplicationID,
 			req.Installation.ID,
-			keyPath+privateKeyFile)
+			config.PrivateKey)
 
 		if tokenErr != nil {
 			log.Fatalln(tokenErr.Error())
@@ -36,7 +36,7 @@ func handlePullRequest(req types.PullRequestOuter, contributingURL string) {
 		token = newToken
 	}
 
-	client := factory.MakeClient(ctx, token)
+	client := factory.MakeClient(ctx, token, config)
 
 	hasUnsignedCommits, err := hasUnsigned(req, client)
 

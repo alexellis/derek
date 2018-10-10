@@ -9,13 +9,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
-	"github.com/alexellis/hmac"
-
+	"github.com/alexellis/derek/config"
 	"github.com/alexellis/derek/types"
+	"github.com/alexellis/hmac"
 )
 
 const (
@@ -24,78 +22,41 @@ const (
 	deleted  = "deleted"
 )
 
-const derekSecretKeyFile = "derek-secret-key"
-const privateKeyFile = "derek-private-key"
-
-func getSecretPath() (string, error) {
-	secretPath := os.Getenv("secret_path")
-
-	if len(secretPath) == 0 {
-		return "", fmt.Errorf("secret_path not set, this must be /var/openfaas/secrets or /run/secrets")
-
-	}
-
-	return secretPath, nil
-}
-
-func hmacValidation() bool {
-	val := os.Getenv("validate_hmac")
-	return len(val) > 0 && (val == "1" || val == "true")
-}
-
-func getFirstLine(secret []byte) []byte {
-	stringSecret := string(secret)
-	if newLine := strings.Index(stringSecret, "\n"); newLine != -1 {
-		secret = secret[:newLine]
-	}
-	return secret
-}
-
 func main() {
+	validateHmac := hmacValidation()
 
-	bytesIn, _ := ioutil.ReadAll(os.Stdin)
+	requestRaw, _ := ioutil.ReadAll(os.Stdin)
 
 	xHubSignature := os.Getenv("Http_X_Hub_Signature")
 
-	if hmacValidation() && len(xHubSignature) == 0 {
-		log.Fatal("must provide X_Hub_Signature")
-		return
-	}
-
-	keyPath, pathErr := getSecretPath()
-	if pathErr != nil {
-		os.Stderr.Write([]byte(pathErr.Error()))
+	if validateHmac && len(xHubSignature) == 0 {
+		os.Stderr.Write([]byte("must provide X_Hub_Signature"))
 		os.Exit(1)
 	}
 
-	if len(xHubSignature) > 0 {
-		secretKeyBytes, readErr := ioutil.ReadFile(keyPath + derekSecretKeyFile)
+	config, configErr := config.NewConfig()
+	if configErr != nil {
+		os.Stderr.Write([]byte(configErr.Error()))
+		os.Exit(1)
+	}
 
-		if readErr != nil {
-			msg := fmt.Errorf("unable to read GitHub symmetrical secret: %s, error: %s",
-				keyPath+derekSecretKeyFile, readErr)
-			os.Stderr.Write([]byte(msg.Error()))
-			os.Exit(1)
-		}
-
-		secretKeyBytes = getFirstLine(secretKeyBytes)
-
-		err := hmac.Validate(bytesIn, xHubSignature, string(secretKeyBytes))
+	if validateHmac {
+		err := hmac.Validate(requestRaw, xHubSignature, config.SecretKey)
 		if err != nil {
-			log.Fatal(err.Error())
-			return
+			os.Stderr.Write([]byte(err.Error()))
+			os.Exit(1)
 		}
 	}
 
-	// HMAC Validated or not turned on.
 	eventType := os.Getenv("Http_X_Github_Event")
 
-	if err := handleEvent(eventType, bytesIn); err != nil {
-		log.Fatal(err)
+	if err := handleEvent(eventType, requestRaw, config); err != nil {
+		os.Stderr.Write([]byte(err.Error()))
+		os.Exit(1)
 	}
 }
 
-func handleEvent(eventType string, bytesIn []byte) error {
+func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 
 	switch eventType {
 	case "pull_request":
@@ -111,14 +72,14 @@ func handleEvent(eventType string, bytesIn []byte) error {
 			return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
-		derekConfig, err := getConfig(req.Repository.Owner.Login, req.Repository.Name)
+		derekConfig, err := getRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 		if req.Action != closedConstant {
 			if enabledFeature(dcoCheck, derekConfig) {
 				contributingURL := getContributingURL(derekConfig.ContributingURL, req.Repository.Owner.Login, req.Repository.Name)
-				handlePullRequest(req, contributingURL)
+				handlePullRequest(req, contributingURL, config)
 			}
 		}
 		break
@@ -136,14 +97,14 @@ func handleEvent(eventType string, bytesIn []byte) error {
 			return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
-		derekConfig, err := getConfig(req.Repository.Owner.Login, req.Repository.Name)
+		derekConfig, err := getRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
 		if req.Action != deleted {
 			if permittedUserFeature(comments, derekConfig, req.Comment.User.Login) {
-				handleComment(req)
+				handleComment(req, config)
 			}
 		}
 		break
@@ -159,4 +120,9 @@ func getContributingURL(contributingURL, owner, repositoryName string) string {
 		contributingURL = fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", owner, repositoryName)
 	}
 	return contributingURL
+}
+
+func hmacValidation() bool {
+	val := os.Getenv("validate_hmac")
+	return len(val) > 0 && (val == "1" || val == "true")
 }

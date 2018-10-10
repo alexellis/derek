@@ -12,6 +12,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
+	"github.com/alexellis/derek/config"
 	"github.com/alexellis/derek/factory"
 	"github.com/alexellis/derek/types"
 	"github.com/google/go-github/github"
@@ -36,29 +37,13 @@ const (
 	commandTriggerSlash   string = "/"
 )
 
-func getCommandTrigger() string {
-	commandTrigger := commandTriggerDefault
-	if os.Getenv("use_slash_trigger") == "true" {
-		commandTrigger = commandTriggerSlash
-	}
-	return commandTrigger
-}
-
-func makeClient(installation int) (*github.Client, context.Context) {
+func makeClient(installation int, config config.Config) (*github.Client, context.Context) {
 	ctx := context.Background()
 
-	token := os.Getenv("access_token")
+	token := os.Getenv("personal_access_token")
 	if len(token) == 0 {
 
-		applicationID := os.Getenv("application")
-
-		secretPath := os.Getenv("secret_path")
-
-		if len(secretPath) == 0 {
-			log.Printf("Must supply a value for env-var %s\n", "secret_path")
-		}
-
-		newToken, tokenErr := auth.MakeAccessTokenForInstallation(applicationID, installation, secretPath+privateKeyFile)
+		newToken, tokenErr := auth.MakeAccessTokenForInstallation(config.ApplicationID, installation, config.PrivateKey)
 		if tokenErr != nil {
 			log.Fatalln(tokenErr.Error())
 		}
@@ -66,12 +51,12 @@ func makeClient(installation int) (*github.Client, context.Context) {
 		token = newToken
 	}
 
-	client := factory.MakeClient(ctx, token)
+	client := factory.MakeClient(ctx, token, config)
 
 	return client, ctx
 }
 
-func handleComment(req types.IssueCommentOuter) {
+func handleComment(req types.IssueCommentOuter, config config.Config) {
 
 	var feedback string
 	var err error
@@ -82,32 +67,32 @@ func handleComment(req types.IssueCommentOuter) {
 
 	case addLabelConstant, removeLabelConstant:
 
-		feedback, err = manageLabel(req, command.Type, command.Value)
+		feedback, err = manageLabel(req, command.Type, command.Value, config)
 		break
 
 	case assignConstant, unassignConstant:
 
-		feedback, err = manageAssignment(req, command.Type, command.Value)
+		feedback, err = manageAssignment(req, command.Type, command.Value, config)
 		break
 
 	case closeConstant, reopenConstant:
 
-		feedback, err = manageState(req, command.Type)
+		feedback, err = manageState(req, command.Type, config)
 		break
 
 	case setTitleConstant:
 
-		feedback, err = manageTitle(req, command.Type, command.Value)
+		feedback, err = manageTitle(req, command.Type, command.Value, config)
 		break
 
 	case lockConstant, unlockConstant:
 
-		feedback, err = manageLocking(req, command.Type)
+		feedback, err = manageLocking(req, command.Type, config)
 		break
 
 	case setMilestoneConstant, removeMilestoneConstant:
 
-		feedback, err = updateMilestone(req, command.Type, command.Value)
+		feedback, err = updateMilestone(req, command.Type, command.Value, config)
 		break
 
 	default:
@@ -133,7 +118,7 @@ func findLabel(currentLabels []types.IssueLabel, cmdLabel string) bool {
 	return false
 }
 
-func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string) (string, error) {
+func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string, config config.Config) (string, error) {
 
 	var buffer bytes.Buffer
 	labelAction := strings.Replace(strings.ToLower(cmdType), "label", "", 1)
@@ -147,7 +132,7 @@ func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string)
 		return buffer.String(), nil
 	}
 
-	client, ctx := makeClient(req.Installation.ID)
+	client, ctx := makeClient(req.Installation.ID, config)
 
 	var err error
 
@@ -170,7 +155,7 @@ func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string)
 	return buffer.String(), nil
 }
 
-func manageTitle(req types.IssueCommentOuter, cmdType string, cmdValue string) (string, error) {
+func manageTitle(req types.IssueCommentOuter, cmdType string, cmdValue string, config config.Config) (string, error) {
 
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintf("%s wants to set the title of issue #%d\n", req.Comment.User.Login, req.Issue.Number))
@@ -182,7 +167,7 @@ func manageTitle(req types.IssueCommentOuter, cmdType string, cmdValue string) (
 		return buffer.String(), nil
 	}
 
-	client, ctx := makeClient(req.Installation.ID)
+	client, ctx := makeClient(req.Installation.ID, config)
 
 	input := &github.IssueRequest{Title: &newTitle}
 
@@ -195,13 +180,13 @@ func manageTitle(req types.IssueCommentOuter, cmdType string, cmdValue string) (
 	return buffer.String(), nil
 }
 
-func manageAssignment(req types.IssueCommentOuter, cmdType string, cmdValue string) (string, error) {
+func manageAssignment(req types.IssueCommentOuter, cmdType string, cmdValue string, config config.Config) (string, error) {
 
 	var buffer bytes.Buffer
 
 	buffer.WriteString(fmt.Sprintf("%s wants to %s user '%s' from issue #%d\n", req.Comment.User.Login, strings.ToLower(cmdType), cmdValue, req.Issue.Number))
 
-	client, ctx := makeClient(req.Installation.ID)
+	client, ctx := makeClient(req.Installation.ID, config)
 
 	if cmdValue == "me" {
 		cmdValue = req.Comment.User.Login
@@ -223,7 +208,7 @@ func manageAssignment(req types.IssueCommentOuter, cmdType string, cmdValue stri
 	return buffer.String(), nil
 }
 
-func manageState(req types.IssueCommentOuter, cmdType string) (string, error) {
+func manageState(req types.IssueCommentOuter, cmdType string, config config.Config) (string, error) {
 
 	var buffer bytes.Buffer
 
@@ -236,7 +221,7 @@ func manageState(req types.IssueCommentOuter, cmdType string) (string, error) {
 		return buffer.String(), nil
 	}
 
-	client, ctx := makeClient(req.Installation.ID)
+	client, ctx := makeClient(req.Installation.ID, config)
 	input := &github.IssueRequest{State: &newState}
 
 	_, _, err := client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, input)
@@ -249,7 +234,7 @@ func manageState(req types.IssueCommentOuter, cmdType string) (string, error) {
 
 }
 
-func manageLocking(req types.IssueCommentOuter, cmdType string) (string, error) {
+func manageLocking(req types.IssueCommentOuter, cmdType string, config config.Config) (string, error) {
 
 	var buffer bytes.Buffer
 
@@ -262,7 +247,7 @@ func manageLocking(req types.IssueCommentOuter, cmdType string) (string, error) 
 		return buffer.String(), nil
 	}
 
-	client, ctx := makeClient(req.Installation.ID)
+	client, ctx := makeClient(req.Installation.ID, config)
 
 	var err error
 
@@ -281,7 +266,7 @@ func manageLocking(req types.IssueCommentOuter, cmdType string) (string, error) 
 	return buffer.String(), nil
 }
 
-func updateMilestone(req types.IssueCommentOuter, cmdType string, cmdValue string) (string, error) {
+func updateMilestone(req types.IssueCommentOuter, cmdType string, cmdValue string, config config.Config) (string, error) {
 
 	milestoneValue := cmdValue
 	var buffer bytes.Buffer
@@ -292,7 +277,7 @@ func updateMilestone(req types.IssueCommentOuter, cmdType string, cmdValue strin
 	var milestoneNumber *int
 	var err error
 
-	client, ctx := makeClient(req.Installation.ID)
+	client, ctx := makeClient(req.Installation.ID, config)
 	theMilestones, _, milErr := client.Issues.ListMilestones(ctx, req.Repository.Owner.Login, req.Repository.Name, allMilestones)
 	if milErr != nil {
 		return buffer.String(), milErr
@@ -402,4 +387,12 @@ func removeMilestone(client *github.Client, ctx context.Context, URL string) err
 
 func isDcoLabel(labelValue string) bool {
 	return strings.ToLower(labelValue) == "no-dco"
+}
+
+func getCommandTrigger() string {
+	commandTrigger := commandTriggerDefault
+	if os.Getenv("use_slash_trigger") == "true" {
+		commandTrigger = commandTriggerSlash
+	}
+	return commandTrigger
 }
