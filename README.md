@@ -14,6 +14,22 @@ From the team that bought you [OpenFaaS](https://www.openfaas.com) - Serverless 
 
 Existing users of Derek can read the [user-guide here](./USER_GUIDE.md).
 
+## Our users
+
+Some of our users include:
+
+* Docker / Moby:
+
+https://github.com/moby/moby/issues/35736
+
+* OpenFaaS
+
+https://github.com/openfaas/faas-cli/issues/85
+
+* [Subsurface Diving app](https://subsurface-divelog.org)
+
+Example: https://github.com/Subsurface-divelog/subsurface/pull/1748
+
 ## What can I do?
 
 * Check that commits are signed-off
@@ -136,16 +152,6 @@ Future work:
 * [ ] Branch Checking
 
 [Live demo here](https://twitter.com/alexellisuk/status/905694832445804544)
-
-Examples on real-world projects:
-
-Docker / Moby:
-
-https://github.com/moby/moby/issues/35736
-
-OpenFaaS CLI:
-
-https://github.com/openfaas/faas-cli/issues/85
 
 ## How do I work?
 
