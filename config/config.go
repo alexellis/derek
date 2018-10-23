@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -31,7 +32,7 @@ func NewConfig() (Config, error) {
 		return config, pathErr
 	}
 
-	secretKeyBytes, readErr := ioutil.ReadFile(keyPath + derekSecretKeyFile)
+	secretKeyBytes, readErr := ioutil.ReadFile(path.Join(keyPath, derekSecretKeyFile))
 
 	if readErr != nil {
 		msg := fmt.Errorf("unable to read GitHub symmetrical secret: %s, error: %s",
@@ -42,7 +43,7 @@ func NewConfig() (Config, error) {
 	secretKeyBytes = getFirstLine(secretKeyBytes)
 	config.SecretKey = string(secretKeyBytes)
 
-	privateKeyPath := keyPath + privateKeyFile
+	privateKeyPath := path.Join(keyPath, privateKeyFile)
 
 	keyBytes, err := ioutil.ReadFile(privateKeyPath)
 	if err != nil {
