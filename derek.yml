@@ -5,7 +5,7 @@ provider:
 functions:
   derek:
     handler: ./
-    image: alexellis/derek:0.5.2
+    image: alexellis/derek:0.5.3-rc1
     lang: dockerfile
     environment:
       debug: true
