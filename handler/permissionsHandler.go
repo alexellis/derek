@@ -1,7 +1,7 @@
 // Copyright (c) Derek Author(s) 2017. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-package main
+package handler
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ import (
 
 const configFile = ".DEREK.yml"
 
-func enabledFeature(attemptedFeature string, config *types.DerekRepoConfig) bool {
+func EnabledFeature(attemptedFeature string, config *types.DerekRepoConfig) bool {
 
 	featureEnabled := false
 
@@ -31,11 +31,11 @@ func enabledFeature(attemptedFeature string, config *types.DerekRepoConfig) bool
 	return featureEnabled
 }
 
-func permittedUserFeature(attemptedFeature string, config *types.DerekRepoConfig, user string) bool {
+func PermittedUserFeature(attemptedFeature string, config *types.DerekRepoConfig, user string) bool {
 
 	permitted := false
 
-	if enabledFeature(attemptedFeature, config) {
+	if EnabledFeature(attemptedFeature, config) {
 		for _, maintainer := range config.Maintainers {
 			if strings.EqualFold(user, maintainer) {
 				permitted = true
@@ -80,7 +80,7 @@ func validateRedirectURL(url string) error {
 	return fmt.Errorf("the redirect URL doesn't seem to be GitHub based")
 }
 
-func getRepoConfig(owner string, repository string) (*types.DerekRepoConfig, error) {
+func GetRepoConfig(owner string, repository string) (*types.DerekRepoConfig, error) {
 	var config types.DerekRepoConfig
 
 	client := http.Client{

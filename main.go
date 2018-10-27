@@ -12,6 +12,9 @@ import (
 
 	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/config"
+
+	"github.com/alexellis/derek/handler"
+
 	"github.com/alexellis/derek/types"
 	"github.com/alexellis/hmac"
 )
@@ -72,14 +75,14 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
-		derekConfig, err := getRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
+		derekConfig, err := handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
-		if req.Action != closedConstant {
-			if enabledFeature(dcoCheck, derekConfig) {
+		if req.Action != handler.ClosedConstant {
+			if handler.EnabledFeature(dcoCheck, derekConfig) {
 				contributingURL := getContributingURL(derekConfig.ContributingURL, req.Repository.Owner.Login, req.Repository.Name)
-				handlePullRequest(req, contributingURL, config)
+				handler.HandlePullRequest(req, contributingURL, config)
 			}
 		}
 		break
@@ -97,14 +100,14 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
-		derekConfig, err := getRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
+		derekConfig, err := handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
 		if req.Action != deleted {
-			if permittedUserFeature(comments, derekConfig, req.Comment.User.Login) {
-				handleComment(req, config)
+			if handler.PermittedUserFeature(comments, derekConfig, req.Comment.User.Login) {
+				handler.HandleComment(req, config)
 			}
 		}
 		break
