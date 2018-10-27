@@ -1,7 +1,7 @@
 // Copyright (c) Derek Author(s) 2017. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-package main
+package handler
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func handlePullRequest(req types.PullRequestOuter, contributingURL string, config config.Config) {
+func HandlePullRequest(req types.PullRequestOuter, contributingURL string, config config.Config) {
 	ctx := context.Background()
 
 	token := os.Getenv("personal_access_token")

@@ -1,7 +1,7 @@
 // Copyright (c) Derek Author(s) 2017. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-package main
+package handler
 
 import (
 	"os"
@@ -240,7 +240,7 @@ func Test_assessState(t *testing.T) {
 		{
 			title:            "Currently Closed and trying to close",
 			requestedAction:  closeConstant,
-			currentState:     closedConstant,
+			currentState:     ClosedConstant,
 			expectedNewState: "",
 			expectedBool:     false,
 		},
@@ -254,7 +254,7 @@ func Test_assessState(t *testing.T) {
 		{
 			title:            "Currently Closed and trying to open",
 			requestedAction:  reopenConstant,
-			currentState:     closedConstant,
+			currentState:     ClosedConstant,
 			expectedNewState: openConstant,
 			expectedBool:     true,
 		},
@@ -262,7 +262,7 @@ func Test_assessState(t *testing.T) {
 			title:            "Currently Open and trying to close",
 			requestedAction:  closeConstant,
 			currentState:     openConstant,
-			expectedNewState: closedConstant,
+			expectedNewState: ClosedConstant,
 			expectedBool:     true,
 		},
 	}

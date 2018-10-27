@@ -1,7 +1,7 @@
 // Copyright (c) Derek Author(s) 2017. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-package main
+package handler
 
 import (
 	"testing"
@@ -80,7 +80,7 @@ func Test_curatorequalsmaintainer(t *testing.T) {
 	}
 }
 
-func Test_enabledFeature(t *testing.T) {
+func Test_EnabledFeature(t *testing.T) {
 
 	var enableFeatureOpts = []struct {
 		title            string
@@ -136,7 +136,7 @@ func Test_enabledFeature(t *testing.T) {
 
 			inputConfig := &types.DerekRepoConfig{Features: test.configFeatures}
 
-			featureEnabled := enabledFeature(test.attemptedFeature, inputConfig)
+			featureEnabled := EnabledFeature(test.attemptedFeature, inputConfig)
 
 			if featureEnabled != test.expectedVal {
 				t.Errorf("Enabled feature - wanted: %t, found %t", test.expectedVal, featureEnabled)
@@ -145,7 +145,7 @@ func Test_enabledFeature(t *testing.T) {
 	}
 }
 
-func Test_permittedUserFeature(t *testing.T) {
+func Test_PermittedUserFeature(t *testing.T) {
 
 	var permittedUserFeatureOpts = []struct {
 		title            string
@@ -221,7 +221,7 @@ func Test_permittedUserFeature(t *testing.T) {
 
 			inputConfig := &test.config
 
-			permittedFeature := permittedUserFeature(test.attemptedFeature, inputConfig, test.user)
+			permittedFeature := PermittedUserFeature(test.attemptedFeature, inputConfig, test.user)
 
 			if permittedFeature != test.expectedVal {
 				t.Errorf("Permitted user feature - wanted: %t, found %t", test.expectedVal, permittedFeature)

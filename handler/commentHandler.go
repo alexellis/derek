@@ -1,7 +1,7 @@
 // Copyright (c) Derek Author(s) 2017. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-package main
+package handler
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ import (
 
 const (
 	openConstant            string = "open"
-	closedConstant          string = "closed"
+	ClosedConstant          string = "closed"
 	closeConstant           string = "close"
 	reopenConstant          string = "reopen"
 	lockConstant            string = "Lock"
@@ -56,7 +56,7 @@ func makeClient(installation int, config config.Config) (*github.Client, context
 	return client, ctx
 }
 
-func handleComment(req types.IssueCommentOuter, config config.Config) {
+func HandleComment(req types.IssueCommentOuter, config config.Config) {
 
 	var feedback string
 	var err error
@@ -361,8 +361,8 @@ func validAction(running bool, requestedAction string, start string, stop string
 
 func checkTransition(requestedAction string, currentState string) (string, bool) {
 
-	if requestedAction == closeConstant && currentState != closedConstant {
-		return closedConstant, true
+	if requestedAction == closeConstant && currentState != ClosedConstant {
+		return ClosedConstant, true
 	} else if requestedAction == reopenConstant && currentState != openConstant {
 		return openConstant, true
 	}
