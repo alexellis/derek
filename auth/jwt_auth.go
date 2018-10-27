@@ -14,12 +14,9 @@ import (
 )
 
 // GetSignedJwtToken get a tokens signed with private key
-func GetSignedJwtToken(appID string, privateKeyPath string) (string, error) {
+func GetSignedJwtToken(appID string, privateKey string) (string, error) {
 
-	keyBytes, err := ioutil.ReadFile(privateKeyPath)
-	if err != nil {
-		return "", fmt.Errorf("unable to read private key path: %s, error: %s", privateKeyPath, err)
-	}
+	keyBytes := []byte(privateKey)
 
 	key, keyErr := jwt.ParseRSAPrivateKeyFromPEM(keyBytes)
 	if keyErr != nil {
@@ -50,8 +47,8 @@ type JWTAuth struct {
 }
 
 // MakeAccessTokenForInstallation makes an access token for an installation / private key
-func MakeAccessTokenForInstallation(appID string, installation int, privateKeyPath string) (string, error) {
-	signed, err := GetSignedJwtToken(appID, privateKeyPath)
+func MakeAccessTokenForInstallation(appID string, installation int, privateKey string) (string, error) {
+	signed, err := GetSignedJwtToken(appID, privateKey)
 
 	if err == nil {
 		c := http.Client{}

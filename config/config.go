@@ -54,7 +54,12 @@ func NewConfig() (Config, error) {
 
 	if val, ok := os.LookupEnv("application_id"); ok && len(val) > 0 {
 		config.ApplicationID = val
+	} else {
+		return config, fmt.Errorf("application_id must be given")
 	}
+
+	// debug, _ := json.Marshal(config)
+	// fmt.Printf("Config:\n%s\n", debug)
 
 	return config, nil
 }
