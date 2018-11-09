@@ -10,7 +10,7 @@ It's derek ![](https://pbs.twimg.com/media/DPo4OyrWsAAOk_i.png). Nice to meet yo
 
 > Please show support for the project and **Star** the repo.
 
-From the team that bought you [OpenFaaS](https://www.openfaas.com) - Serverless Functions Made Simple.
+From the team that brought you [OpenFaaS](https://www.openfaas.com) - Serverless Functions Made Simple.
 
 ### Looking for the User Guide?
 
