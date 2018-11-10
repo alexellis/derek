@@ -20,9 +20,10 @@ import (
 )
 
 const (
-	dcoCheck = "dco_check"
-	comments = "comments"
-	deleted  = "deleted"
+	dcoCheck              = "dco_check"
+	comments              = "comments"
+	deleted               = "deleted"
+	prDescriptionRequired = "pr_description_required"
 )
 
 func main() {
@@ -80,9 +81,12 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 		if req.Action != handler.ClosedConstant {
+			contributingURL := getContributingURL(derekConfig.ContributingURL, req.Repository.Owner.Login, req.Repository.Name)
 			if handler.EnabledFeature(dcoCheck, derekConfig) {
-				contributingURL := getContributingURL(derekConfig.ContributingURL, req.Repository.Owner.Login, req.Repository.Name)
 				handler.HandlePullRequest(req, contributingURL, config)
+			}
+			if handler.EnabledFeature(prDescriptionRequired, derekConfig) {
+				handler.VerifyPullRequestDescription(req, contributingURL, config)
 			}
 		}
 		break

@@ -60,6 +60,10 @@ redirect: https://raw.githubusercontent.com/openfaas/faas/master/.DEREK.yml
 
 If `dco_check` is specified in the feature list then Derek will inform you when a PR is submitted with commits which have no sign-off. He also adds a label `no-dco`.
 
+### Feature: `pr_description_required`
+
+If `pr_description_required` is specified in the feature list then Derek will inform you that a PR needs a description. He also adds the `invalid` label.
+
 ### Feature: `comments`
 
 If `comments` is given in the `features` list then this enables all commenting features:

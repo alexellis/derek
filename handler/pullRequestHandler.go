@@ -18,29 +18,25 @@ import (
 	"github.com/google/go-github/github"
 )
 
+const (
+	prDescriptionRequiredLabel = "invalid"
+	openedPRAction             = "opened"
+)
+
 func HandlePullRequest(req types.PullRequestOuter, contributingURL string, config config.Config) {
 	ctx := context.Background()
+	token, tokenErr := getAccessToken(config, req.Installation.ID)
 
-	token := os.Getenv("personal_access_token")
-	if len(token) == 0 {
-
-		newToken, tokenErr := auth.MakeAccessTokenForInstallation(
-			config.ApplicationID,
-			req.Installation.ID,
-			config.PrivateKey)
-
-		if tokenErr != nil {
-			log.Fatalln(tokenErr.Error())
-		}
-
-		token = newToken
+	if tokenErr != nil {
+		fmt.Printf("Error getting installation token: %s\n", tokenErr.Error())
+		return
 	}
 
 	client := factory.MakeClient(ctx, token, config)
 
 	hasUnsignedCommits, err := hasUnsigned(req, client)
 
-	if req.Action == "opened" {
+	if req.Action == openedPRAction {
 		if req.PullRequest.FirstTimeContributor() == true {
 			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"new-contributor"})
 			if assignLabelErr != nil {
@@ -101,6 +97,63 @@ That's something we need before your Pull Request can be merged. Please see our 
 	}
 }
 
+// VerifyPullRequestDescription checks that the PR has anything in the body.
+// If there is no body, a label is added and comment posted to the PR with a link to the contributing guide.
+func VerifyPullRequestDescription(req types.PullRequestOuter, contributingURL string, config config.Config) {
+	ctx := context.Background()
+	token, tokenErr := getAccessToken(config, req.Installation.ID)
+
+	if tokenErr != nil {
+		fmt.Printf("Error getting installation token: %s\n", tokenErr.Error())
+		return
+	}
+
+	client := factory.MakeClient(ctx, token, config)
+
+	if req.Action == openedPRAction {
+		if !hasDescription(req.PullRequest) {
+			fmt.Printf("Applying label: %s", prDescriptionRequiredLabel)
+			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{prDescriptionRequiredLabel})
+			if assignLabelErr != nil {
+				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
+			}
+
+			body := `Thank you for your contribution. I've just checked and your Pull Request doesn't appear to have any description.
+That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).`
+
+			comment := &github.IssueComment{
+				Body: &body,
+			}
+
+			comment, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, comment)
+			if err != nil {
+				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, resp.Limit, resp.Remaining)
+				log.Fatal(err)
+			}
+			fmt.Println(comment, resp.Rate)
+		}
+	}
+}
+
+func getAccessToken(config config.Config, installationID int) (string, error) {
+	token := os.Getenv("personal_access_token")
+	if len(token) == 0 {
+
+		installationToken, tokenErr := auth.MakeAccessTokenForInstallation(
+			config.ApplicationID,
+			installationID,
+			config.PrivateKey)
+
+		if tokenErr != nil {
+			return "", tokenErr
+		}
+
+		token = installationToken
+	}
+
+	return token, nil
+}
+
 func hasNoDcoLabel(issue *github.Issue) bool {
 	if issue != nil {
 		for _, label := range issue.Labels {
@@ -142,4 +195,8 @@ func hasUnsigned(req types.PullRequestOuter, client *github.Client) (bool, error
 
 func isSigned(msg string) bool {
 	return strings.Contains(msg, "Signed-off-by:")
+}
+
+func hasDescription(pr types.PullRequest) bool {
+	return len(strings.TrimSpace(pr.Body)) > 0
 }
