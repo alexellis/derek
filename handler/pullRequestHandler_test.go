@@ -6,6 +6,7 @@ package handler
 import (
 	"testing"
 
+	"github.com/alexellis/derek/types"
 	"github.com/google/go-github/github"
 )
 
@@ -93,5 +94,33 @@ func Test_hasNoDcoLabel(t *testing.T) {
 				t.Errorf("Has no-dco label - wanted: %t, found %t", test.expectedBool, hasLabel)
 			}
 		})
+	}
+}
+
+func Test_hasDescription(t *testing.T) {
+	var pr = []struct {
+		title        string
+		body         string
+		expectedBool bool
+	}{
+		{
+			title:        "PR with body",
+			body:         "This PR has a body",
+			expectedBool: true,
+		},
+		{
+			title:        "This PR has no body",
+			body:         "",
+			expectedBool: false,
+		},
+	}
+
+	for _, test := range pr {
+		testPr := types.PullRequest{Body: test.body}
+		hasDescription := hasDescription(testPr)
+
+		if hasDescription != test.expectedBool {
+			t.Errorf("PR missing body - wanted: %t, found: %t", test.expectedBool, hasDescription)
+		}
 	}
 }
