@@ -127,5 +127,5 @@ func getContributingURL(contributingURL, owner, repositoryName string) string {
 
 func hmacValidation() bool {
 	val := os.Getenv("validate_hmac")
-	return len(val) > 0 && (val == "1" || val == "true")
+	return (val != "false") && (val != "0")
 }
