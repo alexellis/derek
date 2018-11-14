@@ -32,10 +32,8 @@ func buildCustomerURL() string {
 // IsCustomer returns true if a customer is listed in the customers file.
 // The validation is controlled by the 'validate_customers' env-var
 func IsCustomer(ownerLogin string, c *http.Client) (bool, error) {
-	validate := os.Getenv("validate_customers")
-
-	if len(validate) == 0 || (validate == "false" || validate == "0") {
-
+	validate := customerValidationEnabled()
+	if validate == false {
 		return true, nil
 	}
 
@@ -75,4 +73,9 @@ func IsCustomer(ownerLogin string, c *http.Client) (bool, error) {
 DO_RETURN:
 
 	return found, err
+}
+
+func customerValidationEnabled() bool {
+	validate := os.Getenv("validate_customers")
+	return validate != "false" && validate != "0"
 }
