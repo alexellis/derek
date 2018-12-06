@@ -117,8 +117,16 @@ Derek assign: alexellis
 Derek unassign: me
 ```
 
-> Note: This relies on the target user being a member of your GitHub organisation or for a personal project, they must be a collaborator with write-access.
+#### Add a reviewer to a PR
 
+You can assign people for a PR review as well
+
+```
+Derek set reviewer: alexellis
+Derek clear reviewer: me
+```
+
+> Note: Both assigning work and/or PR reviewer rely on the target user being a member of your GitHub organisation or for a personal project, they must be a collaborator with write-access.
 
 #### Open and close issues and PRs
 
