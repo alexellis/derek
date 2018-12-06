@@ -121,6 +121,15 @@ Derek assign: alexellis
 Derek unassign: me
 ```
 
+* Add a reviewer to a PR
+
+You can assign people for a PR review as well
+
+```
+Derek set reviewer: alexellis
+Derek clear reviewer: me
+```
+
 * Open and close issues and PRs
 
 Sometimes you may want to close or re-open issues or Pull Requests:
