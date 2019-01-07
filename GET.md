@@ -74,8 +74,8 @@ $ docker secret create derek-secret-key derek-secret-key
 For Kubernetes:
 
 ```sh
-$ kubectl create secret generic derek-private-key --from-file=./derek-private-key
-$ kubectl create secret generic derek-secret-key --from-file=./derek-secret-key
+$ kubectl create secret generic derek-private-key --from-file=./derek-private-key -n openfaas-fn
+$ kubectl create secret generic derek-secret-key --from-file=./derek-secret-key -n openfaas-fn
 ```
 
 Create secrets.yml:
