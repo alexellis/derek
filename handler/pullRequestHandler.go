@@ -64,8 +64,9 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
 			}
 
-			body := `Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off.
-That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).`
+			body :=
+				`Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off. That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).
+Tip: if you only have one commit so far then run: ` + "`" + `git commit --amend --sign-off` + "`" + ` and then ` + "`" + `git push --force` + "`."
 
 			comment := &github.IssueComment{
 				Body: &body,
