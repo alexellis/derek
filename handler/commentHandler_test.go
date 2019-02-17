@@ -4,33 +4,28 @@
 package handler
 
 import (
-	"os"
 	"testing"
 
 	"github.com/alexellis/derek/types"
 )
 
-var commandTriggers = []string{commandTriggerDefault, commandTriggerSlash}
-
 func Test_getCommandTrigger(t *testing.T) {
-	const (
-		envVar       = "use_slash_trigger"
-		errorMessage = "expected trigger to be: %s, got: %s"
-	)
-	var trigger string
 
-	// test default trigger
-	os.Unsetenv(envVar)
-	trigger = getCommandTrigger()
-	if trigger != commandTriggerDefault {
-		t.Errorf(errorMessage, commandTriggerDefault, trigger)
+	triggers := getCommandTriggers()
+
+	want := []string{"Derek ", "/"}
+	found := 0
+
+	for _, v := range want {
+		for _, a := range triggers {
+			if a == v {
+				found++
+			}
+		}
 	}
 
-	// test slash trigger
-	os.Setenv(envVar, "true")
-	trigger = getCommandTrigger()
-	if trigger != commandTriggerSlash {
-		t.Errorf(errorMessage, commandTriggerSlash, trigger)
+	if found != len(want) {
+		t.Errorf("Wanted to find %d triggers, but got %d", len(want), found)
 	}
 }
 
@@ -71,8 +66,8 @@ func Test_Parsing_OpenClose(t *testing.T) {
 	for _, test := range actionOptions {
 		t.Run(test.title, func(t *testing.T) {
 
-			for _, trigger := range commandTriggers {
-				action := parse(trigger+test.body, trigger)
+			for _, trigger := range getCommandTriggers() {
+				action := parse(trigger+test.body, getCommandTriggers())
 				if action.Type != test.expectedAction {
 					t.Errorf("Action - want: %s, got %s", test.expectedAction, action.Type)
 				}
@@ -112,8 +107,8 @@ func Test_Parsing_Labels(t *testing.T) {
 	for _, test := range labelOptions {
 		t.Run(test.title, func(t *testing.T) {
 
-			for _, trigger := range commandTriggers {
-				action := parse(trigger+test.body, trigger)
+			for _, trigger := range getCommandTriggers() {
+				action := parse(trigger+test.body, getCommandTriggers())
 				if action.Type != test.expectedType || action.Value != test.expectedVal {
 					t.Errorf("Action - wanted: %s, got %s\nLabel - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
 				}
@@ -171,8 +166,8 @@ func Test_Parsing_Assignments(t *testing.T) {
 	for _, test := range assignmentOptions {
 		t.Run(test.title, func(t *testing.T) {
 
-			for _, trigger := range commandTriggers {
-				action := parse(trigger+test.body, trigger)
+			for _, trigger := range getCommandTriggers() {
+				action := parse(trigger+test.body, getCommandTriggers())
 				if action.Type != test.expectedType || action.Value != test.expectedVal {
 					t.Errorf("Action - wanted: %s, got %s\nMaintainer - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
 				}
@@ -218,8 +213,8 @@ func Test_Parsing_Titles(t *testing.T) {
 	for _, test := range titleOptions {
 		t.Run(test.title, func(t *testing.T) {
 
-			for _, trigger := range commandTriggers {
-				action := parse(trigger+test.body, trigger)
+			for _, trigger := range getCommandTriggers() {
+				action := parse(trigger+test.body, getCommandTriggers())
 				if action.Type != test.expectedType || action.Value != test.expectedVal {
 					t.Errorf("\nAction - wanted: %s, got %s\nValue - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
 				}
@@ -463,8 +458,8 @@ func Test_Parsing_Milestones(t *testing.T) {
 	for _, test := range milestonesOptions {
 		t.Run(test.title, func(t *testing.T) {
 
-			for _, trigger := range commandTriggers {
-				action := parse(trigger+test.body, trigger)
+			for _, trigger := range getCommandTriggers() {
+				action := parse(trigger+test.body, getCommandTriggers())
 				if action.Type != test.expectedType || action.Value != test.expectedVal {
 					t.Errorf("Action - wanted: %s, got %s\nLabel - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
 				}
@@ -547,8 +542,8 @@ func Test_Parsing_Reviewers(t *testing.T) {
 	for _, test := range reviewersOptions {
 		t.Run(test.title, func(t *testing.T) {
 
-			for _, trigger := range commandTriggers {
-				action := parse(trigger+test.body, trigger)
+			for _, trigger := range getCommandTriggers() {
+				action := parse(trigger+test.body, getCommandTriggers())
 				if action.Type != test.expectedType || action.Value != test.expectedVal {
 					t.Errorf("Action - wanted: %s, got %s\nResult - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
 				}

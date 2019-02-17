@@ -58,12 +58,13 @@ func makeClient(installation int, config config.Config) (*github.Client, context
 	return client, ctx
 }
 
+// HandleComment handles a comment
 func HandleComment(req types.IssueCommentOuter, config config.Config) {
 
 	var feedback string
 	var err error
 
-	command := parse(req.Comment.Body, getCommandTrigger())
+	command := parse(req.Comment.Body, getCommandTriggers())
 
 	switch command.Type {
 
@@ -353,35 +354,36 @@ func updateMilestone(req types.IssueCommentOuter, cmdType string, cmdValue strin
 	return buffer.String(), nil
 }
 
-func parse(body, commandTrigger string) *types.CommentAction {
-
+func parse(body string, commandTriggers []string) *types.CommentAction {
 	commentAction := types.CommentAction{}
 
-	commands := map[string]string{
-		commandTrigger + "add label: ":        addLabelConstant,
-		commandTrigger + "remove label: ":     removeLabelConstant,
-		commandTrigger + "assign: ":           assignConstant,
-		commandTrigger + "unassign: ":         unassignConstant,
-		commandTrigger + "close":              closeConstant,
-		commandTrigger + "reopen":             reopenConstant,
-		commandTrigger + "set title: ":        setTitleConstant,
-		commandTrigger + "edit title: ":       setTitleConstant,
-		commandTrigger + "lock":               lockConstant,
-		commandTrigger + "unlock":             unlockConstant,
-		commandTrigger + "set milestone: ":    setMilestoneConstant,
-		commandTrigger + "remove milestone: ": removeMilestoneConstant,
-		commandTrigger + "set reviewer: ":     assignReviewerConstant,
-		commandTrigger + "clear reviewer: ":   unassignReviewerConstant,
-	}
+	for _, commandTrigger := range commandTriggers {
+		commands := map[string]string{
+			commandTrigger + "add label: ":        addLabelConstant,
+			commandTrigger + "remove label: ":     removeLabelConstant,
+			commandTrigger + "assign: ":           assignConstant,
+			commandTrigger + "unassign: ":         unassignConstant,
+			commandTrigger + "close":              closeConstant,
+			commandTrigger + "reopen":             reopenConstant,
+			commandTrigger + "set title: ":        setTitleConstant,
+			commandTrigger + "edit title: ":       setTitleConstant,
+			commandTrigger + "lock":               lockConstant,
+			commandTrigger + "unlock":             unlockConstant,
+			commandTrigger + "set milestone: ":    setMilestoneConstant,
+			commandTrigger + "remove milestone: ": removeMilestoneConstant,
+			commandTrigger + "set reviewer: ":     assignReviewerConstant,
+			commandTrigger + "clear reviewer: ":   unassignReviewerConstant,
+		}
 
-	for trigger, commandType := range commands {
+		for trigger, commandType := range commands {
 
-		if isValidCommand(body, trigger) {
-			val := body[len(trigger):]
-			val = strings.Trim(val, " \t.,\n\r")
-			commentAction.Type = commandType
-			commentAction.Value = val
-			break
+			if isValidCommand(body, trigger) {
+				val := body[len(trigger):]
+				val = strings.Trim(val, " \t.,\n\r")
+				commentAction.Type = commandType
+				commentAction.Value = val
+				break
+			}
 		}
 	}
 
@@ -410,8 +412,8 @@ func checkTransition(requestedAction string, currentState string) (string, bool)
 	return "", false
 }
 
-//removeMilestone sets milestones field to interface{} aka. null since library does not support that
-//Reference to issue - https://github.com/google/go-github/issues/236
+// removeMilestone sets milestones field to interface{} aka. null since library does not support that
+// reference to issue - https://github.com/google/go-github/issues/236
 func removeMilestone(client *github.Client, ctx context.Context, URL string) error {
 	req, err := client.NewRequest("PATCH", URL, &struct {
 		Milestone interface{} `json:"milestone"`
@@ -429,10 +431,6 @@ func isDcoLabel(labelValue string) bool {
 	return strings.ToLower(labelValue) == "no-dco"
 }
 
-func getCommandTrigger() string {
-	commandTrigger := commandTriggerDefault
-	if os.Getenv("use_slash_trigger") == "true" {
-		commandTrigger = commandTriggerSlash
-	}
-	return commandTrigger
+func getCommandTriggers() []string {
+	return []string{"Derek ", "/"}
 }
