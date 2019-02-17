@@ -9,6 +9,7 @@ functions:
     lang: Dockerfile
     environment:
       application_id: <your_GH_applicationID>
+      multilabel_limit: 5
       debug: true
       customers_url: https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS
       validate_hmac: false
