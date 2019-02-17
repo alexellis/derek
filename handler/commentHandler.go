@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -35,8 +36,9 @@ const (
 	assignReviewerConstant   string = "AssignReviewer"
 	unassignReviewerConstant string = "UnassignReviewer"
 
-	commandTriggerDefault string = "Derek "
-	commandTriggerSlash   string = "/"
+	noDCO             string = "no-dco"
+	labelLimitDefault int    = 5
+	labelLimitEnvVar  string = "multilabel_limit"
 )
 
 func makeClient(installation int, config config.Config) (*github.Client, context.Context) {
@@ -135,40 +137,89 @@ func findLabel(currentLabels []types.IssueLabel, cmdLabel string) bool {
 	return false
 }
 
+func classifyLabels(currentLabels []types.IssueLabel, labelAction string, labelValue string) ([]string, []string) {
+
+	var actionableLabels, unactionableLabels []string
+
+	requestedLabels := strings.Split(labelValue, ",")
+
+	for _, requestedLabel := range requestedLabels {
+
+		requestedLabel = strings.TrimSpace(requestedLabel)
+
+		found := findLabel(currentLabels, requestedLabel)
+
+		if validAction(found, labelAction, addLabelConstant, removeLabelConstant) {
+			actionableLabels = append(actionableLabels, requestedLabel)
+		} else {
+			unactionableLabels = append(unactionableLabels, requestedLabel)
+		}
+
+	}
+	return actionableLabels, unactionableLabels
+}
+
 func manageLabel(req types.IssueCommentOuter, cmdType string, labelValue string, config config.Config) (string, error) {
 
 	var buffer bytes.Buffer
 	labelAction := strings.Replace(strings.ToLower(cmdType), "label", "", 1)
+	buffer.WriteString(fmt.Sprintf("%s wants to %s label(s) of '%s' on issue #%d.\n", req.Comment.User.Login, labelAction, labelValue, req.Issue.Number))
 
-	buffer.WriteString(fmt.Sprintf("%s wants to %s label of '%s' on issue #%d \n", req.Comment.User.Login, labelAction, labelValue, req.Issue.Number))
+	actionableLabels, unactionableLabels := classifyLabels(req.Issue.Labels, cmdType, labelValue)
 
-	found := findLabel(req.Issue.Labels, labelValue)
+	if len(unactionableLabels) > 0 {
+		buffer.WriteString(fmt.Sprintf("Request to %s label(s) of '%s' on issue #%d was unnecessary.\n", labelAction, strings.Join(unactionableLabels, ", "), req.Issue.Number))
 
-	if !validAction(found, cmdType, addLabelConstant, removeLabelConstant) {
-		buffer.WriteString(fmt.Sprintf("Request to %s label of '%s' on issue #%d was unnecessary.", labelAction, labelValue, req.Issue.Number))
-		return buffer.String(), nil
+		if len(actionableLabels) == 0 {
+			buffer.WriteString(fmt.Sprintf("No further valid labels found - no action taken on issue #%d.\n", req.Issue.Number))
+			return buffer.String(), nil
+		}
 	}
 
 	client, ctx := makeClient(req.Installation.ID, config)
 
 	var err error
 
+	maxActionableLabels := getMultiLabelLimit()
+
+	if len(actionableLabels) > maxActionableLabels {
+		buffer.WriteString(fmt.Sprintf("Label(s) '%s' on issue #%d were ignored as they fall outside of the configured limit of %d.\n", strings.Join(actionableLabels[maxActionableLabels:], ", "), req.Issue.Number, maxActionableLabels))
+		actionableLabels = actionableLabels[:maxActionableLabels]
+	}
+
 	if cmdType == addLabelConstant {
-		_, _, err = client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, []string{labelValue})
-	} else {
-		if isDcoLabel(labelValue) {
-			buffer.WriteString(fmt.Sprintf("%s the request is not allowed.Label `%s` can be removed by owner or by signing out the commit.", req.Repository.Owner.Login, labelValue))
-			return buffer.String(), nil
-		} else {
-			_, err = client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, labelValue)
+
+		_, _, err = client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, actionableLabels)
+
+		if err != nil {
+			return buffer.String(), err
 		}
+
+	} else {
+
+		actionedLabels := actionableLabels[:0]
+
+		for _, actionableLabel := range actionableLabels {
+
+			if isDcoLabel(actionableLabel) {
+
+				buffer.WriteString(fmt.Sprintf("The request to remove `%s` by %s was not allowed - label can be removed by owner or by signing off the commit.\n", actionableLabel, req.Repository.Owner.Login))
+
+			} else {
+
+				_, err = client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, actionableLabel)
+
+				if err != nil {
+					return buffer.String(), err
+				}
+
+				actionedLabels = append(actionedLabels, actionableLabel)
+			}
+		}
+		actionableLabels = actionedLabels
 	}
 
-	if err != nil {
-		return buffer.String(), err
-	}
-
-	buffer.WriteString(fmt.Sprintf("Request to %s label of '%s' on issue #%d was successfully completed.", labelAction, labelValue, req.Issue.Number))
+	buffer.WriteString(fmt.Sprintf("Request to %s label(s) of '%s' on issue #%d was successfully completed.\n", labelAction, strings.Join(actionableLabels, ", "), req.Issue.Number))
 	return buffer.String(), nil
 }
 
@@ -361,6 +412,8 @@ func parse(body string, commandTriggers []string) *types.CommentAction {
 		commands := map[string]string{
 			commandTrigger + "add label: ":        addLabelConstant,
 			commandTrigger + "remove label: ":     removeLabelConstant,
+			commandTrigger + "add labels: ":       addLabelConstant,
+			commandTrigger + "remove labels: ":    removeLabelConstant,
 			commandTrigger + "assign: ":           assignConstant,
 			commandTrigger + "unassign: ":         unassignConstant,
 			commandTrigger + "close":              closeConstant,
@@ -378,16 +431,22 @@ func parse(body string, commandTriggers []string) *types.CommentAction {
 		for trigger, commandType := range commands {
 
 			if isValidCommand(body, trigger) {
-				val := body[len(trigger):]
-				val = strings.Trim(val, " \t.,\n\r")
 				commentAction.Type = commandType
-				commentAction.Value = val
+				commentAction.Value = getCommandValue(body, len(trigger))
 				break
 			}
 		}
 	}
 
 	return &commentAction
+}
+
+func getCommandValue(commentBody string, triggerLength int) string {
+
+	val := commentBody[triggerLength:]
+	val = strings.Split(val, "\n")[0]
+	val = strings.Trim(val, " \t.,\n\r")
+	return val
 }
 
 func isValidCommand(body string, trigger string) bool {
@@ -428,9 +487,22 @@ func removeMilestone(client *github.Client, ctx context.Context, URL string) err
 }
 
 func isDcoLabel(labelValue string) bool {
-	return strings.ToLower(labelValue) == "no-dco"
+	return strings.ToLower(labelValue) == noDCO
 }
 
 func getCommandTriggers() []string {
 	return []string{"Derek ", "/"}
+}
+
+func getMultiLabelLimit() int {
+
+	val, ok := os.LookupEnv(labelLimitEnvVar)
+	if ok {
+		configuredLimit, err := strconv.Atoi(val)
+		if err != nil {
+			return labelLimitDefault
+		}
+		return configuredLimit
+	}
+	return labelLimitDefault
 }

@@ -4,6 +4,8 @@
 package handler
 
 import (
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/alexellis/derek/types"
@@ -550,4 +552,256 @@ func Test_Parsing_Reviewers(t *testing.T) {
 			}
 		})
 	}
+}
+func Test_classifyLabels(t *testing.T) {
+
+	var classifyOptions = []struct {
+		title                string
+		currentLabels        []types.IssueLabel
+		cmdType              string
+		labelValue           string
+		expectedActionable   []string
+		expectedUnactionable []string
+	}{
+		{title: "Add when all Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+			},
+			cmdType:              addLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{},
+			expectedUnactionable: []string{"rod", "jane", "freddie"},
+		},
+		{title: "Remove when all Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+			},
+			cmdType:              removeLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{"rod", "jane", "freddie"},
+			expectedUnactionable: []string{},
+		},
+		{title: "Add when no Labels exist",
+			currentLabels:        []types.IssueLabel{},
+			cmdType:              addLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{"rod", "jane", "freddie"},
+			expectedUnactionable: []string{},
+		},
+		{title: "Remove when no Labels exist",
+			currentLabels:        []types.IssueLabel{},
+			cmdType:              removeLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{},
+			expectedUnactionable: []string{"rod", "jane", "freddie"},
+		},
+		{title: "Add when subset of Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+			},
+			cmdType:              addLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{"freddie"},
+			expectedUnactionable: []string{"rod", "jane"},
+		},
+		{title: "Remove when subset of Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+			},
+			cmdType:              removeLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{"rod", "jane"},
+			expectedUnactionable: []string{"freddie"},
+		},
+		{title: "Add new value to set",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+			},
+			cmdType:              addLabelConstant,
+			labelValue:           "freddie, burt",
+			expectedActionable:   []string{"freddie", "burt"},
+			expectedUnactionable: []string{},
+		},
+		{title: "remove existing values from set",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+				types.IssueLabel{
+					Name: "burt",
+				},
+			},
+			cmdType:              removeLabelConstant,
+			labelValue:           "rod, jane",
+			expectedActionable:   []string{"freddie", "burt"},
+			expectedUnactionable: []string{},
+		},
+	}
+
+	for _, test := range classifyOptions {
+		t.Run(test.title, func(t *testing.T) {
+
+			actionableLabels, unactionableLabels := classifyLabels(test.currentLabels, test.cmdType, test.labelValue)
+
+			if len(actionableLabels) != len(test.expectedActionable) || len(unactionableLabels) != len(test.expectedUnactionable) {
+				t.Errorf("Label Classification (%s) - wanted: Actionable(%s) Unactionable(%s), got Actionable(%s) Unactionable(%s)\n", test.title, strings.Join(test.expectedActionable, ", "), strings.Join(test.expectedUnactionable, ", "), strings.Join(actionableLabels, ", "), strings.Join(unactionableLabels, ", "))
+			}
+		})
+	}
+}
+
+func Test_getMultiLabelLimit(t *testing.T) {
+
+	var labelLimits = []struct {
+		title       string
+		envVar      string
+		envVal      string
+		expectedVal int
+	}{
+		{
+			title:       "No ENV var",
+			envVar:      "random",
+			envVal:      "10",
+			expectedVal: labelLimitDefault,
+		},
+		{
+			title:       "ENV var exists - all valid",
+			envVar:      labelLimitEnvVar,
+			envVal:      "8",
+			expectedVal: 8,
+		},
+		{
+			title:       "ENV var exists but cannot be cast as int",
+			envVar:      labelLimitEnvVar,
+			envVal:      "fred",
+			expectedVal: labelLimitDefault,
+		},
+	}
+
+	for _, test := range labelLimits {
+		t.Run(test.title, func(t *testing.T) {
+
+			os.Setenv(test.envVar, test.envVal)
+
+			maxActionableLabels := getMultiLabelLimit()
+
+			os.Unsetenv(test.envVar)
+
+			if maxActionableLabels != test.expectedVal {
+				t.Errorf("multi-label limit wrong value found - wanted: %d, found %d", test.expectedVal, maxActionableLabels)
+			}
+		})
+	}
+}
+
+func Test_getCommandValue(t *testing.T) {
+
+	var commandValues = []struct {
+		title       string
+		commentBody string
+		trigger     string
+		expectedVal string
+	}{
+		{
+			title:       "Single Label",
+			commentBody: "Derek add label: burt",
+			trigger:     "Derek add label: ",
+			expectedVal: "burt",
+		},
+		{
+			title:       "Single Label trailing spaces",
+			commentBody: "Derek add label: burt       ",
+			trigger:     "Derek add label: ",
+			expectedVal: "burt",
+		},
+		{
+			title:       "Single Label trailing dots",
+			commentBody: "Derek add label: burt........",
+			trigger:     "Derek add label: ",
+			expectedVal: "burt",
+		},
+		{
+			title:       "Single Label trailing commas",
+			commentBody: "Derek add label: burt,,,,,,,,,,,",
+			trigger:     "Derek add label: ",
+			expectedVal: "burt",
+		},
+		{
+			title: "Single Label trailing mixure",
+			commentBody: "Derek add label: burt,,. , ,,	,.,",
+			trigger:     "Derek add label: ",
+			expectedVal: "burt",
+		},
+		{
+			title:       "Multiple Labels",
+			commentBody: "Derek add label: burt, and, ernie",
+			trigger:     "Derek add label: ",
+			expectedVal: "burt, and, ernie",
+		},
+		{
+			title: "Multi-line Labels",
+			commentBody: `Derek add label: burt
+											, and
+											, ernie`,
+			trigger:     "Derek add label: ",
+			expectedVal: "burt",
+		},
+		{
+			title: "Multi-line Labels with a trailing comma",
+			commentBody: `Derek add label: burt,
+											 and,
+											 ernie`,
+			trigger:     "Derek add label: ",
+			expectedVal: "burt",
+		},
+	}
+
+	for _, test := range commandValues {
+		t.Run(test.title, func(t *testing.T) {
+
+			val := getCommandValue(test.commentBody, len(test.trigger))
+
+			if val != test.expectedVal {
+				t.Errorf("command value error - wanted: %s, found %s", test.expectedVal, val)
+			}
+		})
+	}
+
 }

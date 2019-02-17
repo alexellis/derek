@@ -79,6 +79,18 @@ Derek add label: help wanted
 Derek remove label: bug
 ```
 
+To address multiple labels through a single action use a comma separated list.  The maximum number of labels that can be managed in one comment defaults to 5; this can be set to preference through `multilabel_limit` in your `stack.yml`
+
+To add multiple labels:
+```
+Derek add label: proposal, help wanted, skill/intermediate
+```
+
+To remove multiple labels:
+```
+Derek remove label: proposal, help wanted
+```
+
 #### Set a milestone for an issue or PR
 
 You can organize your issues in groups through existing milestones
@@ -97,6 +109,9 @@ You can assign work to people too
 ```
 Derek assign: alexellis
 ```
+
+Use the `me` moniker to refer to yourself
+
 ```
 Derek unassign: me
 ```
@@ -107,6 +122,11 @@ You can assign people for a PR review as well
 
 ```
 Derek set reviewer: alexellis
+```
+
+Use the `me` moniker to refer to yourself
+
+```
 Derek clear reviewer: me
 ```
 
