@@ -95,6 +95,18 @@ Derek add label: help wanted
 Derek remove label: bug
 ```
 
+To address multiple labels through a single action use a comma separated list.
+
+To add multiple labels:
+```
+Derek add label: proposal, help wanted, skill/intermediate
+```
+
+and to remove:
+```
+Derek remove label: proposal, help wanted
+```
+
 #### Set a milestone for an issue or PR
 
 You can organize your issues in groups through existing milestones

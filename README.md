@@ -97,10 +97,26 @@ Derek edit title: Question - does this work on Windows 10?
 
 Labels can be used to triage work or help sort it.
 
+To add a label:
 ```
 Derek add label: proposal
-Derek add label: help wanted
+```
+
+and to remove:
+```
 Derek remove label: bug
+```
+
+To address multiple labels through a single action use a comma separated list.
+
+To add multiple labels:
+```
+Derek add label: proposal, help wanted, skill/intermediate
+```
+
+and to remove:
+```
+Derek remove label: proposal, help wanted
 ```
 
 * Set milestones for issues

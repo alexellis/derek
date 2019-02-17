@@ -5,6 +5,7 @@ package handler
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/alexellis/derek/types"
@@ -552,6 +553,139 @@ func Test_Parsing_Reviewers(t *testing.T) {
 				if action.Type != test.expectedType || action.Value != test.expectedVal {
 					t.Errorf("Action - wanted: %s, got %s\nResult - wanted: %s, got %s", test.expectedType, action.Type, test.expectedVal, action.Value)
 				}
+			}
+		})
+	}
+}
+func Test_classifyLabels(t *testing.T) {
+
+	var classifyOptions = []struct {
+		title                string
+		currentLabels        []types.IssueLabel
+		cmdType              string
+		labelValue           string
+		expectedActionable   []string
+		expectedUnactionable []string
+	}{
+		{title: "Add when all Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+			},
+			cmdType:              addLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{},
+			expectedUnactionable: []string{"rod", "jane", "freddie"},
+		},
+		{title: "Remove when all Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+			},
+			cmdType:              removeLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{"rod", "jane", "freddie"},
+			expectedUnactionable: []string{},
+		},
+		{title: "Add when no Labels exist",
+			currentLabels:        []types.IssueLabel{},
+			cmdType:              addLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{"rod", "jane", "freddie"},
+			expectedUnactionable: []string{},
+		},
+		{title: "Remove when no Labels exist",
+			currentLabels:        []types.IssueLabel{},
+			cmdType:              removeLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{},
+			expectedUnactionable: []string{"rod", "jane", "freddie"},
+		},
+		{title: "Add when subset of Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+			},
+			cmdType:              addLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{"freddie"},
+			expectedUnactionable: []string{"rod", "jane"},
+		},
+		{title: "Remove when subset of Labels exist",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+			},
+			cmdType:              removeLabelConstant,
+			labelValue:           "rod, jane, freddie",
+			expectedActionable:   []string{"rod", "jane"},
+			expectedUnactionable: []string{"freddie"},
+		},
+		{title: "Add new value to set",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+			},
+			cmdType:              addLabelConstant,
+			labelValue:           "freddie, burt",
+			expectedActionable:   []string{"freddie", "burt"},
+			expectedUnactionable: []string{},
+		},
+		{title: "remove existing values from set",
+			currentLabels: []types.IssueLabel{
+				types.IssueLabel{
+					Name: "rod",
+				},
+				types.IssueLabel{
+					Name: "jane",
+				},
+				types.IssueLabel{
+					Name: "freddie",
+				},
+				types.IssueLabel{
+					Name: "burt",
+				},
+			},
+			cmdType:              removeLabelConstant,
+			labelValue:           "rod, jane",
+			expectedActionable:   []string{"freddie", "burt"},
+			expectedUnactionable: []string{},
+		},
+	}
+
+	for _, test := range classifyOptions {
+		t.Run(test.title, func(t *testing.T) {
+
+			actionableLabels, unactionableLabels := classifyLabels(test.currentLabels, test.cmdType, test.labelValue)
+
+			if len(actionableLabels) != len(test.expectedActionable) || len(unactionableLabels) != len(test.expectedUnactionable) {
+				t.Errorf("Label Classification (%s) - wanted: Actionable(%s) Unactionable(%s), got Actionable(%s) Unactionable(%s)\n", test.title, strings.Join(test.expectedActionable, ", "), strings.Join(test.expectedUnactionable, ", "), strings.Join(actionableLabels, ", "), strings.Join(unactionableLabels, ", "))
 			}
 		})
 	}
