@@ -77,7 +77,7 @@ Please note that redirection is only supported for GitHub repository URLs.
 
 * Command triggers
 
-By default, Derek commands can be called with `Derek <some-command>`. The prefix `Derek ` is the default trigger, but the bot also supports the `/` trigger which can be enabled by setting the `use_slash_trigger` environment variable to `true`.
+Derek commands can be called with `Derek <some-command>` or `/<some-command>` which is an alias.
 
 ### Examples:
 
