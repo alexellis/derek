@@ -13,15 +13,14 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/config"
 	"github.com/alexellis/derek/types"
+	github "github.com/google/go-github/github"
 )
 
 const (
-	configFile             = ".DEREK.yml"
-	configURLFormat        = "https://github.com/%s/%s/raw/master/%s"
-	privateConfigURLFormat = "https://api.github.com/repos/%s/%s/contents/%s"
+	configFile      = ".DEREK.yml"
+	configURLFormat = "https://github.com/%s/%s/raw/master/%s"
 )
 
 func EnabledFeature(attemptedFeature string, config *types.DerekRepoConfig) bool {
@@ -59,21 +58,6 @@ func readConfigFromURL(client http.Client, url string) []byte {
 		log.Fatalln(err)
 	}
 
-	return fetchConfig(client, req)
-}
-
-func readConfigFromURLWithToken(client http.Client, url string, accessToken string) []byte {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("token %s", accessToken))
-	req.Header.Set("Accept", "application/vnd.github.v3.raw'")
-
-	return fetchConfig(client, req)
-}
-
-func fetchConfig(client http.Client, req *http.Request) []byte {
 	res, resErr := client.Do(req)
 	if resErr != nil {
 		log.Fatalln(resErr)
@@ -108,19 +92,24 @@ func validateRedirectURL(url string) error {
 // for the specified repository. Since the repository is
 // private we use the github API to fetch `.DEREK.yml`.
 func GetPrivateRepoConfig(owner, repository string, installation int, config config.Config) (*types.DerekRepoConfig, error) {
-	accessToken, err := auth.MakeAccessTokenForInstallation(config.ApplicationID, installation, config.PrivateKey)
+	client, ctx := makeClient(installation, config)
+	response, err := client.Repositories.DownloadContents(ctx, owner, repository, configFile, &github.RepositoryContentGetOptions{
+		Ref: "master",
+	})
 	if err != nil {
-		return nil, fmt.Errorf("unable to get a signed JWT token: %s", err)
+		return nil, fmt.Errorf("unable to download config file: %s", err)
+	}
+	defer response.Close()
+
+	bytesConfig, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read github's response: %s", err)
 	}
 
-	client := http.Client{
+	httpClient := http.Client{
 		Timeout: 30 * time.Second,
 	}
-
-	configFile := fmt.Sprintf(privateConfigURLFormat, owner, repository, configFile)
-	bytesConfig := readConfigFromURLWithToken(client, configFile, accessToken)
-
-	return buildDerekConfig(client, bytesConfig)
+	return buildDerekConfig(httpClient, bytesConfig)
 }
 
 // GetRepoConfig returns derek's configuration for the specified
