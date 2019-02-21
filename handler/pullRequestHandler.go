@@ -6,6 +6,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"os"
@@ -23,6 +24,8 @@ const (
 	openedPRAction             = "opened"
 )
 
+var anonymousSign = regexp.MustCompile("Signed-off-by:(.*)noreply.github.com")
+
 func HandlePullRequest(req types.PullRequestOuter, contributingURL string, config config.Config) {
 	ctx := context.Background()
 	token, tokenErr := getAccessToken(config, req.Installation.ID)
@@ -34,8 +37,6 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 
 	client := factory.MakeClient(ctx, token, config)
 
-	hasUnsignedCommits, err := hasUnsigned(req, client)
-
 	if req.Action == openedPRAction {
 		if req.PullRequest.FirstTimeContributor() == true {
 			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"new-contributor"})
@@ -45,56 +46,60 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 		}
 	}
 
+	commits, err := fetchPullRequestCommits(req, client)
 	if err != nil {
-		log.Fatal(err)
-	} else if hasUnsignedCommits {
-		fmt.Println("May need to apply labels on item.")
+		log.Fatalf("unable to fetch pull request commits for PR %d: %s", req.PullRequest.Number, err)
+	}
 
-		issue, _, labelErr := client.Issues.Get(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
+	issue, res, labelErr := client.Issues.Get(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
+	if labelErr != nil {
+		log.Fatalf("unable to fetch labels for PR %d: %s", req.PullRequest.Number, err)
+	}
+	fmt.Println("Rate limiting", res.Rate)
+	res.Body.Close()
 
-		if labelErr != nil {
-			log.Fatalln(labelErr)
+	anonymousSign := hasAnonymousSign(commits)
+	unsignedCommits := hasUnsigned(commits)
+	noDcoLabelExists := hasNoDcoLabel(issue)
+
+	if !anonymousSign && !unsignedCommits {
+		fmt.Println("Things look OK right now.")
+		if noDcoLabelExists {
+			fmt.Println("Removing label")
+			res, removeLabelErr := client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, "no-dco")
+			if removeLabelErr != nil {
+				log.Fatalf("unable to remove DCO label from PR %d: %s", req.PullRequest.Number, err)
+			}
+			fmt.Println("Rate limiting", res.Rate)
+			res.Body.Close()
 		}
-		fmt.Println("Current labels ", issue.Labels)
+		return
+	}
 
-		if hasNoDcoLabel(issue) == false {
-			fmt.Println("Applying label")
-			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"no-dco"})
-			if assignLabelErr != nil {
-				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
-			}
-
-			body :=
-				`Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off. That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).
+	var body string
+	if anonymousSign {
+		body =
+			`Thank you for your contribution. It seems that one or more of your commits have an anonymous email address. Please consider signing your commits with a valid email address. Please see our [contributing guide](` + contributingURL + `).`
+	} else {
+		body =
+			`Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off. That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).
 Tip: if you only have one commit so far then run: ` + "`" + `git commit --amend --sign-off` + "`" + ` and then ` + "`" + `git push --force` + "`."
+	}
 
-			comment := &github.IssueComment{
-				Body: &body,
-			}
+	if !noDcoLabelExists {
+		fmt.Println("Applying DCO label")
+		_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"no-dco"})
+		if assignLabelErr != nil {
+			log.Fatalf("unable to add DCO label to PR %d: %s", req.PullRequest.Number, err)
+		}
+		fmt.Println("Rate limiting", res.Rate)
+		res.Body.Close()
 
-			comment, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, comment)
-			if err != nil {
-				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, resp.Limit, resp.Remaining)
-				log.Fatal(err)
-			}
-			fmt.Println(comment, resp.Rate)
+		if err = createPullRequestComment(ctx, body, req, client); err != nil {
+			log.Fatalf("unable to add comment on PR %d: %s", req.PullRequest.Number, err)
 		}
 	} else {
-		fmt.Println("Things look OK right now.")
-		issue, res, labelErr := client.Issues.Get(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
-
-		if labelErr != nil {
-			log.Fatalf("%s limit: %d, remaining: %d", labelErr, res.Limit, res.Remaining)
-			log.Fatalln()
-		}
-
-		if hasNoDcoLabel(issue) {
-			fmt.Println("Removing label")
-			_, removeLabelErr := client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, "no-dco")
-			if removeLabelErr != nil {
-				log.Fatal(removeLabelErr)
-			}
-		}
+		fmt.Println("DCO label was previously applied")
 	}
 }
 
@@ -166,32 +171,60 @@ func hasNoDcoLabel(issue *github.Issue) bool {
 	return false
 }
 
-func hasUnsigned(req types.PullRequestOuter, client *github.Client) (bool, error) {
-	hasUnsigned := false
-	ctx := context.Background()
-
-	var err error
-	listOpts := &github.ListOptions{
-		Page: 0,
+func createPullRequestComment(ctx context.Context, body string, req types.PullRequestOuter, client *github.Client) error {
+	comment := &github.IssueComment{
+		Body: &body,
 	}
-
-	commits, resp, err := client.PullRequests.ListCommits(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, listOpts)
+	comment, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, comment)
 	if err != nil {
-		log.Fatalf("Error getting PR %d\n%s", req.PullRequest.Number, err.Error())
-		return hasUnsigned, err
+		return err
 	}
 
 	fmt.Println("Rate limiting", resp.Rate)
+	resp.Body.Close()
+	return nil
+}
 
+func fetchPullRequestCommits(req types.PullRequestOuter, client *github.Client) ([]*github.RepositoryCommit, error) {
+	ctx := context.Background()
+	listOpts := &github.ListOptions{
+		Page: 0,
+	}
+	commits, resp, err := client.PullRequests.ListCommits(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, listOpts)
+	if err != nil {
+		log.Fatalf("Error getting PR %d\n%s", req.PullRequest.Number, err.Error())
+		return nil, err
+	}
+
+	fmt.Println("Rate limiting", resp.Rate)
+	resp.Body.Close()
+	return commits, nil
+}
+
+func hasUnsigned(commits []*github.RepositoryCommit) bool {
 	for _, commit := range commits {
 		if commit.Commit != nil && commit.Commit.Message != nil {
 			if isSigned(*commit.Commit.Message) == false {
-				hasUnsigned = true
+				return true
 			}
 		}
 	}
+	return false
+}
 
-	return hasUnsigned, err
+func hasAnonymousSign(commits []*github.RepositoryCommit) bool {
+	for _, commit := range commits {
+		if commit.Commit != nil && commit.Commit.Message != nil {
+			if isAnonymousSign(*commit.Commit.Message) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func isAnonymousSign(msg string) bool {
+	return anonymousSign.Match([]byte(msg))
 }
 
 func isSigned(msg string) bool {
