@@ -124,3 +124,81 @@ func Test_hasDescription(t *testing.T) {
 		}
 	}
 }
+
+func Test_isAnonymous(t *testing.T) {
+	var anonymousSignOpts = []struct {
+		title        string
+		message      string
+		expectedBool bool
+	}{
+		{
+			title:        "Correctly signed off full string",
+			message:      "Signed-off-by: openfaas",
+			expectedBool: false,
+		},
+		{
+			title:        "Correctly signed off within string",
+			message:      "This PR was Signed-off-by: rgee0",
+			expectedBool: false,
+		},
+		{
+			title:        "Signed off with an anonymous email",
+			message:      "Signed-off-by: users@noreply.github.com",
+			expectedBool: true,
+		},
+	}
+	for _, test := range anonymousSignOpts {
+		t.Run(test.title, func(t *testing.T) {
+
+			anonymousSign := isAnonymousSign(test.message)
+
+			if anonymousSign != test.expectedBool {
+				t.Errorf("Is anonymous sign - Testing '%s'  - wanted: %t, found %t", test.message, test.expectedBool, anonymousSign)
+			}
+		})
+	}
+}
+
+func Test_hasAnonymousSign(t *testing.T) {
+	var anonymousSignOpts = []struct {
+		title    string
+		commits  []*github.RepositoryCommit
+		expected bool
+	}{
+		{
+			title: "Does not have an anonymous commit",
+			commits: []*github.RepositoryCommit{
+				&github.RepositoryCommit{
+					Commit: &github.Commit{
+						Message: stringPtr("Signed-off-by: test"),
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			title: "Has an anonymous commit",
+			commits: []*github.RepositoryCommit{
+				&github.RepositoryCommit{
+					Commit: &github.Commit{
+						Message: stringPtr("Signed-off-by: User users@users.noreply.github.com"),
+					},
+				},
+			},
+			expected: true,
+		},
+	}
+
+	for _, test := range anonymousSignOpts {
+		t.Run(test.title, func(t *testing.T) {
+			hasAnonymous := hasAnonymousSign(test.commits)
+			if hasAnonymous != test.expected {
+				t.Errorf("Has anonymous sign - wanted: %t, found %t", test.expected, hasAnonymous)
+			}
+		})
+	}
+}
+
+func stringPtr(s string) *string {
+	return &s
+}
