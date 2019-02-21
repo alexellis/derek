@@ -33,6 +33,9 @@ Enter these OAuth Permissions/Scopes:
 - Pull requests - read/write
 - Repository metadata - read only
 
+If you are setting this up on a private repository you need to grant derek permissions to download content, this is so that he can download the config file you'll create:
+- Repository contents - read only
+
 Subscribe to these events:
 
 - Commit comment

@@ -76,11 +76,12 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
+		var derekConfig *types.DerekRepoConfig
 		if req.Repository.Private {
-			return fmt.Errorf("Unable to work with private repo: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+			derekConfig, err = handler.GetPrivateRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Installation.ID, config)
+		} else {
+			derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
 		}
-
-		derekConfig, err := handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
@@ -108,7 +109,12 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
-		derekConfig, err := handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
+		var derekConfig *types.DerekRepoConfig
+		if req.Repository.Private {
+			derekConfig, err = handler.GetPrivateRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Installation.ID, config)
+		} else {
+			derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
+		}
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
