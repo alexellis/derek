@@ -78,12 +78,9 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 
 	var body string
 	if anonymousSign {
-		body =
-			`Thank you for your contribution. It seems that one or more of your commits have an anonymous email address. Please consider signing your commits with a valid email address. Please see our [contributing guide](` + contributingURL + `).`
+		body = anonymousCommitComment(contributingURL)
 	} else {
-		body =
-			`Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off. That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).
-Tip: if you only have one commit so far then run: ` + "`" + `git commit --amend --sign-off` + "`" + ` and then ` + "`" + `git push --force` + "`."
+		body = unsignedCommitComment(contributingURL)
 	}
 
 	if !noDcoLabelExists {
@@ -124,8 +121,7 @@ func VerifyPullRequestDescription(req types.PullRequestOuter, contributingURL st
 				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
 			}
 
-			body := `Thank you for your contribution. I've just checked and your Pull Request doesn't appear to have any description.
-That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).`
+			body := emptyDescriptionComment(contributingURL)
 
 			comment := &github.IssueComment{
 				Body: &body,
@@ -139,6 +135,20 @@ That's something we need before your Pull Request can be merged. Please see our 
 			fmt.Println(comment, resp.Rate)
 		}
 	}
+}
+
+func anonymousCommitComment(contributingURL string) string {
+	return `Thank you for your contribution. It seems that one or more of your commits have an anonymous email address. Please consider signing your commits with a valid email address. Please see our [contributing guide](` + contributingURL + `).`
+}
+
+func unsignedCommitComment(contributingURL string) string {
+	return `Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off. That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).
+Tip: if you only have one commit so far then run: ` + "`" + `git commit --amend --sign-off` + "`" + ` and then ` + "`" + `git push --force` + "`."
+}
+
+func emptyDescriptionComment(contributingURL string) string {
+	return `Thank you for your contribution. I've just checked and your Pull Request doesn't appear to have any description.
+That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).`
 }
 
 func getAccessToken(config config.Config, installationID int) (string, error) {
