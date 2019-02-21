@@ -187,6 +187,17 @@ func Test_hasAnonymousSign(t *testing.T) {
 			},
 			expected: true,
 		},
+		{
+			title: "Has an unsigned commit",
+			commits: []*github.RepositoryCommit{
+				&github.RepositoryCommit{
+					Commit: &github.Commit{
+						Message: stringPtr("Commit message"),
+					},
+				},
+			},
+			expected: false,
+		},
 	}
 
 	for _, test := range anonymousSignOpts {
