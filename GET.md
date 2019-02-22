@@ -1,10 +1,38 @@
 ## Get your own Derek robot
 
-* The easy way
+### 1.0 The easy way (managed Derek by the community)
 
-To use our hosted/managed Derek robot service for free then get in touch with [Alex Ellis](mailto:alex@openfaas.com) for more information. (setup time 5 minutes)
+To use our managed Derek bot service follow the instructions below which take around 5-10 minutes.
 
-* The harder way
+* Install this GitHub App on the individual repos (not the whole org):
+
+https://github.com/apps/derek
+
+You will be told what permissions are required.
+
+* Create `.DEREK.yml` in your elected repos
+
+You can use this file as a template: https://github.com/openfaas/faas/blob/master/.DEREK.yml
+
+* Now raise a PR to the `.CUSTOMERS` file
+
+Raise a PR to this file, and make sure you use `git commit --sign-off` rather than the UI to make the PR
+
+https://github.com/alexellis/derek/blob/master/.CUSTOMERS
+
+* Finally test it works
+
+Raise a new issue and type in `Derek close`, then edit your `.DEREK.yml` file to add your team and community maintainers/contributors
+
+* Support the managed service
+
+What are the engineering cost savings of even 0.5 person-hours?
+
+Think about that and give 10-15 GBP / month via OpenCollective to cover the server hosting costs.
+
+https://www.openfaas.com/donate/
+
+### 2.0 The harder way (self-host)
 
 Read on if you want to operate your own Derek bot, or deploy Derek for development. 
 
