@@ -1,4 +1,4 @@
-## Get your own Derek robot
+## Get your own Derek bot
 
 ### 1.0 The easy way (managed Derek by the community)
 
