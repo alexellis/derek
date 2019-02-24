@@ -32,6 +32,19 @@ https://github.com/openfaas/faas-cli/issues/85
 
 Example: https://github.com/Subsurface-divelog/subsurface/pull/1748
 
+## Get your own Derek bot for free
+
+You can either provision your own OpenFaaS cluster and install your own private Derek, or use the shared, managed Derek bot for free.
+
+Setup:
+
+* Install the managed or your self-hosted Derek GitHub App
+* Send a PR to the [customers file](https://github.com/alexellis/derek/blob/master/.CUSTOMERS) with your GitHub username or GitHub organization
+* Finally add your .DEREK.yml - you can use the file from this repository as an example
+* Add any other repos optionally using the redirect feature
+
+Start here: [Get Derek](GET.md).
+
 ## What can I do?
 
 * Check that commits are signed-off
@@ -198,10 +211,4 @@ Alex Ellis created Derek to automate project maintainer duties around licensing 
 ### Contributions
 
 Please follow the [OpenFaaS contribution guide](https://github.com/openfaas/faas/blob/master/CONTRIBUTING.md).
-
-## Get your own Derek robot
-
-To use our managed service (recommended) get in touch with [Alex Ellis](mailto:alex@openfaas.com) for more info. Once you have installed the GitHub App you will need to send a PR to the [customers file](https://github.com/alexellis/derek/blob/master/.CUSTOMERS) with your username or organisation. The final step is to add your .DEREK.yml - you can use the file from this repository as an example.
-
-You can host and manage your own Derek robot using [these instuctions](GET.md), or use our managed service.
 
