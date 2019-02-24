@@ -66,11 +66,8 @@ If you are setting this up on a private repository you need to grant derek permi
 
 Subscribe to these events:
 
-- Commit comment
 - Issue comment
-- Issues
 - Pull request
-- pull request review comment (optional)
 
 Set "Where can this GitHub App be installed?" to Any account
 
