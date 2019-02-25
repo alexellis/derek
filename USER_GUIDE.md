@@ -26,7 +26,17 @@ features:
 
 This file enables Derek usage for `rgee0` and `alexellis`, it also turns on all features available. If you specifically do not want the commenting or `dco_check` feature then comment out the line or remove it from your file. At least one feature is required for Derek to be of use.
 
-### Feature: redirect config
+### Feature: `dco_check`
+
+If `dco_check` is specified in the feature list then Derek will inform you when a PR is submitted with commits which have no sign-off message. This is required if your project requires the [Developer Certificate of Origin](https://developercertificate.org).
+
+Derek will add a label of `no-dco` and a comment to help the PR submitter fix the commits.
+
+### Feature: `pr_description_required`
+
+If `pr_description_required` is specified in the feature list then Derek will inform you that a PR needs a description. He also adds the `invalid` label.
+
+### Feature: `redirect` config
 
 The .DEREK.yml file can be redirected to another repository or site. This is used in the OpenFaaS project where around 12 repos are present with the same permissions, features and users.
 
@@ -35,16 +45,6 @@ Example:
 ```yaml
 redirect: https://raw.githubusercontent.com/openfaas/faas/master/.DEREK.yml
 ```
-
-### Feature: `dco_check`
-
-If `dco_check` is specified in the feature list then Derek will inform you when a PR is submitted with commits which have no sign-off message. This is required if your project requires the [Developer Certificate of Origin](https://developercertificate.org).
-
-Derek will add a label of `no-dco` and a comment to help the PR submitter fix the comits.
-
-### Feature: `pr_description_required`
-
-If `pr_description_required` is specified in the feature list then Derek will inform you that a PR needs a description. He also adds the `invalid` label.
 
 ### Feature: `comments`
 
