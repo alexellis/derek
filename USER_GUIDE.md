@@ -4,18 +4,18 @@ This is a user-guide for all the features available in Derek.
 
 ### Get Derek
 
-See [Get Derek](./GET.md) instructions
+You can self-host Derek or use the managed service, see [GET.md](./GET.md).
 
 ### Enable Derek for a repo
 
 Add a .DEREK.yml file to the repository.
 
-### .DEREK.yml schema
+#### .DEREK.yml schema
 
 Example from this project:
 
 ```yaml
-curators:
+maintainers:
  - rgee0
  - alexellis
  
@@ -25,26 +25,6 @@ features:
 ```
 
 This file enables Derek usage for `rgee0` and `alexellis`, it also turns on all features available. If you specifically do not want the commenting or `dco_check` feature then comment out the line or remove it from your file. At least one feature is required for Derek to be of use.
-
-### Notes on usage
-
-#### Editing the .DEREK.yml file
-
-The .DEREK.yml file is served by a GitHub CDN which has a 5 minute cache expiry. That means if you make a change, it will take at least 5 minutes before it kicks in.
-
-#### Multiple-commands in a comment
-
-Multiple commands are not supported in a comment
-
-#### Additional white-space
-
-Additional white-space or new-lines is not supported
-
-### Enroll users to use Derek with your repo
-
-Users can be specified in a list called `curators` or `maintainers` - both are offered for when the term `maintainer` is a loaded term. The Moby project use this variant, for everyone else `maintainers` may make sense.
-
-Usernames are strictly case-sensitive.
 
 ### Feature: redirect config
 
@@ -58,7 +38,9 @@ redirect: https://raw.githubusercontent.com/openfaas/faas/master/.DEREK.yml
 
 ### Feature: `dco_check`
 
-If `dco_check` is specified in the feature list then Derek will inform you when a PR is submitted with commits which have no sign-off. He also adds a label `no-dco`.
+If `dco_check` is specified in the feature list then Derek will inform you when a PR is submitted with commits which have no sign-off message. This is required if your project requires the [Developer Certificate of Origin](https://developercertificate.org).
+
+Derek will add a label of `no-dco` and a comment to help the PR submitter fix the comits.
 
 ### Feature: `pr_description_required`
 
@@ -66,10 +48,11 @@ If `pr_description_required` is specified in the feature list then Derek will in
 
 ### Feature: `comments`
 
-If `comments` is given in the `features` list then this enables all commenting features:
+If `comments` is given in the `features` list then this enables all commenting features as below.
+
+> Note: All commands can be given with a prefix of either `Derek <command>` or `/<command>`.
 
 #### Edit title
-
 
 Let's say a user raised an issue with the title `I can't get it to work on my computer`
 
@@ -159,5 +142,24 @@ Derek lock
 Derek unlock
 ```
 
-> Note: if you lock an issue as an unprivileged user, then only a repository admin can unlock it.
+> Note: once locked no further comments are allowed apart from users with admin access.
 
+### Notes on usage
+
+#### Editing the .DEREK.yml file
+
+The .DEREK.yml file is served by a GitHub CDN which has a 5 minute cache expiry. That means if you make a change, it will take at least 5 minutes before it kicks in.
+
+#### Multiple-commands in a comment
+
+Multiple commands in a single comment are not yet supported.
+
+#### Additional white-space
+
+Additional white-space/new-lines in comments are not yet supported
+
+### Enroll users to use Derek with your repo
+
+Users can be specified in a list called `curators` or `maintainers` - both are offered for when the term `maintainer` is a loaded term. The Moby project use this variant, for everyone else `maintainers` may make sense.
+
+Usernames are strictly case-sensitive.

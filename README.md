@@ -12,9 +12,18 @@ It's derek ![](https://pbs.twimg.com/media/DPo4OyrWsAAOk_i.png). Nice to meet yo
 
 From the team that brought you [OpenFaaS](https://www.openfaas.com) - Serverless Functions Made Simple.
 
-### Looking for the User Guide?
+## Core features
 
-Existing users of Derek can read the [user-guide here](./USER_GUIDE.md).
+* Issue and PR administration through comments for non-admin users
+* [Developer Certificate of Origin (DCO) checking (optional)](https://developercertificate.org)
+* Reject PRs without descriptions
+* Self-host or use the free, managed service 
+
+## User guide / documentation
+
+Find out what Derek can do you for your project, community and team including all available commands and configuration options.
+
+* Read the [user-guide](./USER_GUIDE.md)
 
 ## Our users
 
@@ -44,122 +53,6 @@ Setup:
 * Add any other repos optionally using the redirect feature
 
 Start here: [Get Derek](GET.md).
-
-## What can I do?
-
-* Check that commits are signed-off
-
-When someone sends a PR without a sign-off, I'll apply a label `no-dco` and also send them a comment pointing them to the contributor guide. Most of the time when I've been helping the OpenFaaS project - people read my message and fix things up without you having to get involved.
-
-* Allow users in a specified .DEREK.yml file to manage issues and pull-requests
-
-You don't have to give people full write access anymore to help you manage issues and pull-requests. I'll do that for you, just put them in a .DEREK.yml file in the root and when they comment on an issue then I'll use my granular permissions instead.
-
-* Wait.. doesn't the term "maintainer" mean write access in GitHub?
-
-No this is what Derek sets out to resolve. The users in your maintainers list have granular permissions which you'll see in detail when you add the app to your repo org.
-
-```
-maintainers:
-- alexellis
-- rgee0
-```
-
-You can use the alias "curators" instead for the exact same behaviour:
-
-```
-curators:
-- alexellis
-- rgee0
-```
-
-* What about roles?
-
-We are planning to add roles in the ROADMAP which will mean you can get even more granular and have folks who can only add labels but not close issues for instance. If you feel you need to make that distinction. It will also let you call the roles whatever you think makes sense. 
-
-> Note that the assign/unassign commands provides the shortcut `me` to assign to the commenter
-
-* URL redirection of configuration files is supported via the "redirect" field:
-
-```
-redirect: https://github.com/<some-user>/<some-repo>/.DEREK.yaml
-```
-
-If this optional field is non-empty, Derek will read it's configuration from another location. This allows multiple projects to use the same configuration.
-Please note that redirection is only supported for GitHub repository URLs.
-
-* Command triggers
-
-Derek commands can be called with `Derek <some-command>` or `/<some-command>` which is an alias.
-
-### Examples:
-
-* Update the title of a PR or issue
-
-Let's say a user raised an issue with the title `I can't get it to work on my computer`
-
-```
-Derek set title: Question - does this work on Windows 10?
-```
-or
-```
-Derek edit title: Question - does this work on Windows 10?
-```
-
-* Triage and organise work through labels
-
-Labels can be used to triage work or help sort it.
-
-```
-Derek add label: proposal
-Derek add label: help wanted
-Derek remove label: bug
-```
-
-* Set milestones for issues
-
-You can organize your issues in groups through existing milestones
-
-```
-Derek set milestone: example
-Derek remove milestone: example
-```
-
-* Assign work
-
-You can assign work to people too
-
-```
-Derek assign: alexellis
-Derek unassign: me
-```
-
-* Add a reviewer to a PR
-
-You can assign people for a PR review as well
-
-```
-Derek set reviewer: alexellis
-Derek clear reviewer: me
-```
-
-* Open and close issues and PRs
-
-Sometimes you may want to close or re-open issues or Pull Requests:
-
-```
-Derek close
-Derek reopen
-```
-
-* Lock/un-lock conversation/threads
-
-This is useful for when conversations are going off topic or an old thread receives a lot of comments that are better placed in a new issue.
-
-```
-Derek lock
-Derek unlock
-```
 
 ### Backlog:
 
