@@ -41,6 +41,8 @@ https://github.com/openfaas/faas-cli/issues/85
 
 Example: https://github.com/Subsurface-divelog/subsurface/pull/1748
 
+See other users in our [customers file](./.CUSTOMERS)
+
 ## Get your own Derek bot for free
 
 You can either provision your own OpenFaaS cluster and install your own private Derek, or use the shared, managed Derek bot for free.
@@ -83,15 +85,6 @@ This is me in action! Normally contributors edit and re-push within a few minute
 *Inspiration for Derek*
 
 The idea for a bot that could comment on issues or respond to activity is from the docker/docker or Moby project's bot called [Poule](https://github.com/icecrime/poule). It's a much more complex long-running daemon which uses Personal Access Tokens (so needs to run as a full GitHub login). Derek is much simpler (so hackable) and can be installed with granular permissions.
-
-### Where is Derek working now?
-
-Derek is active and operating 24/7 helping the award-winning OpenFaaS project!
-
-* https://github.com/moby/moby
-* http://github.com/openfaas/faas
-* http://github.com/openfaas/faas-netes
-* http://github.com/openfaas/faas-cli
 
 ### Maintainers and contributors
 
