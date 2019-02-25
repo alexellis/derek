@@ -68,7 +68,7 @@ Future work:
 * [ ] Caching of customers / .DEREK.yml file
 * [ ] Observability of GitHub API Token rate limit
 * [ ] Add roles & actions
-* [ ] Branch Checking
+* [ ] PR target branch checking (i.e. no PRs from master to master)
 
 [Live demo here](https://twitter.com/alexellisuk/status/905694832445804544)
 
