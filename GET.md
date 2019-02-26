@@ -1,6 +1,15 @@
-## Get your own Derek bot
+## Get Derek
 
-### 1.0 The easy way (managed Derek by the community)
+### 1.0 The workflow
+
+* Install the managed or your self-hosted Derek GitHub App
+* Send a PR to the [customers file](https://github.com/alexellis/derek/blob/master/.CUSTOMERS) with your GitHub username or GitHub organization
+* Finally add your .DEREK.yml - you can use the file from this repository as an example
+* Add any other repos optionally using the redirect feature
+
+Read on for two options on getting access to Derek
+
+### 2.0 The easy way (managed Derek by the community)
 
 To use our managed Derek bot service follow the instructions below which take around 5-10 minutes.
 
@@ -32,13 +41,13 @@ Think about that and give 10-15 GBP / month via OpenCollective to cover the serv
 
 https://www.openfaas.com/donate/
 
-### 2.0 The harder way (self-host)
+### 3.0 The harder way (self-host)
 
 Read on if you want to operate your own Derek bot, or deploy Derek for development. 
 
 You will setup a single-node cluster with Kubernetes or Swarm, deploy OpenFaaS, create a GitHub App, install your GitHub App on a GitHub repo and then deploy Derek. Estimated setup time 30-60mins depending on your experience-level.
 
-### Ready.. Set.. Derek!
+#### Ready.. Set.. Derek!
 
 Pre-reqs:
 

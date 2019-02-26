@@ -11,20 +11,24 @@ It's derek ![](https://pbs.twimg.com/media/DPo4OyrWsAAOk_i.png). Nice to meet yo
 
 [From the team](https://github.com/alexellis/derek#maintainers-and-contributors) that brought you [OpenFaaS](https://www.openfaas.com) - Serverless Functions Made Simple.
 
-## Core features
-
-* Issue and PR administration through comments for non-admin users
-* [Developer Certificate of Origin (DCO) checking (optional)](https://developercertificate.org)
-* Reject PRs without descriptions
-* Self-host or use the free, managed service 
-
 ## User guide / documentation
 
-Find out what Derek can do you for your project, community and team including all available commands and configuration options.
+### Core features
 
-* Read the [user-guide](./USER_GUIDE.md)
+* Let non-admin users manage Issues and PRs by commenting `Derek <command>`
+* Enforce [Developer Certificate of Origin (DCO) checking (optional)](https://developercertificate.org)
+* Automatically label/flag PRs without a *Description*
+* Use the managed service or self-host
 
-## How do I work?
+### User guide
+
+Find out what Derek can do you for your project, community and team including all available commands and configuration options: [Read the user-guide](./USER_GUIDE.md)
+
+### Get Derek
+
+You can use a managed Derek bot or self-host your own on OpenFaaS. Start here: [Get Derek](GET.md).
+
+### How do I work?
 
 I'm designed to be installed as a [GitHub App](https://developer.github.com/apps/building-integrations/setting-up-and-registering-github-apps/), but don't worry - I don't need a lot of permissions. Just access to issues and Pull Requests will do.
 
@@ -40,7 +44,7 @@ The idea for a bot that could comment on issues or respond to activity is from t
 
 [Live demo here](https://twitter.com/alexellisuk/status/905694832445804544)
 
-## Our users
+### Our users
 
 Some of our users include:
 
@@ -58,20 +62,7 @@ Example: https://github.com/Subsurface-divelog/subsurface/pull/1748
 
 See other users in our [customers file](./.CUSTOMERS)
 
-## Get your own Derek bot for free
-
-You can either provision your own OpenFaaS cluster and install your own private Derek, or use the shared, managed Derek bot for free.
-
-Setup:
-
-* Install the managed or your self-hosted Derek GitHub App
-* Send a PR to the [customers file](https://github.com/alexellis/derek/blob/master/.CUSTOMERS) with your GitHub username or GitHub organization
-* Finally add your .DEREK.yml - you can use the file from this repository as an example
-* Add any other repos optionally using the redirect feature
-
-Start here: [Get Derek](GET.md).
-
-### Backlog:
+## Backlog:
 
 * [x] Derek as a managed GitHub App
 * [x] Lock thread
@@ -85,7 +76,7 @@ Future work:
 * [ ] Add roles & actions
 * [ ] PR target branch checking (i.e. no PRs from master to master)
 
-### Maintainers and contributors
+## Maintainers and contributors
 
 There are [over a dozen contributors](https://github.com/alexellis/derek/graphs/contributors) to Derek, but the following people have made the most impact.
 
