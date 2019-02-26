@@ -15,6 +15,8 @@ It's derek ![](https://pbs.twimg.com/media/DPo4OyrWsAAOk_i.png). Nice to meet yo
 
 ### Core features
 
+Derek is a bot for GitHub designed to reduce fatigue for maintainers and to delegate permissions to non-admin users in your community or team. 
+
 * Let non-admin users manage Issues and PRs by commenting `Derek <command>`
 * Enforce [Developer Certificate of Origin (DCO) checking (optional)](https://developercertificate.org)
 * Automatically label/flag PRs without a *Description*
