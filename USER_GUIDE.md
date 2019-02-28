@@ -22,6 +22,7 @@ maintainers:
 features:
  - dco_check
  - comments
+ - pr_description_required
 ```
 
 This file enables Derek usage for `rgee0` and `alexellis`, it also turns on all features available. If you specifically do not want the commenting or `dco_check` feature then comment out the line or remove it from your file. At least one feature is required for Derek to be of use.
