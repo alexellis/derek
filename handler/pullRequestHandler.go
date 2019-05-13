@@ -143,7 +143,7 @@ func anonymousCommitComment(contributingURL string) string {
 
 func unsignedCommitComment(contributingURL string) string {
 	return `Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off. That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).
-Tip: if you only have one commit so far then run: ` + "`" + `git commit --amend --sign-off` + "`" + ` and then ` + "`" + `git push --force` + "`."
+Tip: if you only have one commit so far then run: ` + "`" + `git commit --amend --signoff` + "`" + ` and then ` + "`" + `git push --force` + "`."
 }
 
 func emptyDescriptionComment(contributingURL string) string {

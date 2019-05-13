@@ -25,7 +25,7 @@ You can use this file as a template: https://github.com/openfaas/faas/blob/maste
 
 * Now raise a PR to the `.CUSTOMERS` file
 
-Raise a PR to this file, and make sure you use `git commit --sign-off` rather than the UI to make the PR
+Raise a PR to this file, and make sure you use `git commit --signoff` rather than the UI to make the PR
 
 https://github.com/alexellis/derek/blob/master/.CUSTOMERS
 
