@@ -83,7 +83,10 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
 		}
 		if err != nil {
-			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+			return fmt.Errorf("Unable to access maintainers file at: %s/%s\nError: %s",
+				req.Repository.Owner.Login,
+				req.Repository.Name,
+				err.Error())
 		}
 		if req.Action != handler.ClosedConstant {
 			contributingURL := getContributingURL(derekConfig.ContributingURL, req.Repository.Owner.Login, req.Repository.Name)
@@ -116,12 +119,15 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
 		}
 		if err != nil {
-			return fmt.Errorf("Unable to access maintainers file at: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+			return fmt.Errorf("Unable to access maintainers file at: %s/%s\nError: %s",
+				req.Repository.Owner.Login,
+				req.Repository.Name,
+				err.Error())
 		}
 
 		if req.Action != deleted {
 			if handler.PermittedUserFeature(comments, derekConfig, req.Comment.User.Login) {
-				handler.HandleComment(req, config)
+				handler.HandleComment(req, config, derekConfig)
 			}
 		}
 		break

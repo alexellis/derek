@@ -91,6 +91,13 @@ type DerekRepoConfig struct {
 
 	//ContributingURL url to contribution guide
 	ContributingURL string `yaml:"contributing_url"`
+
+	Messages []Message `yaml:"custom_messages"`
+}
+
+type Message struct {
+	Name  string `yaml:"name"`
+	Value string `yaml:"value"`
 }
 
 // FirstTimeContributor whether the contributor is new to the repo
