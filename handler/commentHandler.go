@@ -35,6 +35,7 @@ const (
 	removeMilestoneConstant  string = "RemoveMilestone"
 	assignReviewerConstant   string = "AssignReviewer"
 	unassignReviewerConstant string = "UnassignReviewer"
+	messageConstant          string = "message"
 
 	noDCO             string = "no-dco"
 	labelLimitDefault int    = 5
@@ -61,7 +62,7 @@ func makeClient(installation int, config config.Config) (*github.Client, context
 }
 
 // HandleComment handles a comment
-func HandleComment(req types.IssueCommentOuter, config config.Config) {
+func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfig *types.DerekRepoConfig) {
 
 	var feedback string
 	var err error
@@ -112,6 +113,11 @@ func HandleComment(req types.IssueCommentOuter, config config.Config) {
 			InstallationRequest: req.InstallationRequest,
 		}
 		feedback, err = editReviewers(prReq, command.Type, command.Value, config)
+		break
+
+	case messageConstant:
+
+		feedback, err = createMessage(req, command.Type, command.Value, config, derekConfig)
 		break
 
 	default:
@@ -426,6 +432,8 @@ func parse(body string, commandTriggers []string) *types.CommentAction {
 			commandTrigger + "remove milestone: ": removeMilestoneConstant,
 			commandTrigger + "set reviewer: ":     assignReviewerConstant,
 			commandTrigger + "clear reviewer: ":   unassignReviewerConstant,
+			commandTrigger + "message: ":          messageConstant,
+			commandTrigger + "msg: ":              messageConstant,
 		}
 
 		for trigger, commandType := range commands {
@@ -505,4 +513,42 @@ func getMultiLabelLimit() int {
 		return configuredLimit
 	}
 	return labelLimitDefault
+}
+
+func createMessage(req types.IssueCommentOuter, cmdType, cmdValue string, config config.Config, derekConfig *types.DerekRepoConfig) (string, error) {
+	var err error
+
+	var buffer bytes.Buffer
+
+	buffer.WriteString(fmt.Sprintf("%s wants to add message of type '%s' on issue #%d \n", req.Comment.User.Login, cmdValue, req.Issue.Number))
+
+	messageValue, err := createIssueComment(derekConfig.Messages, cmdValue)
+	if err != nil {
+		return buffer.String(), fmt.Errorf("Error while filtering message: %s", err.Error())
+	}
+
+	buffer.WriteString(fmt.Sprintf("Message '%s' with content: \n%s\nfound.\n", cmdValue, *messageValue.Body))
+
+	client, ctx := makeClient(req.Installation.ID, config)
+
+	comment, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, messageValue)
+	if err != nil {
+		return buffer.String(), err
+	}
+	buffer.WriteString(fmt.Sprintf("Successfully applied comment: \n%s\nstatus code: %d",
+		*comment.Body,
+		resp.StatusCode))
+
+	return buffer.String(), nil
+}
+
+func createIssueComment(messages []types.Message, wantedMessage string) (*github.IssueComment, error) {
+	for _, message := range messages {
+		if message.Name == wantedMessage {
+			return &github.IssueComment{
+				Body: &message.Value,
+			}, nil
+		}
+	}
+	return nil, fmt.Errorf("Message: `%s` is not configured", wantedMessage)
 }

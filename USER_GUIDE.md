@@ -165,6 +165,33 @@ Derek unlock
 
 > Note: once locked no further comments are allowed apart from users with admin access.
 
+#### Add predefined message
+
+Have Derek add pre-configured comments to a PR or Issue thread, for example when you would like to direct someone towards the contributing guide.
+
+Configure the feature in `.DEREK.yml` file. It should look something like:
+
+```
+custom_messages:
+  - name: docs
+    value: Hello, please check out the docs ...
+  - name: slack
+    value: |
+           -- 
+           To join our slack channel ...
+```
+
+Above are two examples which shows simple configuration, the first one is the method for single line messages, the second one is more specific multi line literal, which should be exactly below the `|` sign in order to be displayed and not having errors while parsing.
+
+Tell derek to send the message:
+
+```
+Derek message: docs
+```
+```
+Derek msg: slack
+```
+
 ### Notes on usage
 
 #### Editing the .DEREK.yml file

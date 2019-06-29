@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/alexellis/derek/types"
+	"github.com/google/go-github/github"
 )
 
 func Test_getCommandTrigger(t *testing.T) {
@@ -803,5 +804,54 @@ func Test_getCommandValue(t *testing.T) {
 			}
 		})
 	}
+}
 
+func Test_createIssueComment(t *testing.T) {
+	desiredBody := "The content of the message with slack info"
+	tests := []struct {
+		title             string
+		message           []types.Message
+		wantedMessage     string
+		wantedErr         bool
+		desiredGitHubBody *github.IssueComment
+	}{
+		{
+			title: "Desired message is found.",
+			message: []types.Message{
+				{Name: "slack", Value: "The content of the message with slack info"},
+				{Name: "docs", Value: "The content of the message with docs info"},
+			},
+			wantedMessage: "slack",
+			wantedErr:     false,
+			desiredGitHubBody: &github.IssueComment{
+				Body: &desiredBody,
+			},
+		},
+		{
+			title: "User tried to set non existing message",
+			message: []types.Message{
+				{Name: "slack", Value: "The content of the message with slack info"},
+				{Name: "docs", Value: "The content of the message with docs info"},
+			},
+			wantedMessage:     "dco",
+			wantedErr:         true,
+			desiredGitHubBody: nil,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.title, func(t *testing.T) {
+			gitHubComment, err := createIssueComment(test.message, test.wantedMessage)
+			if gitHubComment != nil && test.desiredGitHubBody != nil {
+				if *gitHubComment.Body != *test.desiredGitHubBody.Body {
+					t.Errorf("Expected body to contain: %s got :%s",
+						*test.desiredGitHubBody.Body,
+						*gitHubComment.Body)
+				}
+			}
+			if err != nil && test.wantedErr == false {
+				t.Errorf("Unexpected error: %s",
+					err.Error())
+			}
+		})
+	}
 }
