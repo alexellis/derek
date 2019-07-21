@@ -7,7 +7,7 @@ RUN go test $(go list ./... | grep -v /vendor/) -cover
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o derek .
 
-FROM alpine:3.8
+FROM alpine:3.10 as ship
 
 RUN apk --no-cache add curl ca-certificates \ 
     && echo "Pulling watchdog binary from Github." \
