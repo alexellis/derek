@@ -15,8 +15,16 @@ RUN apk --no-cache add curl ca-certificates \
     && chmod +x /usr/bin/fwatchdog \
     && apk del curl --no-cache
 
-WORKDIR /root/
+RUN addgroup -S app && adduser -S -g app app
+RUN mkdir -p /home/app
+
+WORKDIR /home/app
+
 COPY --from=build /go/src/github.com/alexellis/derek/derek derek
+
+RUN chown -R app /home/app
+
+USER app
 
 ENV cgi_headers="true"
 ENV validate_hmac="true"
