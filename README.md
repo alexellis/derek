@@ -66,10 +66,11 @@ See other users in our [customers file](./.CUSTOMERS)
 
 ## Backlog:
 
-* [x] Derek as a managed GitHub App
+* [x] Derek as a managed GitHub App (SaaS)
 * [x] Lock thread
-* [x] Edit title
-* [x] Toggle the DCO-feature
+* [x] Edit title of Issue/PR
+* [x] Toggle the DCO-feature for those who don't need compliance
+* [x] Show help messages such as how to join Slack or asking for a rebase via `Derek message`
 
 Future work:
 
@@ -82,10 +83,15 @@ Future work:
 
 There are [over a dozen contributors](https://github.com/alexellis/derek/graphs/contributors) to Derek, but the following people have made the most impact.
 
-* Alex Ellis - creator
+Maintainers:
+
+* Alex Ellis - creator & maintainer
 * Richard Gee ([@rgee0](https://github.com/rgee0)) - co-maintainer
+* Martin Dekov ([@martindekov](https://github.com/martindekov)) - co-maintainer
+
+Main contributors:
+
 * John McCabe ([@johnmccabe](https://github.com/johnmccabe)) - contributor
-* Martin Dekov ([@martindekov](https://github.com/martindekov)) - contributor
 * Lubomir I. Ivanov ([@neolit123](https://github.com/neolit123)) - contributor
 * Ivana Yovcheva ([@ivanayov](https://github.com/ivanayov)) - contributor
 
