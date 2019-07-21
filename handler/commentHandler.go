@@ -527,16 +527,16 @@ func createMessage(req types.IssueCommentOuter, cmdType, cmdValue string, config
 		return buffer.String(), fmt.Errorf("Error while filtering message: %s", err.Error())
 	}
 
-	buffer.WriteString(fmt.Sprintf("Message '%s' with content: \n%s\nfound.\n", cmdValue, *messageValue.Body))
+	buffer.WriteString(fmt.Sprintf("Message '%s' found.\n", cmdValue))
 
 	client, ctx := makeClient(req.Installation.ID, config)
 
-	comment, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, messageValue)
+	_, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number, messageValue)
 	if err != nil {
 		return buffer.String(), err
 	}
-	buffer.WriteString(fmt.Sprintf("Successfully applied comment: \n%s\nstatus code: %d",
-		*comment.Body,
+	buffer.WriteString(fmt.Sprintf("Successfully applied message: `%s` status code: %d\n",
+		cmdValue,
 		resp.StatusCode))
 
 	return buffer.String(), nil
