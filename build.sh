@@ -1,8 +1,9 @@
-export eTAG="latest-dev"
-echo $1
+export TAG="latest-dev"
 if [ $1 ] ; then
-  eTAG=$1
+  TAG=$1
 fi
 
-docker build -t alexellis/derek:$eTAG . -f Dockerfile && \
-docker create --name derek alexellis/derek:$eTAG
+echo "Building: alexellis/derek:$TAG"
+
+docker build -t alexellis/derek:$TAG . -f Dockerfile
+
