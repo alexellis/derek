@@ -3,7 +3,6 @@ if [ $1 ] ; then
   TAG=$1
 fi
 
-echo "Building: alexellis/derek:$TAG"
+echo "Building: $DOCKER_NS/derek:$TAG"
 
-docker build -t alexellis/derek:$TAG . -f Dockerfile
-
+docker build -t $DOCKER_NS/derek:$TAG . -f Dockerfile
