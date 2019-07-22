@@ -1,3 +1,5 @@
+FROM openfaas/classic-watchdog:0.15.4 as watchdog
+
 FROM golang:1.10.4-alpine as build
 
 WORKDIR /go/src/github.com/alexellis/derek
@@ -9,11 +11,10 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o derek .
 
 FROM alpine:3.10 as ship
 
-RUN apk --no-cache add curl ca-certificates \ 
-    && echo "Pulling watchdog binary from Github." \
-    && curl -sSL https://github.com/alexellis/faas/releases/download/0.9.6/fwatchdog > /usr/bin/fwatchdog \
-    && chmod +x /usr/bin/fwatchdog \
-    && apk del curl --no-cache
+COPY --from=watchdog /fwatchdog /usr/bin/fwatchdog
+RUN chmod +x /usr/bin/fwatchdog
+
+RUN apk --no-cache add ca-certificates
 
 RUN addgroup -S app && adduser -S -g app app
 RUN mkdir -p /home/app
