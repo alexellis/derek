@@ -58,6 +58,11 @@ https://github.com/moby/moby/issues/35736
 
 https://github.com/openfaas/faas-cli/issues/85
 
+* goreleaser
+
+See: [goreleaser's .DEREK.yml file](https://github.com/goreleaser/goreleaser/commit/9d418755dd9f37589f5a97f34b2c47e2e2f1325a)
+Example: [issue 1053](https://github.com/goreleaser/goreleaser/issues/1053)
+
 * [Subsurface Diving app](https://subsurface-divelog.org)
 
 Example: https://github.com/Subsurface-divelog/subsurface/pull/1748
