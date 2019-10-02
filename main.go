@@ -24,6 +24,7 @@ const (
 	comments              = "comments"
 	deleted               = "deleted"
 	prDescriptionRequired = "pr_description_required"
+	hacktoberfest         = "hacktoberfest"
 )
 
 func main() {
@@ -90,6 +91,9 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 		}
 		if req.Action != handler.ClosedConstant {
 			contributingURL := getContributingURL(derekConfig.ContributingURL, req.Repository.Owner.Login, req.Repository.Name)
+			if handler.EnabledFeature(hacktoberfest, derekConfig) {
+				handler.HandleHacktoberfestPR(req, contributingURL, config)
+			}
 			if handler.EnabledFeature(dcoCheck, derekConfig) {
 				handler.HandlePullRequest(req, contributingURL, config)
 			}

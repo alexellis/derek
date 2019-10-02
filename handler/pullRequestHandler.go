@@ -26,6 +26,42 @@ const (
 
 var anonymousSign = regexp.MustCompile("Signed-off-by:(.*)noreply.github.com")
 
+// HandleHacktoberfestPR checks for opened PR, first time contributor. If only .MD files are changed, issue is closed and invalid label is added
+// The goal of this function is to mark pull requests invalid and close them from people only making typo changes without signing their commit (flybys)
+func HandleHacktoberfestPR(req types.PullRequestOuter, contributingURL string, config config.Config) {
+	ctx := context.Background()
+	token, tokenErr := getAccessToken(config, req.Installation.ID)
+
+	if tokenErr != nil {
+		fmt.Printf("Error getting installation token: %s\n", tokenErr.Error())
+		return
+	}
+
+	client := factory.MakeClient(ctx, token, config)
+
+	if req.Action == openedPRAction {
+
+		if isHacktoberfestSpam(req, client) {
+			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"invalid"})
+			if assignLabelErr != nil {
+				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
+			}
+
+			closeState := "close"
+			input := &github.IssueRequest{State: &closeState}
+
+			_, _, err := client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, input)
+			if err != nil {
+				log.Fatalf("unable to close pull request %d: %s", req.PullRequest.Number, err)
+				return
+			}
+
+			fmt.Println(fmt.Sprintf("Request to close issue #%d was successful.\n", req.PullRequest.Number))
+			return
+		}
+	}
+}
+
 func HandlePullRequest(req types.PullRequestOuter, contributingURL string, config config.Config) {
 	ctx := context.Background()
 	token, tokenErr := getAccessToken(config, req.Installation.ID)
@@ -243,4 +279,36 @@ func isSigned(msg string) bool {
 
 func hasDescription(pr types.PullRequest) bool {
 	return len(strings.TrimSpace(pr.Body)) > 0
+}
+
+func isHacktoberfestSpam(req types.PullRequestOuter, client *github.Client) bool {
+	commits, err := fetchPullRequestCommits(req, client)
+	if err != nil {
+		log.Fatalf("unable to fetch pull request commits for PR %d: %s", req.PullRequest.Number, err)
+		return false
+	}
+
+	anonymousSign := hasAnonymousSign(commits)
+	unsignedCommits := hasUnsigned(commits)
+
+	onlyMD := onlyMarkdownFiles(commits)
+
+	return onlyMD && req.PullRequest.FirstTimeContributor() && (anonymousSign || unsignedCommits)
+}
+
+func onlyMarkdownFiles(commits []*github.RepositoryCommit) bool {
+	for _, c := range commits {
+		if len(c.Files) == 0 {
+			return false
+		}
+
+		for _, f := range c.Files {
+			fileName := f.GetFilename()
+			ext := fileName[strings.LastIndex(fileName, ".")+1:]
+			if !strings.EqualFold(ext, "md") {
+				return false
+			}
+		}
+	}
+	return true
 }
