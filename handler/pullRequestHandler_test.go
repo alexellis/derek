@@ -210,6 +210,94 @@ func Test_hasAnonymousSign(t *testing.T) {
 	}
 }
 
+func Test_onlyMarkdownFiles(t *testing.T) {
+	mdFileName1 := "readme.md"
+	mdFileName2 := "README.MD"
+	nonMDFileName := "main.go"
+
+	var testCommits = []struct {
+		commits  []*github.RepositoryCommit
+		expected bool
+	}{
+		{
+			commits: []*github.RepositoryCommit{
+				&github.RepositoryCommit{
+					Files: []github.CommitFile{
+						github.CommitFile{
+							Filename: &mdFileName1,
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			commits: []*github.RepositoryCommit{
+				&github.RepositoryCommit{
+					Files: []github.CommitFile{
+						github.CommitFile{
+							Filename: &mdFileName2,
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			commits: []*github.RepositoryCommit{
+				&github.RepositoryCommit{
+					Files: []github.CommitFile{
+						github.CommitFile{
+							Filename: &mdFileName1,
+						},
+						github.CommitFile{
+							Filename: &mdFileName2,
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			commits: []*github.RepositoryCommit{
+				&github.RepositoryCommit{
+					Files: []github.CommitFile{
+						github.CommitFile{
+							Filename: &nonMDFileName,
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			commits: []*github.RepositoryCommit{
+				&github.RepositoryCommit{
+					Files: []github.CommitFile{
+						github.CommitFile{
+							Filename: &mdFileName1,
+						},
+						github.CommitFile{
+							Filename: &mdFileName2,
+						},
+						github.CommitFile{
+							Filename: &nonMDFileName,
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+	}
+
+	for _, test := range testCommits {
+		onlyMD := onlyMarkdownFiles(test.commits)
+		if onlyMD != test.expected {
+			t.Errorf("Only markdown files - wanted %t, found %t", test.expected, onlyMD)
+		}
+	}
+}
+
 func stringPtr(s string) *string {
 	return &s
 }
