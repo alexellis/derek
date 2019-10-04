@@ -238,13 +238,29 @@ func fetchPullRequestCommits(req types.PullRequestOuter, client *github.Client) 
 	}
 	commits, resp, err := client.PullRequests.ListCommits(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, listOpts)
 	if err != nil {
-		log.Fatalf("Error getting PR %d\n%s", req.PullRequest.Number, err.Error())
+		log.Fatalf("Error getting commits for PR %d\n%s", req.PullRequest.Number, err.Error())
 		return nil, err
 	}
 
 	fmt.Println("Rate limiting", resp.Rate)
 	resp.Body.Close()
 	return commits, nil
+}
+
+func fetchPullRequestFiles(req types.PullRequestOuter, client *github.Client) ([]*github.CommitFile, error) {
+	ctx := context.Background()
+	listOpts := &github.ListOptions{
+		Page: 0,
+	}
+	commitFiles, resp, err := client.PullRequests.ListFiles(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, listOpts)
+	if err != nil {
+		log.Fatalf("Error getting files for PR %d\n%s", req.PullRequest.Number, err.Error())
+		return nil, err
+	}
+
+	fmt.Println("Rate limiting", resp.Rate)
+	resp.Body.Close()
+	return commitFiles, nil
 }
 
 func hasUnsigned(commits []*github.RepositoryCommit) bool {
@@ -291,23 +307,27 @@ func isHacktoberfestSpam(req types.PullRequestOuter, client *github.Client) bool
 	anonymousSign := hasAnonymousSign(commits)
 	unsignedCommits := hasUnsigned(commits)
 
-	onlyMD := onlyMarkdownFiles(commits)
+	files, err := fetchPullRequestFiles(req, client)
+	if err != nil {
+		log.Fatalf("unable to fetch pull request files for PR %d: %s", req.PullRequest.Number, err)
+		return false
+	}
+
+	onlyMD := onlyMarkdownFiles(files)
 
 	return onlyMD && req.PullRequest.FirstTimeContributor() && (anonymousSign || unsignedCommits)
 }
 
-func onlyMarkdownFiles(commits []*github.RepositoryCommit) bool {
-	for _, c := range commits {
-		if len(c.Files) == 0 {
-			return false
-		}
+func onlyMarkdownFiles(files []*github.CommitFile) bool {
+	if len(files) == 0 {
+		return false
+	}
 
-		for _, f := range c.Files {
-			fileName := f.GetFilename()
-			ext := fileName[strings.LastIndex(fileName, ".")+1:]
-			if !strings.EqualFold(ext, "md") {
-				return false
-			}
+	for _, f := range files {
+		fileName := f.GetFilename()
+		ext := fileName[strings.LastIndex(fileName, ".")+1:]
+		if !strings.EqualFold(ext, "md") {
+			return false
 		}
 	}
 	return true
