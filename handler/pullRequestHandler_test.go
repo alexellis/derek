@@ -216,74 +216,55 @@ func Test_onlyMarkdownFiles(t *testing.T) {
 	nonMDFileName := "main.go"
 
 	var testCommits = []struct {
-		commits  []*github.RepositoryCommit
+		files    []*github.CommitFile
 		expected bool
 	}{
 		{
-			commits: []*github.RepositoryCommit{
-				&github.RepositoryCommit{
-					Files: []github.CommitFile{
-						github.CommitFile{
-							Filename: &mdFileName1,
-						},
-					},
+			files: []*github.CommitFile{
+				&github.CommitFile{
+					Filename: &mdFileName1,
 				},
 			},
 			expected: true,
 		},
 		{
-			commits: []*github.RepositoryCommit{
-				&github.RepositoryCommit{
-					Files: []github.CommitFile{
-						github.CommitFile{
-							Filename: &mdFileName2,
-						},
-					},
+			files: []*github.CommitFile{
+				&github.CommitFile{
+					Filename: &mdFileName2,
 				},
 			},
 			expected: true,
 		},
 		{
-			commits: []*github.RepositoryCommit{
-				&github.RepositoryCommit{
-					Files: []github.CommitFile{
-						github.CommitFile{
-							Filename: &mdFileName1,
-						},
-						github.CommitFile{
-							Filename: &mdFileName2,
-						},
-					},
+			files: []*github.CommitFile{
+				&github.CommitFile{
+					Filename: &mdFileName1,
+				},
+				&github.CommitFile{
+					Filename: &mdFileName2,
 				},
 			},
 			expected: true,
 		},
 		{
-			commits: []*github.RepositoryCommit{
-				&github.RepositoryCommit{
-					Files: []github.CommitFile{
-						github.CommitFile{
-							Filename: &nonMDFileName,
-						},
-					},
+			files: []*github.CommitFile{
+				&github.CommitFile{
+					Filename: &nonMDFileName,
 				},
 			},
 			expected: false,
 		},
 		{
-			commits: []*github.RepositoryCommit{
-				&github.RepositoryCommit{
-					Files: []github.CommitFile{
-						github.CommitFile{
-							Filename: &mdFileName1,
-						},
-						github.CommitFile{
-							Filename: &mdFileName2,
-						},
-						github.CommitFile{
-							Filename: &nonMDFileName,
-						},
-					},
+
+			files: []*github.CommitFile{
+				&github.CommitFile{
+					Filename: &mdFileName1,
+				},
+				&github.CommitFile{
+					Filename: &mdFileName2,
+				},
+				&github.CommitFile{
+					Filename: &nonMDFileName,
 				},
 			},
 			expected: false,
@@ -291,7 +272,7 @@ func Test_onlyMarkdownFiles(t *testing.T) {
 	}
 
 	for _, test := range testCommits {
-		onlyMD := onlyMarkdownFiles(test.commits)
+		onlyMD := onlyMarkdownFiles(test.files)
 		if onlyMD != test.expected {
 			t.Errorf("Only markdown files - wanted %t, found %t", test.expected, onlyMD)
 		}
