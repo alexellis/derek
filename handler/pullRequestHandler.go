@@ -57,6 +57,13 @@ func HandleHacktoberfestPR(req types.PullRequestOuter, contributingURL string, c
 			}
 
 			fmt.Println(fmt.Sprintf("Request to close issue #%d was successful.\n", req.PullRequest.Number))
+
+			body := hacktoberfestSpamComment(contributingURL)
+
+			if err = createPullRequestComment(ctx, body, req, client); err != nil {
+				log.Fatalf("unable to add comment on PR %d: %s", req.PullRequest.Number, err)
+			}
+
 			return
 		}
 	}
@@ -185,6 +192,12 @@ Tip: if you only have one commit so far then run: ` + "`" + `git commit --amend 
 func emptyDescriptionComment(contributingURL string) string {
 	return `Thank you for your contribution. I've just checked and your Pull Request doesn't appear to have any description.
 That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).`
+}
+
+func hacktoberfestSpamComment(contributingURL string) string {
+	return `Thank you for your contribution. I've checked and your commit does not appear to follow the guidelines in our [contributing guide](` + contributingURL + `). Spelling and README changes are better handled by opening an issue.
+Also, be sure to review the Hacktoberfest [quality standards](https://hacktoberfest.digitalocean.com/details#quality-standards)
+`
 }
 
 func getAccessToken(config config.Config, installationID int) (string, error) {
