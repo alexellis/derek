@@ -19,6 +19,11 @@ import (
 	"github.com/google/go-github/github"
 )
 
+const (
+	prDescriptionRequiredLabel = "invalid"
+	openedPRAction             = "opened"
+)
+
 var anonymousSign = regexp.MustCompile("Signed-off-by:(.*)noreply.github.com")
 
 func HandlePullRequest(req types.PullRequestOuter, contributingURL string, config config.Config) {
@@ -144,12 +149,6 @@ Tip: if you only have one commit so far then run: ` + "`" + `git commit --amend 
 func emptyDescriptionComment(contributingURL string) string {
 	return `Thank you for your contribution. I've just checked and your Pull Request doesn't appear to have any description.
 That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).`
-}
-
-func hacktoberfestSpamComment(contributingURL string) string {
-	return `Thank you for your contribution. I've checked and your commit does not appear to follow the guidelines in our [contributing guide](` + contributingURL + `). Spelling and README changes are better handled by opening an issue.
-Also, be sure to review the Hacktoberfest [quality standards](https://hacktoberfest.digitalocean.com/details#quality-standards)
-`
 }
 
 func getAccessToken(config config.Config, installationID int) (string, error) {
