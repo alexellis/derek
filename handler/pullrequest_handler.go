@@ -212,7 +212,7 @@ func fetchPullRequestCommits(req types.PullRequestOuter, client *github.Client) 
 	return commits, nil
 }
 
-func fetchPullRequestFiles(req types.PullRequestOuter, client *github.Client) ([]*github.CommitFile, error) {
+func fetchPullRequestFileList(req types.PullRequestOuter, client *github.Client) ([]*github.CommitFile, error) {
 	ctx := context.Background()
 	listOpts := &github.ListOptions{
 		Page: 0,
@@ -224,7 +224,10 @@ func fetchPullRequestFiles(req types.PullRequestOuter, client *github.Client) ([
 	}
 
 	fmt.Println("Rate limiting", resp.Rate)
-	resp.Body.Close()
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
 	return commitFiles, nil
 }
 
