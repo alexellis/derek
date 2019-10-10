@@ -16,19 +16,18 @@ import (
 )
 
 const (
-	prDescriptionRequiredLabel = "invalid"
-	openedPRAction             = "opened"
+	hacktoberfestPRLabel = "invalid"
 )
 
 // HandleHacktoberfestPR checks for opened PR, first time contributor. If only .MD files are changed, issue is closed and invalid label is added
 // The goal of this function is to mark pull requests invalid and close them from people only making typo changes without signing their commit (flybys)
-func HandleHacktoberfestPR(req types.PullRequestOuter, contributingURL string, config config.Config) {
+func HandleHacktoberfestPR(req types.PullRequestOuter, contributingURL string, config config.Config) (bool, error) {
 	ctx := context.Background()
 	token, tokenErr := getAccessToken(config, req.Installation.ID)
 
 	if tokenErr != nil {
 		fmt.Printf("Error getting installation token: %s\n", tokenErr.Error())
-		return
+		return false, tokenErr
 	}
 
 	client := factory.MakeClient(ctx, token, config)
@@ -36,9 +35,10 @@ func HandleHacktoberfestPR(req types.PullRequestOuter, contributingURL string, c
 	if req.Action == openedPRAction {
 
 		if isHacktoberfestSpam(req, client) {
-			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"invalid"})
+			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{hacktoberfestPRLabel})
 			if assignLabelErr != nil {
 				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
+				return true, assignLabelErr
 			}
 
 			closeState := "close"
@@ -47,7 +47,7 @@ func HandleHacktoberfestPR(req types.PullRequestOuter, contributingURL string, c
 			_, _, err := client.Issues.Edit(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, input)
 			if err != nil {
 				log.Fatalf("unable to close pull request %d: %s", req.PullRequest.Number, err)
-				return
+				return true, err
 			}
 
 			fmt.Println(fmt.Sprintf("Request to close issue #%d was successful.\n", req.PullRequest.Number))
@@ -56,11 +56,19 @@ func HandleHacktoberfestPR(req types.PullRequestOuter, contributingURL string, c
 
 			if err = createPullRequestComment(ctx, body, req, client); err != nil {
 				log.Fatalf("unable to add comment on PR %d: %s", req.PullRequest.Number, err)
+				return true, err
 			}
 
-			return
+			return true, nil
 		}
 	}
+	return false, nil
+}
+
+func hacktoberfestSpamComment(contributingURL string) string {
+	return `Thank you for your contribution. I've checked and your commit does not appear to follow the guidelines in our [contributing guide](` + contributingURL + `). Spelling and README changes are better handled by opening an issue.
+Also, be sure to review the Hacktoberfest [quality standards](https://hacktoberfest.digitalocean.com/details#quality-standards)
+`
 }
 
 func isHacktoberfestSpam(req types.PullRequestOuter, client *github.Client) bool {
