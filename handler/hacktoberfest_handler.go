@@ -73,7 +73,7 @@ func isHacktoberfestSpam(req types.PullRequestOuter, client *github.Client) bool
 	anonymousSign := hasAnonymousSign(commits)
 	unsignedCommits := hasUnsigned(commits)
 
-	files, err := fetchPullRequestFiles(req, client)
+	files, err := fetchPullRequestFileList(req, client)
 	if err != nil {
 		log.Fatalf("unable to fetch pull request files for PR %d: %s", req.PullRequest.Number, err)
 		return false
