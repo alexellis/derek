@@ -89,7 +89,8 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 				req.Repository.Name,
 				err.Error())
 		}
-		if req.Action != handler.ClosedConstant {
+
+		if req.Action != handler.ClosedConstant && req.PullRequest.State != handler.ClosedConstant {
 			contributingURL := getContributingURL(derekConfig.ContributingURL, req.Repository.Owner.Login, req.Repository.Name)
 			if handler.EnabledFeature(hacktoberfest, derekConfig) {
 				isSpamPR, _ := handler.HandleHacktoberfestPR(req, contributingURL, config)

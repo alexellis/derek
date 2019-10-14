@@ -18,6 +18,7 @@ type PullRequest struct {
 	Number            int    `json:"number"`
 	AuthorAssociation string `json:"author_association"`
 	Body              string `json:"body"`
+	State             string `json:"state"`
 }
 
 type InstallationRequest struct {
