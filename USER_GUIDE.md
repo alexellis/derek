@@ -23,6 +23,7 @@ features:
  - dco_check
  - comments
  - pr_description_required
+ - hacktoberfest
 ```
 
 This file enables Derek usage for `rgee0` and `alexellis`, it also turns on all features available. If you specifically do not want the commenting or `dco_check` feature then comment out the line or remove it from your file. At least one feature is required for Derek to be of use.
@@ -36,6 +37,12 @@ Derek will add a label of `no-dco` and a comment to help the PR submitter fix th
 ### Feature: `pr_description_required`
 
 If `pr_description_required` is specified in the feature list then Derek will inform you that a PR needs a description. He also adds the `invalid` label.
+
+### Feature: `hacktoberfest`
+
+This feature is used as an effort to enforce the DigitalOcean Hacktoberfest [Quality Standards](https://hacktoberfest.digitalocean.com/details#quality-standards)
+
+If `hacktoberfest` is specified in the feature list then Derek will check whether _all_ the files included in the pull request are markdown files (ending in `.md`). If they are, and the user is a first-time contributor, and they did not sign off their commit, Derek will close the Pull Request, and add the `invalid` label.
 
 ### Feature: `redirect` config
 
