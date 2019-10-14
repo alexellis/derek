@@ -35,12 +35,7 @@ func HandleHacktoberfestPR(req types.PullRequestOuter, contributingURL string, c
 	if req.Action == openedPRAction {
 
 		if isHacktoberfestSpam(req, client) {
-			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{hacktoberfestPRLabel})
-			if assignLabelErr != nil {
-				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
-				return true, assignLabelErr
-			}
-
+			// Close PR first, to prevent other handlers from executing on "label" events
 			closeState := "close"
 			input := &github.IssueRequest{State: &closeState}
 
@@ -51,6 +46,12 @@ func HandleHacktoberfestPR(req types.PullRequestOuter, contributingURL string, c
 			}
 
 			fmt.Println(fmt.Sprintf("Request to close issue #%d was successful.\n", req.PullRequest.Number))
+
+			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{hacktoberfestPRLabel})
+			if assignLabelErr != nil {
+				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
+				return true, assignLabelErr
+			}
 
 			body := hacktoberfestSpamComment(contributingURL)
 
@@ -66,7 +67,7 @@ func HandleHacktoberfestPR(req types.PullRequestOuter, contributingURL string, c
 }
 
 func hacktoberfestSpamComment(contributingURL string) string {
-	return `Thank you for your contribution. I've checked and your commit does not appear to follow the guidelines in our [contributing guide](` + contributingURL + `). Spelling and README changes are better handled by opening an issue.
+	return `Thank you for your interest in this project. I've checked and your commit does not appear to follow the guidelines in our [contributing guide](` + contributingURL + `). Spelling and README changes are better handled by opening an issue.
 Also, be sure to review the Hacktoberfest [quality standards](https://hacktoberfest.digitalocean.com/details#quality-standards)
 `
 }
