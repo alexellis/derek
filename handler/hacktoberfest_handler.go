@@ -67,10 +67,10 @@ func HandleHacktoberfestPR(req types.PullRequestOuter, contributingURL string, c
 }
 
 func hacktoberfestSpamComment(contributingURL string) string {
-	return `Thank you for your interest in this project, but unfortunately your commit does not appear to follow [contributing guidelines](` + contributingURL + `).
+	return `Thank you for your interest in this project, but unfortunately your commit did not follow the [contributing guidelines](` + contributingURL + `).
 
 Check the following:
-* Did you [sign-off the commit?](https://github.com/openfaas/faas/blob/master/CONTRIBUTING.md#sign-your-work)
+* Did you add a ["Signed-off-by" line to the commit?](https://developercertificate.org)
 * Did you send a PR to fix a typo instead of raising an issue?
 * Are you a first-time contributor who has skipped reading the [contributing guidelines](` + contributingURL + `)?
 
