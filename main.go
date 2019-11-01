@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/google/go-github/github"
+
 	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/config"
 
@@ -25,6 +27,7 @@ const (
 	deleted               = "deleted"
 	prDescriptionRequired = "pr_description_required"
 	hacktoberfest         = "hacktoberfest"
+	releaseNotes          = "release_notes"
 )
 
 func main() {
@@ -64,6 +67,35 @@ func main() {
 func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 
 	switch eventType {
+	case "release":
+		req := github.ReleaseEvent{}
+
+		if err := json.Unmarshal(bytesIn, &req); err != nil {
+			return fmt.Errorf("Cannot parse input %s", err.Error())
+		}
+
+		customer, err := auth.IsCustomer(req.Repo.Owner.GetLogin(), &http.Client{})
+		if err != nil {
+			return fmt.Errorf("unable to verify customer: %s/%s", req.Repo.Owner.GetLogin(), req.Repo.GetName())
+		} else if customer == false {
+			return fmt.Errorf("no customer found for: %s/%s", req.Repo.Owner.GetLogin(), req.Repo.GetName())
+		}
+
+		var derekConfig *types.DerekRepoConfig
+		if req.Repo.GetPrivate() {
+			derekConfig, err = handler.GetPrivateRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName(), int(req.Installation.GetID()), config)
+		} else {
+			derekConfig, err = handler.GetRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName())
+		}
+
+		err = fmt.Errorf(`"release_notes" feature not enabled`)
+		if handler.EnabledFeature(releaseNotes, derekConfig) {
+
+			handler := handler.NewReleaseHandler(config, int(req.Installation.GetID()))
+			err = handler.Handle(req)
+		}
+		return err
+
 	case "pull_request":
 		req := types.PullRequestOuter{}
 		if err := json.Unmarshal(bytesIn, &req); err != nil {
@@ -126,6 +158,7 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 		} else {
 			derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
 		}
+
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s\nError: %s",
 				req.Repository.Owner.Login,
