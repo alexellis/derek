@@ -46,11 +46,13 @@ func (h *UpdatingReleaseHandler) Handle(req github.ReleaseEvent) error {
 
 func updateReleaseNotes(client *github.Client, owner, repo, latestTag string) error {
 
-	workingReleases, err := getWorkingReleases(client, owner, repo, latestTag)
-
+	listOptions := &github.ListOptions{}
+	releases, _, err := client.Repositories.ListReleases(context.Background(), owner, repo, listOptions)
 	if err != nil {
 		return err
 	}
+
+	workingReleases := getWorkingReleases(releases, owner, repo, latestTag)
 
 	opts := &github.PullRequestListOptions{
 		State:     "closed",
@@ -96,13 +98,8 @@ func updateReleaseNotes(client *github.Client, owner, repo, latestTag string) er
 	return err
 }
 
-func getWorkingReleases(client *github.Client, owner, repo, tag string) (WorkingRelease, error) {
+func getWorkingReleases(releases []*github.RepositoryRelease, owner, repo, tag string) WorkingRelease {
 	rel := WorkingRelease{}
-	listOptions := &github.ListOptions{}
-	releases, _, err := client.Repositories.ListReleases(context.Background(), owner, repo, listOptions)
-	if err != nil {
-		return WorkingRelease{}, err
-	}
 
 	var count int
 	var r *github.RepositoryRelease
@@ -113,7 +110,7 @@ func getWorkingReleases(client *github.Client, owner, repo, tag string) (Working
 			rel.CurrentTag = tag
 			rel.CurrentRelease = r
 
-			if count+1 <= len(releases) {
+			if count+1 < len(releases) {
 				prior := releases[count+1]
 				rel.PreviousDate = prior.CreatedAt.Time
 				rel.PreviousTag = prior.GetTagName()
@@ -123,7 +120,7 @@ func getWorkingReleases(client *github.Client, owner, repo, tag string) (Working
 		}
 	}
 
-	return rel, nil
+	return rel
 }
 
 func includePR(pr github.PullRequest, previous, current time.Time) bool {
