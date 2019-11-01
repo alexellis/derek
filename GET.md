@@ -70,8 +70,9 @@ Enter these OAuth Permissions/Scopes:
 - Pull requests - read/write
 - Repository metadata - read only
 
-If you are setting this up on a private repository you need to grant derek permissions to download content, this is so that he can download the config file you'll create:
-- Repository contents - read only
+If you are setting this up on a private repository you need to grant Derek permissions to download content, this is so that he can download the config file. The write permissions are so that Derek can update your release notes if you are using the `release_notes` feature.
+
+- Repository contents - read/write
 
 Subscribe to these events:
 
