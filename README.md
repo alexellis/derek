@@ -90,11 +90,11 @@ There are [over a dozen contributors](https://github.com/alexellis/derek/graphs/
 
 Maintainers:
 
-* Alex Ellis - creator & maintainer
+* Alex Ellis - creator & primary maintainer
 * Richard Gee ([@rgee0](https://github.com/rgee0)) - co-maintainer
 * Martin Dekov ([@martindekov](https://github.com/martindekov)) - co-maintainer
 
-Main contributors:
+Notable contributors:
 
 * John McCabe ([@johnmccabe](https://github.com/johnmccabe)) - contributor
 * Lubomir I. Ivanov ([@neolit123](https://github.com/neolit123)) - contributor
