@@ -6,6 +6,16 @@ This is a user-guide for all the features available in Derek.
 
 You can self-host Derek or use the managed service, see [GET.md](./GET.md).
 
+### Share Derek - with a GitHub badge
+
+Copy the below to your README.md file and replace "owner" and "repo"
+
+```
+[![Derek](https://alexellis.o6s.io/badge?repo=derek&owner=alexellis)](https://github.com/alexellis/derek/)
+```
+
+See [alexellis/derek-fn](https://github.com/alexellis/derek-fn) for more.
+
 ### Enable Derek for a repo
 
 Add a .DEREK.yml file to the repository.
