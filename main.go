@@ -74,27 +74,30 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			return fmt.Errorf("Cannot parse input %s", err.Error())
 		}
 
-		customer, err := auth.IsCustomer(req.Repo.Owner.GetLogin(), &http.Client{})
-		if err != nil {
-			return fmt.Errorf("unable to verify customer: %s/%s", req.Repo.Owner.GetLogin(), req.Repo.GetName())
-		} else if customer == false {
-			return fmt.Errorf("no customer found for: %s/%s", req.Repo.Owner.GetLogin(), req.Repo.GetName())
-		}
+		if req.GetAction() == "created" {
+			customer, err := auth.IsCustomer(req.Repo.Owner.GetLogin(), &http.Client{})
+			if err != nil {
+				return fmt.Errorf("unable to verify customer: %s/%s", req.Repo.Owner.GetLogin(), req.Repo.GetName())
+			} else if customer == false {
+				return fmt.Errorf("no customer found for: %s/%s", req.Repo.Owner.GetLogin(), req.Repo.GetName())
+			}
 
-		var derekConfig *types.DerekRepoConfig
-		if req.Repo.GetPrivate() {
-			derekConfig, err = handler.GetPrivateRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName(), int(req.Installation.GetID()), config)
-		} else {
-			derekConfig, err = handler.GetRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName())
-		}
+			var derekConfig *types.DerekRepoConfig
+			if req.Repo.GetPrivate() {
+				derekConfig, err = handler.GetPrivateRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName(), int(req.Installation.GetID()), config)
+			} else {
+				derekConfig, err = handler.GetRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName())
+			}
 
-		err = fmt.Errorf(`"release_notes" feature not enabled`)
-		if handler.EnabledFeature(releaseNotes, derekConfig) {
+			err = fmt.Errorf(`"release_notes" feature not enabled`)
+			if handler.EnabledFeature(releaseNotes, derekConfig) {
 
-			handler := handler.NewReleaseHandler(config, int(req.Installation.GetID()))
-			err = handler.Handle(req)
+				handler := handler.NewReleaseHandler(config, int(req.Installation.GetID()))
+				err = handler.Handle(req)
+			}
+			return err
 		}
-		return err
+		break
 
 	case "pull_request":
 		req := types.PullRequestOuter{}
