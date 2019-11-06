@@ -18,10 +18,15 @@ It's derek ![](https://pbs.twimg.com/media/DPo4OyrWsAAOk_i.png). Nice to meet yo
 
 Derek is a bot for GitHub designed to reduce fatigue for maintainers and to delegate permissions to non-admin users in your community or team. 
 
-* Let non-admin users manage Issues and PRs by commenting `Derek <command>`
+All features are modular and can be enabled/disabled as required:
+
+* Let designated non-admin users manage Issues and PRs by commenting `Derek <command>`
 * Enforce [Developer Certificate of Origin (DCO) checking (optional)](https://developercertificate.org)
 * Automatically label/flag PRs without a *Description*
-* Use the managed service or self-host
+* Label PRs from first-time contributors
+* Automate generation of release notes based upon PRs closed
+* Detect spam PRs (from hacktoberfest)
+* Use the free SaaS or self-host
 
 ### User guide
 
@@ -51,22 +56,17 @@ The idea for a bot that could comment on issues or respond to activity is from t
 
 Some of our users include:
 
-* Docker / Moby:
+* [Docker / Moby](https://github.com/moby/moby/issues/35736)
 
-https://github.com/moby/moby/issues/35736
+* [OpenFaaS](https://github.com/openfaas/faas-cli/issues/85)
 
-* OpenFaaS
+* [inlets](https://github.com/inlets/inlets)
 
-https://github.com/openfaas/faas-cli/issues/85
+* [goreleaser](https://github.com/goreleaser/goreleaser/commit/9d418755dd9f37589f5a97f34b2c47e2e2f1325a)
 
-* goreleaser
+* [evilsocket](https://github.com/evilsocket)
 
-See: [goreleaser's .DEREK.yml file](https://github.com/goreleaser/goreleaser/commit/9d418755dd9f37589f5a97f34b2c47e2e2f1325a)
-Example: [issue 1053](https://github.com/goreleaser/goreleaser/issues/1053)
-
-* [Subsurface Diving app](https://subsurface-divelog.org)
-
-Example: https://github.com/Subsurface-divelog/subsurface/pull/1748
+* [Subsurface Diving app](https://github.com/Subsurface-divelog/subsurface/pull/1748)
 
 See other users in our [customers file](./.CUSTOMERS)
 
@@ -77,6 +77,7 @@ See other users in our [customers file](./.CUSTOMERS)
 * [x] Edit title of Issue/PR
 * [x] Toggle the DCO-feature for those who don't need compliance
 * [x] Show help messages such as how to join Slack or asking for a rebase via `Derek message`
+* [x] Automate release notes based upon PRs closed
 
 Future work:
 
