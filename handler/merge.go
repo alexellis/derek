@@ -48,10 +48,17 @@ func (m *merge) Merge(req types.IssueCommentOuter, cmdType string, cmdValue stri
 				return "invalid merge policy", nil
 			}
 
-			if len(m.RepoConfig.MustApprove) == 1 &&
-				pr.GetUser().GetLogin() == m.RepoConfig.MustApprove[0] {
-				fmt.Printf("OK to merge own PR.\n")
-			} else if len(m.RepoConfig.MustApprove) > 0 {
+			mustApprove := []string{}
+
+			// An approver, can't approve their own PRs so must come out
+			// of the list
+			for _, approver := range m.RepoConfig.MustApprove {
+				if approver != pr.GetUser().GetLogin() {
+					mustApprove = append(mustApprove, approver)
+				}
+			}
+
+			if len(mustApprove) > 0 {
 
 				listOpts := &github.ListOptions{}
 				reviews, _, listReviewsErr := client.PullRequests.ListReviews(ctx, req.Repository.Owner.Login,
@@ -63,7 +70,7 @@ func (m *merge) Merge(req types.IssueCommentOuter, cmdType string, cmdValue stri
 
 				mustApproveConfirmed := []github.PullRequestReview{}
 				for _, r := range reviews {
-					for _, approver := range m.RepoConfig.MustApprove {
+					for _, approver := range mustApprove {
 						if r.GetState() == "APPROVED" &&
 							r.GetUser().GetLogin() == approver &&
 							r.GetCommitID() == pr.GetHead().GetSHA() {
