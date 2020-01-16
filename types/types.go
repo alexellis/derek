@@ -56,6 +56,12 @@ type Issue struct {
 	State     string       `json:"state"`
 	Milestone Milestone    `json:"milestone"`
 	URL       string       `json:"url"`
+
+	PullRequest *PullRequestIssueLink `json:"pull_request"`
+}
+
+type PullRequestIssueLink struct {
+	URL string `json:"url"`
 }
 
 type Milestone struct {

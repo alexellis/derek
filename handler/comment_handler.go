@@ -36,6 +36,7 @@ const (
 	assignReviewerConstant   string = "AssignReviewer"
 	unassignReviewerConstant string = "UnassignReviewer"
 	messageConstant          string = "message"
+	mergePRConstant          string = "Merge"
 
 	noDCO             string = "no-dco"
 	labelLimitDefault int    = 5
@@ -118,6 +119,12 @@ func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfi
 	case messageConstant:
 
 		feedback, err = createMessage(req, command.Type, command.Value, config, derekConfig)
+		break
+
+	case mergePRConstant:
+		merger := merge{}
+		feedback, err = merger.Merge(req, command.Type, command.Value)
+
 		break
 
 	default:
@@ -434,6 +441,7 @@ func parse(body string, commandTriggers []string) *types.CommentAction {
 			commandTrigger + "clear reviewer: ":   unassignReviewerConstant,
 			commandTrigger + "message: ":          messageConstant,
 			commandTrigger + "msg: ":              messageConstant,
+			commandTrigger + "merge":              mergePRConstant,
 		}
 
 		for trigger, commandType := range commands {
