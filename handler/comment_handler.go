@@ -134,7 +134,7 @@ func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfi
 		}
 
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 
 		break
@@ -145,10 +145,10 @@ func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfi
 		break
 	}
 
-	fmt.Print(feedback)
+	log.Print(feedback)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 }
 
