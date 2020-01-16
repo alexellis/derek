@@ -122,7 +122,11 @@ func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfi
 		break
 
 	case mergePRConstant:
-		merger := merge{}
+		merger := merge{
+			Config:     config,
+			RepoConfig: derekConfig,
+		}
+
 		feedback, err = merger.Merge(req, command.Type, command.Value)
 
 		break

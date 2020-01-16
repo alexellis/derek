@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/alexellis/derek/config"
 	"github.com/alexellis/derek/types"
@@ -10,16 +11,25 @@ import (
 )
 
 type merge struct {
-	Config *config.Config
+	Config     config.Config
+	RepoConfig *types.DerekRepoConfig
 }
 
 func (m *merge) Merge(req types.IssueCommentOuter, cmdType string, cmdValue string) (string, error) {
 	result := ""
 
-	client, ctx := makeClient(req.Installation.ID, *m.Config)
+	client, ctx := makeClient(req.Installation.ID, m.Config)
 
 	if req.Issue.PullRequest == nil {
 		return "can't merge a non-PR issue", nil
+	}
+
+	if len(m.RepoConfig.Mergers) == 0 {
+		return "can't merge without at least one merger", nil
+	}
+
+	if mayMerge(req.Comment.User.Login, m.RepoConfig.Mergers) == false {
+		return fmt.Sprintf("user %s, may not merge", req.Comment.User.Login), nil
 	}
 
 	pr, _, err := client.PullRequests.Get(ctx, req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number)
@@ -38,16 +48,46 @@ func (m *merge) Merge(req types.IssueCommentOuter, cmdType string, cmdValue stri
 				return "invalid merge policy", nil
 			}
 
+			listOpts := &github.ListOptions{}
+
+			reviews, _, listReviewsErr := client.PullRequests.ListReviews(ctx, req.Repository.Owner.Login,
+				req.Repository.Name, req.Issue.Number, listOpts)
+
+			if listReviewsErr != nil {
+				return fmt.Sprintf("unable to list reviews for %d", pr.GetID()), listReviewsErr
+			}
+
+			mustApproveConfirmed := []github.PullRequestReview{}
+			for _, r := range reviews {
+				for _, approver := range m.RepoConfig.MustApprove {
+					if r.GetState() == "APPROVED" &&
+						r.GetUser().GetLogin() == approver &&
+						r.GetCommitID() == pr.GetHead().GetSHA() {
+						mustApproveConfirmed = append(mustApproveConfirmed, *r)
+					}
+				}
+			}
+
+			if len(m.RepoConfig.MustApprove) > 0 {
+				if len(m.RepoConfig.MustApprove) != len(mustApproveConfirmed) {
+					return fmt.Sprintf("needed %d approvals, but had: %d",
+						len(m.RepoConfig.MustApprove), len(mustApproveConfirmed)), nil
+				}
+			}
+
 			pullRequestOptions := github.PullRequestOptions{
 				MergeMethod: "rebase",
 				CommitTitle: fmt.Sprintf("Merge PR #%d", req.Issue.Number),
 			}
+
 			mergeRes, _, err := client.PullRequests.Merge(ctx,
 				req.Repository.Owner.Login, req.Repository.Name, req.Issue.Number,
 				fmt.Sprintf(`Merging PR #%d by Derek
+
 This is an automated merge by the bot Derek, find more
 https://github.com/alexellis/derek/
-Signed-off-by: derek@openfaas.com`, req.Issue.Number), &pullRequestOptions)
+
+Signed-off-by: Derek <derek@openfaas.com>`, req.Issue.Number), &pullRequestOptions)
 
 			if err != nil {
 
@@ -75,8 +115,12 @@ func sendComment(client *github.Client, login string, repo string, issue int, co
 	issueComment := &github.IssueComment{
 		Body: &comment,
 	}
-	client.Issues.CreateComment(context.Background(),
+
+	_, _, err := client.Issues.CreateComment(context.Background(),
 		login, repo, issue, issueComment)
+	if err != nil {
+		log.Printf("Error creating comment %s %s %d\n", login, repo, issue)
+	}
 }
 
 func validMergePolicy(req types.IssueCommentOuter) bool {
@@ -89,4 +133,16 @@ func validMergePolicy(req types.IssueCommentOuter) bool {
 	}
 
 	return validDCO
+}
+
+func mayMerge(user string, list []string) bool {
+	may := false
+
+	for _, item := range list {
+		if item == user {
+			may = true
+			break
+		}
+	}
+	return may
 }
