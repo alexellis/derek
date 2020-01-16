@@ -130,7 +130,7 @@ func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfi
 		feedback, err = merger.Merge(req, command.Type, command.Value)
 
 		if len(feedback) > 0 {
-			log.Printf("Feedback: %s", feedback)
+			log.Printf("Feedback: %s\n", feedback)
 		}
 
 		if err != nil {

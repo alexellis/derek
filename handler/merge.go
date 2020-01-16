@@ -70,6 +70,7 @@ func (m *merge) Merge(req types.IssueCommentOuter, cmdType string, cmdValue stri
 
 				mustApproveConfirmed := []github.PullRequestReview{}
 				for _, r := range reviews {
+					fmt.Printf("Review state: %s, commitID: %s, HEADSHA: %s\n", r.GetState(), r.GetCommitID(), pr.GetHead().GetSHA())
 					for _, approver := range mustApprove {
 						if r.GetState() == "APPROVED" &&
 							r.GetUser().GetLogin() == approver &&
