@@ -48,27 +48,30 @@ func (m *merge) Merge(req types.IssueCommentOuter, cmdType string, cmdValue stri
 				return "invalid merge policy", nil
 			}
 
-			listOpts := &github.ListOptions{}
+			if len(m.RepoConfig.MustApprove) == 1 &&
+				pr.GetUser().GetLogin() == m.RepoConfig.MustApprove[0] {
+				fmt.Printf("OK to merge own PR.\n")
+			} else if len(m.RepoConfig.MustApprove) > 0 {
 
-			reviews, _, listReviewsErr := client.PullRequests.ListReviews(ctx, req.Repository.Owner.Login,
-				req.Repository.Name, req.Issue.Number, listOpts)
+				listOpts := &github.ListOptions{}
+				reviews, _, listReviewsErr := client.PullRequests.ListReviews(ctx, req.Repository.Owner.Login,
+					req.Repository.Name, req.Issue.Number, listOpts)
 
-			if listReviewsErr != nil {
-				return fmt.Sprintf("unable to list reviews for %d", pr.GetID()), listReviewsErr
-			}
+				if listReviewsErr != nil {
+					return fmt.Sprintf("unable to list reviews for %d", pr.GetID()), listReviewsErr
+				}
 
-			mustApproveConfirmed := []github.PullRequestReview{}
-			for _, r := range reviews {
-				for _, approver := range m.RepoConfig.MustApprove {
-					if r.GetState() == "APPROVED" &&
-						r.GetUser().GetLogin() == approver &&
-						r.GetCommitID() == pr.GetHead().GetSHA() {
-						mustApproveConfirmed = append(mustApproveConfirmed, *r)
+				mustApproveConfirmed := []github.PullRequestReview{}
+				for _, r := range reviews {
+					for _, approver := range m.RepoConfig.MustApprove {
+						if r.GetState() == "APPROVED" &&
+							r.GetUser().GetLogin() == approver &&
+							r.GetCommitID() == pr.GetHead().GetSHA() {
+							mustApproveConfirmed = append(mustApproveConfirmed, *r)
+						}
 					}
 				}
-			}
 
-			if len(m.RepoConfig.MustApprove) > 0 {
 				if len(m.RepoConfig.MustApprove) != len(mustApproveConfirmed) {
 					return fmt.Sprintf("needed %d approvals, but had: %d",
 						len(m.RepoConfig.MustApprove), len(mustApproveConfirmed)), nil

@@ -129,6 +129,14 @@ func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfi
 
 		feedback, err = merger.Merge(req, command.Type, command.Value)
 
+		if len(feedback) > 0 {
+			log.Printf("Feedback: %s", feedback)
+		}
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		break
 
 	default:
@@ -446,6 +454,7 @@ func parse(body string, commandTriggers []string) *types.CommentAction {
 			commandTrigger + "message: ":          messageConstant,
 			commandTrigger + "msg: ":              messageConstant,
 			commandTrigger + "merge":              mergePRConstant,
+			commandTrigger + "rebase":             mergePRConstant,
 		}
 
 		for trigger, commandType := range commands {
