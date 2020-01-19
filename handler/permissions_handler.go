@@ -55,12 +55,12 @@ func PermittedUserFeature(attemptedFeature string, config *types.DerekRepoConfig
 func readConfigFromURL(client http.Client, url string) []byte {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln(fmt.Sprintf("unable to make request to %q, %e", url, err))
 	}
 
 	res, resErr := client.Do(req)
 	if resErr != nil {
-		log.Fatalln(resErr)
+		log.Fatalln(fmt.Sprintf("could not action request url: %q, err: %s", url, resErr.Error()))
 	}
 
 	if res.StatusCode != http.StatusOK {
@@ -128,27 +128,35 @@ func GetRepoConfig(owner string, repository string) (*types.DerekRepoConfig, err
 }
 
 func buildDerekConfig(client http.Client, bytesConfig []byte) (*types.DerekRepoConfig, error) {
-	var config types.DerekRepoConfig
+	var localConfig types.DerekRepoConfig
+	var remoteConfig types.DerekRepoConfig
 
-	err := parseConfig(bytesConfig, &config)
+	err := parseConfig(bytesConfig, &localConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	// The config contains a redirect URL. Load the config from there.
-	if len(config.Redirect) > 0 {
-		err = validateRedirectURL(config.Redirect)
+	if len(localConfig.Redirect) > 0 {
+		err = validateRedirectURL(localConfig.Redirect)
 		if err != nil {
 			return nil, err
 		}
-		bytesConfig = readConfigFromURL(client, config.Redirect)
-		err = parseConfig(bytesConfig, &config)
+
+		bytesConfig = readConfigFromURL(client, localConfig.Redirect)
+		err = parseConfig(bytesConfig, &remoteConfig)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return &config, nil
+	mergedConfig, err := types.MergeDerekRepoConfigs(localConfig, remoteConfig)
+
+	if err != nil {
+		return &mergedConfig, err
+	}
+
+	return &mergedConfig, nil
 }
 
 func parseConfig(bytesOut []byte, config *types.DerekRepoConfig) error {
