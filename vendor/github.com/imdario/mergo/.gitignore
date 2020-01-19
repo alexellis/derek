@@ -1,9 +1,11 @@
+#### joe made this: http://goel.io/joe
+
+#### go ####
 # Binaries for programs and plugins
 *.exe
 *.dll
 *.so
 *.dylib
-derek
 
 # Test binary, build with `go test -c`
 *.test
@@ -14,13 +16,18 @@ derek
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
-*.txt
-auth/*.pem
+#### vim ####
+# Swap
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
 
-*.pem
-template
-build
-secrets.yml
-derek-*-key
+# Session
+Session.vim
 
-.idea/
+# Temporary
+.netrwhist
+*~
+# Auto-generated tag files
+tags

@@ -246,3 +246,13 @@ Additional white-space/new-lines in comments are not yet supported
 Users can be specified in a list called `curators` or `maintainers` - both are offered for when the term `maintainer` is a loaded term. The Moby project use this variant, for everyone else `maintainers` may make sense.
 
 Usernames are strictly case-sensitive.
+
+
+### Local overrides and merging config
+
+You can specify a `redirect` URL in the .DEREK.yml file, this instructs derek to get config from that remote URL. You can also
+apply local overrides and additions to the config set in the remote file.
+
+For example, to add a contributor to that repo (in addition to the existing contributors) you can specify the remote file and also 
+add the `maintainers` section to your local file. These lists will then be merged, giving all users in the merged set access to
+derek.
