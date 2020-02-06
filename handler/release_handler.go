@@ -83,17 +83,19 @@ func updateReleaseNotes(client *github.Client, owner, repo, latestTag string) er
 
 		author := c.GetAuthor().GetLogin()
 
-		if len(author) == 0 {
-			author = c.GetCommit().GetAuthor().GetLogin()
+		// log.Println("1", c.GetAuthor())
+		// log.Println("2", c.GetCommitter())
+		// log.Println("3", c.GetCommit().GetAuthor())
+
+		if len(author) > 0 {
+			author = " by @" + author
+		} else {
+			author = " by " + c.GetCommit().GetAuthor().GetName()
 		}
 
 		title := c.GetCommit().GetMessage()
 		if index := strings.Index(title, "\n"); index > -1 {
 			title = title[:index]
-		}
-
-		if len(author) > 0 {
-			author = "by @" + author
 		}
 
 		output = output + fmt.Sprintf("%s %s%s\n", id, title, author)
