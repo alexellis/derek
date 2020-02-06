@@ -1,6 +1,6 @@
 # derek
 
-[![Build Status](https://travis-ci.org/alexellis/derek.svg?branch=master)](https://travis-ci.org/alexellis/derek)
+[![Build Status](https://travis-ci.com/alexellis/derek.svg?branch=master)](https://travis-ci.com/alexellis/derek)
 [![OpenFaaS](https://img.shields.io/badge/openfaas-serverless-blue.svg)](https://www.openfaas.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![](https://godoc.org/github.com/alexellis/derek?status.svg)](https://godoc.org/github.com/alexellis/derek)
@@ -78,6 +78,7 @@ See other users in our [customers file](./.CUSTOMERS)
 * [x] Toggle the DCO-feature for those who don't need compliance
 * [x] Show help messages such as how to join Slack or asking for a rebase via `Derek message`
 * [x] Automate release notes based upon PRs closed
+* [x] Add each commit to release notes
 
 Future work:
 
