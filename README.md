@@ -93,15 +93,16 @@ There are [over a dozen contributors](https://github.com/alexellis/derek/graphs/
 
 Maintainers:
 
-* Alex Ellis - creator & primary maintainer
-* Richard Gee ([@rgee0](https://github.com/rgee0)) - co-maintainer
+* Alex Ellis - creator & lead maintainer
 * Martin Dekov ([@martindekov](https://github.com/martindekov)) - co-maintainer
 
-Notable contributors:
+Hall of fame:
 
-* John McCabe ([@johnmccabe](https://github.com/johnmccabe)) - contributor
-* Lubomir I. Ivanov ([@neolit123](https://github.com/neolit123)) - contributor
-* Ivana Yovcheva ([@ivanayov](https://github.com/ivanayov)) - contributor
+* Burton Rheutan ([@burtonr](https://github.com/burtonr))
+* John McCabe ([@johnmccabe](https://github.com/johnmccabe))
+* Lubomir I. Ivanov ([@neolit123](https://github.com/neolit123))
+* Ivana Yovcheva ([@ivanayov](https://github.com/ivanayov))
+* Richard Gee ([@rgee0](https://github.com/rgee0))
 
 Alex Ellis created Derek to automate project maintainer duties around licensing and to help bring granular permissions back to GitHub. Derek has empowered contributors in the OpenFaaS community to run and maintain the project without needing full write access. OpenFaaS contributors continue to improve Derek so they can get the job done without fuss.
 
