@@ -122,7 +122,9 @@ func buildCommits(client *github.Client, workingReleases WorkingRelease, owner, 
 	res, _, err := client.Repositories.ListCommits(context.Background(), owner, repo, &opts)
 
 	for _, c := range res {
-		commits = append(commits, *c)
+		if includeCommits(*c, workingReleases.PreviousDate, workingReleases.CurrentDate) {
+			commits = append(commits, *c)
+		}
 	}
 
 	if err != nil {
@@ -203,4 +205,14 @@ func updateRelease(client *github.Client, release *github.RepositoryRelease, own
 
 	_, _, err := client.Repositories.EditRelease(context.Background(), owner, repo, *release.ID, release)
 	return err
+}
+
+func includeCommits(cm github.RepositoryCommit, previous, current time.Time) bool {
+	window := time.Minute * 1 // GitHub is an async system and events can end up with times that are out by a few seconds.
+
+	committed := cm.GetCommit().GetCommitter().GetDate().Equal(time.Time{}) == false
+
+	return cm.GetCommit().GetCommitter().GetDate().After(previous.Add(window)) &&
+		cm.GetCommit().GetCommitter().GetDate().Before(current.Add(window)) &&
+		committed
 }
