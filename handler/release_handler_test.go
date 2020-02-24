@@ -153,3 +153,53 @@ func Test_getWorkingReleases_OneRelease(t *testing.T) {
 	}
 
 }
+
+func Test_includeCommit_AfterCurrentPeriod(t *testing.T) {
+	now := time.Now()
+
+	cmDate := now.Add(time.Hour * 48)
+	cm := github.RepositoryCommit{
+		Commit: &github.Commit{
+			Committer: &github.CommitAuthor{
+				Date: &cmDate,
+			},
+		},
+	}
+
+	previous := now.Add(time.Hour * -24)
+	current := now.Add(time.Hour * 24)
+
+	got := includeCommits(cm, previous, current)
+	want := false
+
+	if got != want {
+		t.Errorf("Included value for Commot %s incorrect for range: [%s-%s] got: %v, want %v",
+			cm.GetCommit().GetCommitter().GetDate().String(), previous.String(), current.String(), got, want)
+		t.Fail()
+	}
+}
+
+func Test_includeCommit_WithinCurrentRange(t *testing.T) {
+	now := time.Now()
+
+	cmDate := now.Add(time.Hour)
+	cm := github.RepositoryCommit{
+		Commit: &github.Commit{
+			Committer: &github.CommitAuthor{
+				Date: &cmDate,
+			},
+		},
+	}
+
+	previous := now.Add(time.Hour * -24)
+	current := now.Add(time.Hour * 24)
+
+	got := includeCommits(cm, previous, current)
+	want := true
+	t.Logf("Running Test Case")
+	if got != want {
+		t.Errorf("Included value for Commit %s incorrect for range: [%s-%s] got: %v, want %v",
+			cm.GetCommit().GetCommitter().GetDate().String(), previous.String(), current.String(), got, want)
+		t.Fail()
+	}
+}
