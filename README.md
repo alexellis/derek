@@ -10,6 +10,8 @@
 
 Derek reduces fatigue for maintainers by automating governance and delegating permissions to your team and community.
 
+> Follow [@derekapp](https://twitter.com/derekapp) on Twitter.
+
 ## User guide / documentation
 
 [From the team](https://github.com/alexellis/derek#maintainers-and-contributors) that brought you [OpenFaaS](https://www.openfaas.com) - Serverless Functions Made Simple.
