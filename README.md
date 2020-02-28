@@ -6,27 +6,26 @@
 [![](https://godoc.org/github.com/alexellis/derek?status.svg)](https://godoc.org/github.com/alexellis/derek)
 [![Derek App](https://alexellis.o6s.io/badge?owner=alexellis&repo=derek)](https://github.com/alexellis/derek/)
 
-It's derek ![](https://pbs.twimg.com/media/DPo4OyrWsAAOk_i.png). Nice to meet you. I'd like to help you with Pull Requests and Issues on your GitHub project.
+![Derek's logo](https://pbs.twimg.com/media/DPo4OyrWsAAOk_i.png)
 
-> Please show support for the project and **Star** the repo.
-
-[From the team](https://github.com/alexellis/derek#maintainers-and-contributors) that brought you [OpenFaaS](https://www.openfaas.com) - Serverless Functions Made Simple.
+Derek reduces fatigue for maintainers by automating governance and delegating permissions to your team and community.
 
 ## User guide / documentation
 
-### Core features
+[From the team](https://github.com/alexellis/derek#maintainers-and-contributors) that brought you [OpenFaaS](https://www.openfaas.com) - Serverless Functions Made Simple.
 
-Derek is a bot for GitHub designed to reduce fatigue for maintainers and to delegate permissions to non-admin users in your community or team. 
+### Core features
 
 All features are modular and can be enabled/disabled as required:
 
-* Let designated non-admin users manage Issues and PRs by commenting `Derek <command>`
+* Generate changelogs for releases with PRs merged and commits added
+* Let designated non-admin users manage Issues and PRs by commenting `Derek <command>` or `/command`
 * Enforce [Developer Certificate of Origin (DCO) checking (optional)](https://developercertificate.org)
 * Automatically label/flag PRs without a *Description*
 * Label PRs from first-time contributors
-* Automate generation of release notes based upon PRs closed
 * Detect spam PRs (from hacktoberfest)
-* Use the free SaaS or self-host
+
+Self-host, or use the free managed version.
 
 ### User guide
 
@@ -62,6 +61,10 @@ Some of our users include:
 
 * [inlets](https://github.com/inlets/inlets)
 
+* [arkade](https://github.com/alexellis/arkade)
+
+* [k3sup](https://github.com/alexellis/k3sup)
+
 * [goreleaser](https://github.com/goreleaser/goreleaser/commit/9d418755dd9f37589f5a97f34b2c47e2e2f1325a)
 
 * [evilsocket](https://github.com/evilsocket)
@@ -82,6 +85,7 @@ See other users in our [customers file](./.CUSTOMERS)
 
 Future work:
 
+* [ ] Add merge feature based upon policy (in-progress)
 * [ ] Caching of customers / .DEREK.yml file
 * [ ] Observability of GitHub API Token rate limit
 * [ ] Add roles & actions
