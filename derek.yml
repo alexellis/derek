@@ -3,9 +3,9 @@ provider:
   gateway: http://127.0.0.1:8080
 
 functions:
-  derek-0911:
+  derek-0913:
     handler: ./
-    image: alexellis/derek:0.9.11
+    image: alexellis/derek:0.9.13
     lang: dockerfile
     environment:
       debug: true

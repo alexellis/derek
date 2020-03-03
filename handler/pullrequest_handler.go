@@ -37,41 +37,53 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 
 	client := factory.MakeClient(ctx, token, config)
 
+	if req.Action == "review_requested" {
+		log.Printf("[%s/%s] review_requested on PR %d, unable to process this request\n",
+			req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
+		return
+	}
+
 	if req.Action == openedPRAction {
 		if req.PullRequest.FirstTimeContributor() == true {
 			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"new-contributor"})
 			if assignLabelErr != nil {
-				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
+				log.Fatalf("[%s/%s] %s limit: %d, remaining: %d",
+					req.Repository.Owner.Login, req.Repository.Name, assignLabelErr, res.Limit, res.Remaining)
 			}
 		}
 	}
 
 	commits, err := fetchPullRequestCommits(req, client)
 	if err != nil {
-		log.Fatalf("unable to fetch pull request commits for PR %d: %s", req.PullRequest.Number, err)
+		log.Fatalf("[%s/%s] unable to fetch pull request commits for PR %d: %s",
+			req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, err)
 	}
 
 	issue, res, labelErr := client.Issues.Get(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
 	if labelErr != nil {
-		log.Fatalf("unable to fetch labels for PR %d: %s", req.PullRequest.Number, err)
+		log.Fatalf("[%s/%s] unable to fetch labels for PR %d: %s",
+			req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, err)
 	}
-	fmt.Println("Rate limiting", res.Rate)
-	res.Body.Close()
+
+	fmt.Printf("[%s/%s] %s rate limit\n",
+		req.Repository.Owner.Login, req.Repository.Name, res.Rate)
+
+	defer res.Body.Close()
 
 	anonymousSign := hasAnonymousSign(commits)
 	unsignedCommits := hasUnsigned(commits)
 	noDcoLabelExists := hasNoDcoLabel(issue)
 
 	if !anonymousSign && !unsignedCommits {
-		fmt.Println("Things look OK right now.")
 		if noDcoLabelExists {
-			fmt.Println("Removing label")
+			fmt.Printf("[%s/%s] Removing no-dco label: PR: %d\n",
+				req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
 			res, removeLabelErr := client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, "no-dco")
 			if removeLabelErr != nil {
 				log.Fatalf("unable to remove DCO label from PR %d: %s", req.PullRequest.Number, err)
 			}
-			fmt.Println("Rate limiting", res.Rate)
-			res.Body.Close()
+			fmt.Printf("[%s/%s] Removing no-dco label: PR: %d - %v\n",
+				req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, res.Rate)
 		}
 		return
 	}
@@ -84,19 +96,21 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 	}
 
 	if !noDcoLabelExists {
-		fmt.Println("Applying DCO label")
+		fmt.Printf("[%s/%s] Adding no-dco label: PR: %d\n",
+			req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
+
 		_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"no-dco"})
 		if assignLabelErr != nil {
 			log.Fatalf("unable to add DCO label to PR %d: %s", req.PullRequest.Number, err)
 		}
 		fmt.Println("Rate limiting", res.Rate)
-		res.Body.Close()
 
 		if err = createPullRequestComment(ctx, body, req, client); err != nil {
 			log.Fatalf("unable to add comment on PR %d: %s", req.PullRequest.Number, err)
 		}
 	} else {
-		fmt.Println("DCO label was previously applied")
+		fmt.Printf("[%s/%s] DCO label already applied: PR: %d\n",
+			req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
 	}
 }
 
