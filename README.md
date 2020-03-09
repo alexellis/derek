@@ -73,6 +73,8 @@ Some of our users include:
 
 * [Subsurface Diving app](https://github.com/Subsurface-divelog/subsurface/pull/1748)
 
+* [okteto](https://github.com/okteto/okteto)
+
 See other users in our [customers file](./.CUSTOMERS)
 
 ## Backlog:
