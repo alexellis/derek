@@ -12,7 +12,6 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/config"
 	"github.com/alexellis/derek/types"
 	github "github.com/google/go-github/github"
@@ -52,27 +51,29 @@ func PermittedUserFeature(attemptedFeature string, config *types.DerekRepoConfig
 	return permitted
 }
 
-func readConfigFromURL(client http.Client, url string) []byte {
+func readConfigFromURL(client http.Client, url string) ([]byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatalln(fmt.Sprintf("unable to make request to %q, %e", url, err))
+		return nil, fmt.Errorf("unable to make request to %q, %e", url, err)
 	}
 
 	res, resErr := client.Do(req)
 	if resErr != nil {
-		log.Fatalln(fmt.Sprintf("could not action request url: %q, err: %s", url, resErr.Error()))
+		return nil, fmt.Errorf("could not action request url: %q, err: %s", url, resErr.Error())
 	}
 
 	if res.StatusCode != http.StatusOK {
-		log.Fatalln(fmt.Sprintf("HTTP Status code: %d while fetching config (%s)", res.StatusCode, req.URL.String()))
+		return nil, fmt.Errorf("HTTP Status code: %d while fetching config (%s)", res.StatusCode, req.URL.String())
 	}
-
-	defer res.Body.Close()
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
 	bytesOut, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
-	return bytesOut
+
+	return bytesOut, nil
 }
 
 func getValidRedirectDomains() []string {
@@ -122,7 +123,10 @@ func GetRepoConfig(owner string, repository string) (*types.DerekRepoConfig, err
 	}
 
 	configFile := fmt.Sprintf(configURLFormat, owner, repository, configFile)
-	bytesConfig := readConfigFromURL(client, configFile)
+	bytesConfig, err := readConfigFromURL(client, configFile)
+	if err != nil {
+		return nil, err
+	}
 
 	return buildDerekConfig(client, bytesConfig)
 }
@@ -143,7 +147,11 @@ func buildDerekConfig(client http.Client, bytesConfig []byte) (*types.DerekRepoC
 			return nil, err
 		}
 
-		bytesConfig = readConfigFromURL(client, localConfig.Redirect)
+		bytesConfig, err = readConfigFromURL(client, localConfig.Redirect)
+		if err != nil {
+			return nil, err
+		}
+
 		err = parseConfig(bytesConfig, &remoteConfig)
 		if err != nil {
 			return nil, err
