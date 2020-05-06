@@ -85,8 +85,14 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			var derekConfig *types.DerekRepoConfig
 			if req.Repo.GetPrivate() {
 				derekConfig, err = handler.GetPrivateRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName(), int(req.Installation.GetID()), config)
+				if err != nil {
+					return fmt.Errorf("unable to get private repo config: %s", err)
+				}
 			} else {
 				derekConfig, err = handler.GetRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName())
+				if err != nil {
+					return fmt.Errorf("unable to get repo config: %s", err)
+				}
 			}
 
 			err = fmt.Errorf(`"release_notes" feature not enabled`)

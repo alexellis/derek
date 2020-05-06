@@ -199,7 +199,7 @@ func createPullRequestComment(ctx context.Context, body string, req types.PullRe
 	comment := &github.IssueComment{
 		Body: &body,
 	}
-	comment, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, comment)
+	_, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, comment)
 	if err != nil {
 		return err
 	}
