@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"os"
 
@@ -22,7 +23,12 @@ import (
 const (
 	prDescriptionRequiredLabel = "invalid"
 	openedPRAction             = "opened"
+	actionRequiredConclusion   = "action_required"
+	successConclusion          = "success"
 )
+
+// DCO is the check name
+var DCO string = "DCO"
 
 var anonymousSign = regexp.MustCompile("Signed-off-by:(.*)noreply.github.com")
 
@@ -36,6 +42,11 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 	}
 
 	client := factory.MakeClient(ctx, token, config)
+
+	checkErr := createSuccessfulCheck(req, client, ctx)
+	if checkErr != nil {
+		log.Fatalf("Error while creating successful DCO check: %s", checkErr.Error())
+	}
 
 	if req.Action == "review_requested" {
 		log.Printf("[%s/%s] review_requested on PR %d, unable to process this request\n",
@@ -73,6 +84,18 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 	anonymousSign := hasAnonymousSign(commits)
 	unsignedCommits := hasUnsigned(commits)
 	noDcoLabelExists := hasNoDcoLabel(issue)
+
+	if unsignedCommits {
+		checkErr := updateExistingDCOCheck(req, client, ctx, actionRequiredConclusion)
+		if checkErr != nil {
+			log.Fatalf("Error while updating existing DCO check: %s", checkErr)
+		}
+	} else {
+		checkErr := updateExistingDCOCheck(req, client, ctx, successConclusion)
+		if checkErr != nil {
+			log.Fatalf("Error while updating check: %s", checkErr.Error())
+		}
+	}
 
 	if !anonymousSign && !unsignedCommits {
 		if noDcoLabelExists {
@@ -276,4 +299,133 @@ func isSigned(msg string) bool {
 
 func hasDescription(pr types.PullRequest) bool {
 	return len(strings.TrimSpace(pr.Body)) > 0
+}
+
+func createSuccessfulCheck(req types.PullRequestOuter, client *github.Client, ctx context.Context) error {
+	checks, checksErr := determineExistingDCOCheck(req, client, ctx)
+	if checksErr != nil {
+		return fmt.Errorf("Error while creating successful DCO check: %s", checksErr.Error())
+	}
+	if *checks.Total > 1 {
+		return fmt.Errorf("Error unexpected count of existing DCO checks: %d", *checks.Total)
+	}
+	if *checks.Total == 1 {
+		return nil
+	}
+
+	check := createDCOCheck(req)
+	_, apiResponse, apiErr := client.Checks.CreateCheckRun(ctx, req.Repository.Owner.Login, req.Repository.Name, check)
+	if apiErr != nil {
+		return fmt.Errorf("Error while creating successful DCO check: %s", apiErr.Error())
+	}
+	if apiResponse.StatusCode != 201 {
+		return fmt.Errorf("Error while creating successful DCO check unexpected status code: %d", apiResponse.StatusCode)
+	}
+	return nil
+}
+
+func determineExistingDCOCheck(req types.PullRequestOuter, client *github.Client, ctx context.Context) (*github.ListCheckRunsResults, error) {
+	checks, checkRes, checkErr := client.Checks.ListCheckRunsForRef(ctx,
+		req.Repository.Owner.Login,
+		req.Repository.Name,
+		req.PullRequest.Head.SHA,
+		&github.ListCheckRunsOptions{CheckName: &DCO})
+
+	if checkRes.StatusCode != 200 {
+		return nil, fmt.Errorf("Error unexpected status code while retreiving existing checks %d", checkRes.StatusCode)
+	}
+	if checkErr != nil {
+		return nil, fmt.Errorf("Error while retreiving existing checks: %s", checkErr.Error())
+	}
+	return checks, nil
+}
+
+func createDCOCheck(req types.PullRequestOuter) github.CreateCheckRunOptions {
+	now := github.Timestamp{time.Now()}
+	status := "in_progress"
+	text := "Thank you for the contribution, everything looks fine."
+	title := "Signed commits"
+	summary := "All of your commits are signed"
+	check := github.CreateCheckRunOptions{
+		StartedAt: &now,
+		Name:      DCO,
+		HeadSHA:   req.PullRequest.Head.SHA,
+		Status:    &status,
+		Output: &github.CheckRunOutput{
+			Text:    &text,
+			Title:   &title,
+			Summary: &summary,
+		},
+	}
+	conclusion := successConclusion
+	check.Conclusion = &conclusion
+	check.CompletedAt = &now
+	return check
+}
+
+func updateExistingDCOCheck(req types.PullRequestOuter, client *github.Client, ctx context.Context, conclusion string) error {
+	var check github.UpdateCheckRunOptions
+	checks, checksErr := determineExistingDCOCheck(req, client, ctx)
+	if checksErr != nil {
+		return fmt.Errorf("Error while creating successful DCO check: %s", checksErr.Error())
+	}
+	if *checks.Total == 0 {
+		return fmt.Errorf("Error unexpected count of existing DCO checks: %d", *checks.Total)
+	}
+
+	if conclusion == successConclusion {
+		check = updateSuccessfulDCOCheck(checks)
+	} else if conclusion == actionRequiredConclusion {
+		check = updateUnsuccessfulDCOCheck(checks)
+	}
+
+	_, apiResponse, apiErr := client.Checks.UpdateCheckRun(ctx, req.Repository.Owner.Login, req.Repository.Name, *checks.CheckRuns[0].ID, check)
+	if apiErr != nil {
+		return fmt.Errorf("Error while updating the DCO check: %s", apiErr.Error())
+	}
+	if apiResponse.StatusCode != 200 {
+		return fmt.Errorf("Error while updating the DCO check unexpected status code: %d", apiResponse.StatusCode)
+	}
+	return nil
+}
+
+func updateSuccessfulDCOCheck(checks *github.ListCheckRunsResults) github.UpdateCheckRunOptions {
+	now := github.Timestamp{time.Now()}
+	text := "Thank you for the contribution, everything looks fine."
+	title := "Signed commits"
+	summary := "All of your commits are signed"
+
+	check := github.UpdateCheckRunOptions{
+		Name: *checks.CheckRuns[0].Name,
+		Output: &github.CheckRunOutput{
+			Text:    &text,
+			Title:   &title,
+			Summary: &summary,
+		},
+	}
+	conclusion := successConclusion
+	check.Conclusion = &conclusion
+	check.CompletedAt = &now
+	return check
+}
+
+func updateUnsuccessfulDCOCheck(checks *github.ListCheckRunsResults) github.UpdateCheckRunOptions {
+	now := github.Timestamp{time.Now()}
+	text := `Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off.
+	That's something we need before your Pull Request can be merged.`
+	title := "Unsigned commits"
+	summary := "One or more of the commits in this Pull Request are not signed-off."
+
+	check := github.UpdateCheckRunOptions{
+		Name: *checks.CheckRuns[0].Name,
+		Output: &github.CheckRunOutput{
+			Text:    &text,
+			Title:   &title,
+			Summary: &summary,
+		},
+	}
+	conclusion := actionRequiredConclusion
+	check.Conclusion = &conclusion
+	check.CompletedAt = &now
+	return check
 }
