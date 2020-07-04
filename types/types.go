@@ -19,6 +19,7 @@ type PullRequest struct {
 	AuthorAssociation string `json:"author_association"`
 	Body              string `json:"body"`
 	State             string `json:"state"`
+	Head              Head   `json:"head"`
 }
 
 type InstallationRequest struct {
@@ -104,4 +105,8 @@ type Message struct {
 // FirstTimeContributor whether the contributor is new to the repo
 func (p *PullRequest) FirstTimeContributor() bool {
 	return p.AuthorAssociation == "NONE"
+}
+
+type Head struct {
+	SHA string `json:"sha"`
 }
