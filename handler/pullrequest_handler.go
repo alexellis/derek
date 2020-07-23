@@ -101,12 +101,12 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 
 		_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"no-dco"})
 		if assignLabelErr != nil {
-			log.Fatalf("unable to add DCO label to PR %d: %s", req.PullRequest.Number, err)
+			log.Fatalf("unable to add DCO label to PR %d: %v", req.PullRequest.Number, assignLabelErr)
 		}
 		fmt.Println("Rate limiting", res.Rate)
 
 		if err = createPullRequestComment(ctx, body, req, client); err != nil {
-			log.Fatalf("unable to add comment on PR %d: %s", req.PullRequest.Number, err)
+			log.Fatalf("unable to add comment on PR %d: %v", req.PullRequest.Number, err)
 		}
 	} else {
 		fmt.Printf("[%s/%s] DCO label already applied: PR: %d\n",
