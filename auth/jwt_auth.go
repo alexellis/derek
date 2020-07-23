@@ -52,7 +52,7 @@ func MakeAccessTokenForInstallation(appID string, installation int, privateKey s
 
 	if err == nil {
 		c := http.Client{}
-		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("https://api.github.com/apps/installations/%d/access_tokens", installation), nil)
+		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("https://api.github.com/app/installations/%d/access_tokens", installation), nil)
 
 		req.Header.Add("Authorization", "Bearer "+signed)
 		req.Header.Add("Accept", "application/vnd.github.machine-man-preview+json")
@@ -72,9 +72,10 @@ func MakeAccessTokenForInstallation(appID string, installation int, privateKey s
 				return "", jsonErr
 			}
 
-			return string(jwtAuth.Token), nil
+			return jwtAuth.Token, nil
 		}
 	}
+	fmt.Println(fmt.Sprintf("Clound not get access token, %v", err))
 
 	return "", err
 }
