@@ -70,16 +70,18 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 			req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, err)
 	}
 
-	issue, res, labelErr := client.Issues.Get(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
-	if labelErr != nil {
-		log.Fatalf("[%s/%s] unable to fetch labels for PR %d: %s",
-			req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, err)
+	issue, resp, labelErr := client.Issues.Get(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
+	action := "Issues.Get"
+	if resp != nil {
+		fmt.Printf("%s rate limits: %d/%d\n", action, resp.Rate.Remaining, resp.Rate.Limit)
 	}
 
-	fmt.Printf("[%s/%s] %s rate limit\n",
-		req.Repository.Owner.Login, req.Repository.Name, res.Rate)
+	if labelErr != nil {
+		log.Fatalf("%s - [%s/%s] unable to fetch labels for PR %d: %s",
+			action, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, err)
+	}
 
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
 	anonymousSign := hasAnonymousSign(commits)
 	unsignedCommits := hasUnsigned(commits)
@@ -101,12 +103,16 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 		if noDcoLabelExists {
 			fmt.Printf("[%s/%s] Removing no-dco label: PR: %d\n",
 				req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
-			res, removeLabelErr := client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, "no-dco")
+			resp, removeLabelErr := client.Issues.RemoveLabelForIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, "no-dco")
 			if removeLabelErr != nil {
 				log.Fatalf("unable to remove DCO label from PR %d: %s", req.PullRequest.Number, err)
 			}
-			fmt.Printf("[%s/%s] Removing no-dco label: PR: %d - %v\n",
-				req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, res.Rate)
+			action := "RemoveLabelForIssue"
+			if resp != nil {
+				fmt.Printf("%s rate limits: %d/%d\n", action, resp.Rate.Remaining, resp.Rate.Limit)
+			}
+			fmt.Printf("[%s/%s] Removing no-dco label: PR: %d\n",
+				req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
 		}
 		return
 	}
@@ -122,12 +128,15 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 		fmt.Printf("[%s/%s] Adding no-dco label: PR: %d\n",
 			req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number)
 
-		_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"no-dco"})
-		if assignLabelErr != nil {
-			log.Fatalf("unable to add DCO label to PR %d: %v", req.PullRequest.Number, assignLabelErr)
+		_, resp, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, []string{"no-dco"})
+		action := "AddLabelsToIssue"
+		if resp != nil {
+			fmt.Printf("%s rate limits: %d/%d\n", action, resp.Rate.Remaining, resp.Rate.Limit)
 		}
-		fmt.Println("Rate limiting", res.Rate)
 
+		if assignLabelErr != nil {
+			log.Fatalf("%s unable to add DCO label to PR %d: %v", action, req.PullRequest.Number, assignLabelErr)
+		}
 		if err = createPullRequestComment(ctx, body, req, client); err != nil {
 			log.Fatalf("unable to add comment on PR %d: %v", req.PullRequest.Number, err)
 		}
@@ -222,12 +231,20 @@ func createPullRequestComment(ctx context.Context, body string, req types.PullRe
 	comment := &github.IssueComment{
 		Body: &body,
 	}
+	owner := req.Repository.Owner.Login
+	repo := req.Repository.Name
 	_, resp, err := client.Issues.CreateComment(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, comment)
+
+	action := "CreateComment"
+	if resp != nil {
+		fmt.Printf("%s rate limits: %d/%d\n", action, resp.Rate.Remaining, resp.Rate.Limit)
+	}
+
 	if err != nil {
+		log.Fatalf("Error with %s for PR %s/%s, %d\n%s", action, owner, repo, req.PullRequest.Number, err.Error())
 		return err
 	}
 
-	fmt.Println("Rate limiting", resp.Rate)
 	resp.Body.Close()
 	return nil
 }
@@ -237,13 +254,20 @@ func fetchPullRequestCommits(req types.PullRequestOuter, client *github.Client) 
 	listOpts := &github.ListOptions{
 		Page: 0,
 	}
-	commits, resp, err := client.PullRequests.ListCommits(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, listOpts)
+	owner := req.Repository.Owner.Login
+	repo := req.Repository.Name
+	commits, resp, err := client.PullRequests.ListCommits(ctx, owner, repo, req.PullRequest.Number, listOpts)
+
+	action := "ListCommits"
+	if resp != nil {
+		fmt.Printf("%s rate limits: %d/%d\n", action, resp.Rate.Remaining, resp.Rate.Limit)
+	}
+
 	if err != nil {
-		log.Fatalf("Error getting commits for PR %d\n%s", req.PullRequest.Number, err.Error())
+		log.Fatalf("Error with %s for PR %s/%s, %d\n%s", action, owner, repo, req.PullRequest.Number, err.Error())
 		return nil, err
 	}
 
-	fmt.Println("Rate limiting", resp.Rate)
 	resp.Body.Close()
 	return commits, nil
 }
@@ -253,16 +277,17 @@ func fetchPullRequestFileList(req types.PullRequestOuter, client *github.Client)
 	listOpts := &github.ListOptions{
 		Page: 0,
 	}
+	action := "ListFiles"
 	commitFiles, resp, err := client.PullRequests.ListFiles(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number, listOpts)
+	if resp != nil {
+		fmt.Printf("%s rate limits: %d/%d\n", action, resp.Rate.Remaining, resp.Rate.Limit)
+	}
 	if err != nil {
-		log.Fatalf("Error getting files for PR %d\n%s", req.PullRequest.Number, err.Error())
+		log.Fatalf("Error with %s for PR %d\n%s", action, req.PullRequest.Number, err.Error())
 		return nil, err
 	}
 
-	fmt.Println("Rate limiting", resp.Rate)
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
+	defer resp.Body.Close()
 
 	return commitFiles, nil
 }
