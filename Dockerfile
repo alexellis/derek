@@ -1,9 +1,9 @@
 FROM openfaas/classic-watchdog:0.18.10 as watchdog
 
-FROM golang:1.13-alpine as build
+FROM golang:1.15-alpine as build
 
 ENV CGO_ENABLED=0
-ENV GO111MODULE=off
+ENV GO111MODULE=on
 
 WORKDIR /go/src/github.com/alexellis/derek
 COPY . .
