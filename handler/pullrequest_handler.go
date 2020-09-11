@@ -12,12 +12,12 @@ import (
 
 	"os"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/alexellis/derek/auth"
 	"github.com/alexellis/derek/config"
 	"github.com/alexellis/derek/factory"
 	"github.com/alexellis/derek/types"
 	"github.com/google/go-github/github"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
