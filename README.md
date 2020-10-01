@@ -26,6 +26,7 @@ All features are modular and can be enabled/disabled as required:
 * Automatically label/flag PRs without a *Description*
 * Label PRs from first-time contributors
 * Detect spam PRs (from hacktoberfest)
+* Automatically close PRs during hacktoberfest from first-time contributors
 
 Self-host, or use the free managed version.
 

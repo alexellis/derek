@@ -27,6 +27,7 @@ const (
 	deleted               = "deleted"
 	prDescriptionRequired = "pr_description_required"
 	hacktoberfest         = "hacktoberfest"
+	noNewbies             = "no_newbies"
 	releaseNotes          = "release_notes"
 )
 
@@ -133,6 +134,12 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 
 		if req.Action != handler.ClosedConstant && req.PullRequest.State != handler.ClosedConstant {
 			contributingURL := getContributingURL(derekConfig.ContributingURL, req.Repository.Owner.Login, req.Repository.Name)
+			if handler.EnabledFeature(noNewbies, derekConfig) {
+				isSpamPR, _ := handler.HandleFirstTimerPR(req, contributingURL, config)
+				if isSpamPR {
+					return nil
+				}
+			}
 			if handler.EnabledFeature(hacktoberfest, derekConfig) {
 				isSpamPR, _ := handler.HandleHacktoberfestPR(req, contributingURL, config)
 				if isSpamPR {
