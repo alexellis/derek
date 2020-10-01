@@ -31,11 +31,15 @@ Self-host, or use the free managed version.
 
 ### User guide
 
-Find out what Derek can do you for your project, community and team including all available commands and configuration options: [Read the user-guide](./USER_GUIDE.md)
+Find out what Derek can do you for your project, community and team including all available commands and configuration options
+
+[Read the user guide](./USER_GUIDE.md)
 
 ### Get Derek
 
-You can use a managed Derek bot or self-host your own on OpenFaaS. Start here: [Get Derek](GET.md).
+You can use the managed Derek service or self-host your own bot.
+
+[Get Derek](GET.md)
 
 ### How do I work?
 
@@ -58,24 +62,14 @@ The idea for a bot that could comment on issues or respond to activity is from t
 Some of our users include:
 
 * [Docker / Moby](https://github.com/moby/moby/issues/35736)
-
-* [OpenFaaS](https://github.com/openfaas/faas-cli/issues/85)
-
-* [inlets](https://github.com/inlets/inlets)
-
-* [arkade](https://github.com/alexellis/arkade)
-
-* [k3sup](https://github.com/alexellis/k3sup)
-
-* [goreleaser](https://github.com/goreleaser/goreleaser/commit/9d418755dd9f37589f5a97f34b2c47e2e2f1325a)
-
-* [evilsocket](https://github.com/evilsocket)
-
-* [Subsurface Diving app](https://github.com/Subsurface-divelog/subsurface/pull/1748)
-
 * [okteto](https://github.com/okteto/okteto)
-
-See other users in our [customers file](./.CUSTOMERS)
+* [OpenFaaS](https://github.com/openfaas/faas-cli/issues/85)
+* [inlets](https://github.com/inlets/inlets)
+* [arkade](https://github.com/alexellis/arkade)
+* [k3sup](https://github.com/alexellis/k3sup)
+* [goreleaser](https://github.com/goreleaser/goreleaser/commit/9d418755dd9f37589f5a97f34b2c47e2e2f1325a)
+* [evilsocket](https://github.com/evilsocket)
+* [Subsurface Diving app](https://github.com/Subsurface-divelog/subsurface/pull/1748)
 
 ## Backlog:
 
@@ -99,18 +93,18 @@ Future work:
 
 There are [over a dozen contributors](https://github.com/alexellis/derek/graphs/contributors) to Derek, but the following people have made the most impact.
 
-Maintainers:
+Maintainer(s):
 
 * Alex Ellis - creator & lead maintainer
-* Martin Dekov ([@martindekov](https://github.com/martindekov)) - co-maintainer
 
 Hall of fame:
 
-* Burton Rheutan ([@burtonr](https://github.com/burtonr))
-* John McCabe ([@johnmccabe](https://github.com/johnmccabe))
-* Lubomir I. Ivanov ([@neolit123](https://github.com/neolit123))
-* Ivana Yovcheva ([@ivanayov](https://github.com/ivanayov))
-* Richard Gee ([@rgee0](https://github.com/rgee0))
+* Martin Dekov - [@martindekov](https://github.com/martindekov)
+* Burton Rheutan - [@burtonr](https://github.com/burtonr)
+* John McCabe - [@johnmccabe](https://github.com/johnmccabe)
+* Lubomir I. Ivanov - [@neolit123](https://github.com/neolit123)
+* Ivana Yovcheva - [@ivanayov](https://github.com/ivanayov)
+* Richard Gee - [@rgee0](https://github.com/rgee0)
 
 Alex Ellis created Derek to automate project maintainer duties around licensing and to help bring granular permissions back to GitHub. Derek has empowered contributors in the OpenFaaS community to run and maintain the project without needing full write access. OpenFaaS contributors continue to improve Derek so they can get the job done without fuss.
 

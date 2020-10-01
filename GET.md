@@ -15,7 +15,7 @@ Installation process:
 
 * Install the managed or your self-hosted Derek GitHub App
 * Send a PR to the [customers file](https://github.com/alexellis/derek/blob/master/.CUSTOMERS) with your GitHub username or GitHub organization
-* Add a .DEREK.yml to any repositories you want to include, turn on or off any features you need as per the user-guide
+* Add a .DEREK.yml to any repositories you want to include, turn on or off any features you need as per the [user guide](./USER_GUIDE.md)
 * Add in more repositories in the same organisation using the redirect feature
 
 ### Derek the SaaS (managed for you, by us)
