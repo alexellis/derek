@@ -44,7 +44,7 @@ Raise a new issue and type in `Derek close`, then edit your `.DEREK.yml` file to
 
 * Support the managed service
 
-Show your support for Derek by [becoming a GitHub Sponsor from 5 USD / mo](https://github.com/sponsors/alexellis).
+Show your support for Derek by [becoming a GitHub Sponsor from 10 USD / mo](https://github.com/sponsors/alexellis). You'll receive updates via email as a Sponsor, but can opt out if you wish.
 
 ### Doing the things the hard way (self-hosting)
 
