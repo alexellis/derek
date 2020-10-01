@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -17,9 +18,10 @@ const (
 
 // Config to run Derek
 type Config struct {
-	SecretKey     string
-	PrivateKey    string
-	ApplicationID string
+	SecretKey       string
+	PrivateKey      string
+	ApplicationID   string
+	DCOStatusChecks bool
 }
 
 // NewConfig populates configuration from known-locations and gives
@@ -56,6 +58,13 @@ func NewConfig() (Config, error) {
 		config.ApplicationID = val
 	} else {
 		return config, fmt.Errorf("application_id must be given")
+	}
+
+	if val, ok := os.LookupEnv("dco_status_checks"); ok && len(val) > 0 {
+		v, err := strconv.ParseBool(val)
+		if err == nil {
+			config.DCOStatusChecks = v
+		}
 	}
 
 	// debug, _ := json.Marshal(config)
