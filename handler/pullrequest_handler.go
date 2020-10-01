@@ -43,9 +43,11 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 
 	client := factory.MakeClient(ctx, token, config)
 
-	checkErr := createSuccessfulCheck(req, client, ctx)
-	if checkErr != nil {
-		log.Fatalf("Error while creating successful DCO check: %s", checkErr.Error())
+	if config.DCOStatusChecks {
+		checkErr := createSuccessfulCheck(req, client, ctx)
+		if checkErr != nil {
+			log.Fatalf("Error while creating successful DCO check: %s", checkErr.Error())
+		}
 	}
 
 	if req.Action == "review_requested" {
@@ -87,15 +89,17 @@ func HandlePullRequest(req types.PullRequestOuter, contributingURL string, confi
 	unsignedCommits := hasUnsigned(commits)
 	noDcoLabelExists := hasNoDcoLabel(issue)
 
-	if unsignedCommits {
-		checkErr := updateExistingDCOCheck(req, client, ctx, actionRequiredConclusion)
-		if checkErr != nil {
-			log.Fatalf("Error while updating existing DCO check: %s", checkErr)
-		}
-	} else {
-		checkErr := updateExistingDCOCheck(req, client, ctx, successConclusion)
-		if checkErr != nil {
-			log.Fatalf("Error while updating check: %s", checkErr.Error())
+	if config.DCOStatusChecks {
+		if unsignedCommits {
+			checkErr := updateExistingDCOCheck(req, client, ctx, actionRequiredConclusion)
+			if checkErr != nil {
+				log.Fatalf("Error while updating existing DCO check: %s", checkErr)
+			}
+		} else {
+			checkErr := updateExistingDCOCheck(req, client, ctx, successConclusion)
+			if checkErr != nil {
+				log.Fatalf("Error while updating check: %s", checkErr.Error())
+			}
 		}
 	}
 
