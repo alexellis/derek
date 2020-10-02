@@ -45,18 +45,17 @@ func HandleFirstTimerPR(req types.PullRequestOuter, contributingURL string, conf
 
 			fmt.Println(fmt.Sprintf("Request to close issue #%d was successful.\n", req.PullRequest.Number))
 
+			body := firstTimerComment(contributingURL)
+			if err = createPullRequestComment(ctx, body, req, client); err != nil {
+				log.Fatalf("unable to add comment on PR %d: %s", req.PullRequest.Number, err)
+				return true, err
+			}
+
 			_, res, assignLabelErr := client.Issues.AddLabelsToIssue(ctx, req.Repository.Owner.Login, req.Repository.Name, req.PullRequest.Number,
 				[]string{invalidLabel})
 			if assignLabelErr != nil {
 				log.Fatalf("%s limit: %d, remaining: %d", assignLabelErr, res.Limit, res.Remaining)
 				return true, assignLabelErr
-			}
-
-			body := firstTimerComment(contributingURL)
-
-			if err = createPullRequestComment(ctx, body, req, client); err != nil {
-				log.Fatalf("unable to add comment on PR %d: %s", req.PullRequest.Number, err)
-				return true, err
 			}
 
 			return true, nil

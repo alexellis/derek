@@ -134,23 +134,27 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 
 		if req.Action != handler.ClosedConstant && req.PullRequest.State != handler.ClosedConstant {
 			contributingURL := getContributingURL(derekConfig.ContributingURL, req.Repository.Owner.Login, req.Repository.Name)
+
+			if handler.EnabledFeature(dcoCheck, derekConfig) {
+				handler.HandlePullRequest(req, contributingURL, config)
+			}
+
+			if handler.EnabledFeature(prDescriptionRequired, derekConfig) {
+				handler.VerifyPullRequestDescription(req, contributingURL, config)
+			}
+
 			if handler.EnabledFeature(noNewbies, derekConfig) {
 				isSpamPR, _ := handler.HandleFirstTimerPR(req, contributingURL, config)
 				if isSpamPR {
 					return nil
 				}
 			}
+
 			if handler.EnabledFeature(hacktoberfest, derekConfig) {
 				isSpamPR, _ := handler.HandleHacktoberfestPR(req, contributingURL, config)
 				if isSpamPR {
 					return nil
 				}
-			}
-			if handler.EnabledFeature(dcoCheck, derekConfig) {
-				handler.HandlePullRequest(req, contributingURL, config)
-			}
-			if handler.EnabledFeature(prDescriptionRequired, derekConfig) {
-				handler.VerifyPullRequestDescription(req, contributingURL, config)
 			}
 		}
 		break
