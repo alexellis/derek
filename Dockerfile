@@ -1,6 +1,6 @@
 FROM openfaas/classic-watchdog:0.18.10 as watchdog
 
-FROM golang:1.15-alpine as build
+FROM golang:1.13-alpine as build
 
 ENV CGO_ENABLED=0
 ENV GO111MODULE=on
@@ -10,9 +10,9 @@ COPY . .
 
 RUN go test $(go list ./... | grep -v /vendor/) -cover
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o derek .
+RUN CGO_ENABLED=0 GOOS=linux go build -mod=vendor -a -installsuffix cgo -o derek .
 
-FROM alpine:3.11 as ship
+FROM alpine:3.12 as ship
 
 COPY --from=watchdog /fwatchdog /usr/bin/fwatchdog
 RUN chmod +x /usr/bin/fwatchdog
