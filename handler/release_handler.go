@@ -55,14 +55,17 @@ func updateReleaseNotes(client *github.Client, owner, repo, latestTag string) er
 
 	workingReleases := getWorkingReleases(releases, owner, repo, latestTag)
 
-	includedPRs, err := buildClosedPRs(client, workingReleases, owner, repo, latestTag)
+	if workingReleases.CurrentRelease == nil {
+		return fmt.Errorf("unable to detect current release, retry webhook after a few seconds")
 
+	}
+
+	includedPRs, err := buildClosedPRs(client, workingReleases, owner, repo, latestTag)
 	if err != nil {
 		return err
 	}
 
 	includedCommits, err := buildCommits(client, workingReleases, owner, repo, latestTag)
-
 	if err != nil {
 		return err
 	}
