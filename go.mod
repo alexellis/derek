@@ -1,6 +1,6 @@
 module github.com/alexellis/derek
 
-go 1.13
+go 1.15
 
 require (
 	github.com/alexellis/hmac v0.0.0-20180624211220-5c52ab81c0de
@@ -9,6 +9,6 @@ require (
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.11
 	github.com/sirupsen/logrus v1.7.0
-	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
-	gopkg.in/yaml.v2 v2.3.0
+	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
+	gopkg.in/yaml.v2 v2.4.0
 )

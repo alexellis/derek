@@ -1,6 +1,6 @@
-FROM openfaas/classic-watchdog:0.18.10 as watchdog
+FROM ghcr.io/openfaas/classic-watchdog:0.1.2 as watchdog
 
-FROM golang:1.13-alpine as build
+FROM golang:1.15-alpine as build
 
 ENV CGO_ENABLED=0
 ENV GO111MODULE=on
