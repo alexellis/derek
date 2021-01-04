@@ -121,7 +121,12 @@ func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfi
 		break
 
 	default:
-		feedback = "Unable to work with comment: " + req.Comment.Body
+		feedback = "No command found in comment"
+
+		if strings.HasPrefix(req.Comment.Body, "Derek ") || strings.HasPrefix(req.Comment.Body, "/") {
+			feedback = fmt.Sprintf("Unable to work with command: %q", req.Comment.Body)
+		}
+
 		err = nil
 		break
 	}

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 
@@ -68,44 +69,6 @@ func main() {
 func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 
 	switch eventType {
-	case "release":
-		req := github.ReleaseEvent{}
-
-		if err := json.Unmarshal(bytesIn, &req); err != nil {
-			return fmt.Errorf("Cannot parse input %s", err.Error())
-		}
-
-		if req.GetAction() == "created" {
-			customer, err := auth.IsCustomer(req.Repo.Owner.GetLogin(), &http.Client{})
-			if err != nil {
-				return fmt.Errorf("unable to verify customer: %s/%s", req.Repo.Owner.GetLogin(), req.Repo.GetName())
-			} else if customer == false {
-				return fmt.Errorf("no customer found for: %s/%s", req.Repo.Owner.GetLogin(), req.Repo.GetName())
-			}
-
-			var derekConfig *types.DerekRepoConfig
-			if req.Repo.GetPrivate() {
-				derekConfig, err = handler.GetPrivateRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName(), int(req.Installation.GetID()), config)
-				if err != nil {
-					return fmt.Errorf("unable to get private repo config: %s", err)
-				}
-			} else {
-				derekConfig, err = handler.GetRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName())
-				if err != nil {
-					return fmt.Errorf("unable to get repo config: %s", err)
-				}
-			}
-
-			err = fmt.Errorf(`"release_notes" feature not enabled`)
-			if handler.EnabledFeature(releaseNotes, derekConfig) {
-
-				handler := handler.NewReleaseHandler(config, int(req.Installation.GetID()))
-				err = handler.Handle(req)
-			}
-			return err
-		}
-		break
-
 	case "pull_request":
 		req := types.PullRequestOuter{}
 		if err := json.Unmarshal(bytesIn, &req); err != nil {
@@ -119,12 +82,15 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
+		log.Printf("Owner: %s, repo: %s, action: %s", req.Repository.Owner.Login, req.Repository.Name, "pull_request")
+
 		var derekConfig *types.DerekRepoConfig
 		if req.Repository.Private {
 			derekConfig, err = handler.GetPrivateRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Installation.ID, config)
 		} else {
 			derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
 		}
+
 		if err != nil {
 			return fmt.Errorf("Unable to access maintainers file at: %s/%s\nError: %s",
 				req.Repository.Owner.Login,
@@ -136,6 +102,8 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			contributingURL := getContributingURL(derekConfig.ContributingURL, req.Repository.Owner.Login, req.Repository.Name)
 
 			if handler.EnabledFeature(dcoCheck, derekConfig) {
+				log.Printf("Owner: %s, repo: %s, action: %s", req.Repository.Owner.Login, req.Repository.Name, "derek:dco_check")
+
 				handler.HandlePullRequest(req, contributingURL, config)
 			}
 
@@ -165,6 +133,8 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			return fmt.Errorf("Cannot parse input %s", err.Error())
 		}
 
+		log.Printf("Owner: %s, repo: %s, action: %s", req.Repository.Owner.Login, req.Repository.Name, "issue_comment")
+
 		customer, err := auth.IsCustomer(req.Repository.Owner.Login, &http.Client{})
 		if err != nil {
 			return fmt.Errorf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
@@ -188,8 +158,51 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 
 		if req.Action != deleted {
 			if handler.PermittedUserFeature(comments, derekConfig, req.Comment.User.Login) {
+				log.Printf("Owner: %s, repo: %s, action: %s", req.Repository.Owner.Login, req.Repository.Name, "derek:handle_comment")
+
 				handler.HandleComment(req, config, derekConfig)
 			}
+		}
+		break
+
+	case "release":
+		req := github.ReleaseEvent{}
+
+		if err := json.Unmarshal(bytesIn, &req); err != nil {
+			return fmt.Errorf("Cannot parse input %s", err.Error())
+		}
+
+		log.Printf("Owner: %s, repo: %s, action: %s", req.Repo.Owner.GetLogin(), req.Repo.GetName(), "release")
+
+		if req.GetAction() == "created" {
+			customer, err := auth.IsCustomer(req.Repo.Owner.GetLogin(), &http.Client{})
+			if err != nil {
+				return fmt.Errorf("unable to verify customer: %s/%s", req.Repo.Owner.GetLogin(), req.Repo.GetName())
+			} else if customer == false {
+				return fmt.Errorf("no customer found for: %s/%s", req.Repo.Owner.GetLogin(), req.Repo.GetName())
+			}
+
+			var derekConfig *types.DerekRepoConfig
+			if req.Repo.GetPrivate() {
+				derekConfig, err = handler.GetPrivateRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName(), int(req.Installation.GetID()), config)
+				if err != nil {
+					return fmt.Errorf("unable to get private repo config: %s", err)
+				}
+			} else {
+				derekConfig, err = handler.GetRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName())
+				if err != nil {
+					return fmt.Errorf("unable to get repo config: %s", err)
+				}
+			}
+
+			err = fmt.Errorf(`"release_notes" feature not enabled`)
+			if handler.EnabledFeature(releaseNotes, derekConfig) {
+				log.Printf("Owner: %s, repo: %s, action: %s", req.Repo.Owner.GetLogin(), req.Repo.GetName(), "derek:handle_release")
+
+				handler := handler.NewReleaseHandler(config, int(req.Installation.GetID()))
+				err = handler.Handle(req)
+			}
+			return err
 		}
 		break
 	default:
