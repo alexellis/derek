@@ -74,9 +74,6 @@ Some of our users include:
 * [inlets](https://github.com/inlets/inlets)
 * [arkade](https://github.com/alexellis/arkade)
 * [k3sup](https://github.com/alexellis/k3sup)
-* [goreleaser](https://github.com/goreleaser/goreleaser/commit/9d418755dd9f37589f5a97f34b2c47e2e2f1325a)
-* [evilsocket](https://github.com/evilsocket)
-* [Subsurface Diving app](https://github.com/Subsurface-divelog/subsurface/pull/1748)
 
 ## Backlog:
 
