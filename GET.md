@@ -20,15 +20,17 @@ Installation process:
 
 ### Derek the SaaS (managed for you, by us)
 
-To use our managed Derek bot service follow the instructions below which take around 5-10 minutes.
+The cost is 25USD per month. You will need to become a [GitHub Sponsor](https://github.com/sponsors/alexellis) to gain access to the managed service. The price covers hosting, management and maintenance of the service.
 
-* Install this GitHub App on the individual repos (not the whole org):
+To use our managed Derek service follow the instructions below which take around 5-10 minutes.
+
+* Install this GitHub App on the individual repository (not the whole org):
 
 https://github.com/apps/derek
 
 You will be told what permissions are required.
 
-* Create `.DEREK.yml` in your elected repos
+* Create `.DEREK.yml` in your selected repositories. You can use a redirect file if you have several repositories.
 
 You can use this file as a template: https://github.com/openfaas/faas/blob/master/.DEREK.yml
 
@@ -40,11 +42,7 @@ https://github.com/alexellis/derek/blob/master/.CUSTOMERS
 
 * Finally test it works
 
-Raise a new issue and type in `Derek close`, then edit your `.DEREK.yml` file to add your team and community maintainers/contributors
-
-* Support the managed service
-
-Show your support for Derek by [becoming a GitHub Sponsor from 10 USD / mo](https://github.com/sponsors/alexellis). You'll receive updates via email as a Sponsor, but can opt out if you wish.
+Raise a new issue and type in `Derek close` or `/close`, then edit your `.DEREK.yml` file to add your team and community maintainers/contributors.
 
 ### Doing the things the hard way (self-hosting)
 
