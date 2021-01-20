@@ -28,7 +28,7 @@ All features are modular and can be enabled/disabled as required:
 * Detect spam PRs (from hacktoberfest)
 * Automatically close PRs during hacktoberfest from first-time contributors
 
-For the managed service the cost is 25USD per month. You will need to become a [GitHub Sponsor](https://github.com/sponsors/alexellis) to gain access to the managed service. The price covers hosting, management and maintenance of the service.
+For the managed service the cost is 25USD per month. You will need to become an [OpenFaaS GitHub Sponsor](https://github.com/sponsors/openfaas) to gain access to the managed service. The price covers hosting, management and maintenance of the service.
 
 ## Built for developers by developers
 
@@ -42,11 +42,9 @@ Find out what Derek can do you for your project, community and team including al
 
 [Read the user guide](./USER_GUIDE.md)
 
-### Get Derek
+### Start using Derek today
 
-You can use the managed Derek service or self-host your own bot.
-
-[Get Derek](GET.md)
+Get started here: [Onboarding guide](GET.md)
 
 ### How do I work?
 

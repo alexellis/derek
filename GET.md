@@ -1,4 +1,4 @@
-## Get Derek
+## Onboarding guide for Derek
 
 ### The workflow
 
