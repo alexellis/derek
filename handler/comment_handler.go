@@ -36,6 +36,7 @@ const (
 	assignReviewerConstant   string = "AssignReviewer"
 	unassignReviewerConstant string = "UnassignReviewer"
 	messageConstant          string = "message"
+	mergePRConstant          string = "Merge"
 
 	noDCO             string = "no-dco"
 	labelLimitDefault int    = 5
@@ -120,6 +121,24 @@ func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfi
 		feedback, err = createMessage(req, command.Type, command.Value, config, derekConfig)
 		break
 
+	case mergePRConstant:
+		merger := merge{
+			Config:     config,
+			RepoConfig: derekConfig,
+		}
+
+		feedback, err = merger.Merge(req, command.Type, command.Value)
+
+		if len(feedback) > 0 {
+			log.Printf("Feedback: %s\n", feedback)
+		}
+
+		if err != nil {
+			log.Println(err)
+		}
+
+		break
+
 	default:
 		feedback = "No command found in comment"
 
@@ -131,10 +150,10 @@ func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfi
 		break
 	}
 
-	fmt.Print(feedback)
+	log.Print(feedback)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 }
 
@@ -439,6 +458,8 @@ func parse(body string, commandTriggers []string) *types.CommentAction {
 			commandTrigger + "clear reviewer: ":   unassignReviewerConstant,
 			commandTrigger + "message: ":          messageConstant,
 			commandTrigger + "msg: ":              messageConstant,
+			commandTrigger + "merge":              mergePRConstant,
+			commandTrigger + "rebase":             mergePRConstant,
 		}
 
 		for trigger, commandType := range commands {

@@ -57,6 +57,12 @@ type Issue struct {
 	State     string       `json:"state"`
 	Milestone Milestone    `json:"milestone"`
 	URL       string       `json:"url"`
+
+	PullRequest *PullRequestIssueLink `json:"pull_request"`
+}
+
+type PullRequestIssueLink struct {
+	URL string `json:"url"`
 }
 
 type Milestone struct {
@@ -80,21 +86,27 @@ type CommentAction struct {
 type DerekRepoConfig struct {
 
 	// A redirect URL to load the config from another location.
-	Redirect string
+	Redirect string `yaml:"redirect"`
 
 	// Features can be turned on/off if needed.
-	Features []string
+	Features []string `yaml:"features"`
 
 	// Users who are enrolled to make use of Derek
-	Maintainers []string
+	Maintainers []string `yaml:"maintainers"`
 
 	// Curators is an alias for Maintainers and is only used if the Maintainers list is empty.
-	Curators []string
+	Curators []string `yaml:"curators"`
 
 	//ContributingURL url to contribution guide
 	ContributingURL string `yaml:"contributing_url"`
 
 	Messages []Message `yaml:"custom_messages"`
+
+	// Mergers are those who can perform a rebase
+	Mergers []string `yaml:"mergers"`
+
+	// MustApprove are those from whom an approval must be in place for a merge
+	MustApprove []string `yaml:"must_approve"`
 }
 
 type Message struct {
