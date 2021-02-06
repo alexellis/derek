@@ -37,6 +37,19 @@ type PullRequestOuter struct {
 	InstallationRequest
 }
 
+type IssuesOuter struct {
+	Repository Repository `json:"repository"`
+	Comment    Comment    `json:"comment"`
+	Action     string     `json:"action"`
+	Issue      Issue      `json:"issue"`
+	Sender     Sender     `json:"sender"`
+	InstallationRequest
+}
+
+type Sender struct {
+	Login string `json:"login"`
+}
+
 type IssueCommentOuter struct {
 	Repository Repository `json:"repository"`
 	Comment    Comment    `json:"comment"`
@@ -53,6 +66,7 @@ type Issue struct {
 	Labels    []IssueLabel `json:"labels"`
 	Number    int          `json:"number"`
 	Title     string       `json:"title"`
+	Body      string       `json:"body"`
 	Locked    bool         `json:"locked"`
 	State     string       `json:"state"`
 	Milestone Milestone    `json:"milestone"`
@@ -95,6 +109,8 @@ type DerekRepoConfig struct {
 	ContributingURL string `yaml:"contributing_url"`
 
 	Messages []Message `yaml:"custom_messages"`
+
+	RequiredInIssues []string `yaml:"required_in_issues"`
 }
 
 type Message struct {

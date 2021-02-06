@@ -127,6 +127,45 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 		}
 		break
 
+	case "issues":
+
+		req := types.IssuesOuter{}
+		if err := json.Unmarshal(bytesIn, &req); err != nil {
+			return fmt.Errorf("Cannot parse input %s", err.Error())
+		}
+
+		if req.Action == "opened" {
+			log.Printf("Owner: %s, repo: %s, action: %s", req.Repository.Owner.Login, req.Repository.Name, "issues")
+
+			customer, err := auth.IsCustomer(req.Repository.Owner.Login, &http.Client{})
+			if err != nil {
+				return fmt.Errorf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+			} else if customer == false {
+				return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
+			}
+
+			var derekConfig *types.DerekRepoConfig
+			if req.Repository.Private {
+				derekConfig, err = handler.GetPrivateRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Installation.ID, config)
+			} else {
+				derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
+			}
+			if err != nil {
+				return fmt.Errorf("Unable to access maintainers file at: %s/%s\nError: %s",
+					req.Repository.Owner.Login,
+					req.Repository.Name,
+					err.Error())
+			}
+
+			if len(derekConfig.RequiredInIssues) > 0 {
+				err := handler.CheckIssueTemplateHeadings(req, derekConfig, config)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		break
 	case "issue_comment":
 		req := types.IssueCommentOuter{}
 		if err := json.Unmarshal(bytesIn, &req); err != nil {
