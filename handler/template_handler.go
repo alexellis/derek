@@ -11,6 +11,17 @@ import (
 
 func CheckIssueTemplateHeadings(req types.IssuesOuter, derekConfig *types.DerekRepoConfig, config config.Config) error {
 
+	maintainer := false
+	for _, u := range derekConfig.Maintainers {
+		if u == req.Sender.Login {
+			maintainer = true
+			break
+		}
+	}
+	if maintainer {
+		return nil
+	}
+
 	body := req.Issue.Body
 
 	found := 0
