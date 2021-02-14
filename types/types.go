@@ -4,9 +4,10 @@
 package types
 
 type Repository struct {
-	Owner   Owner  `json:"owner"`
-	Name    string `json:"name"`
-	Private bool   `json:"private"`
+	Owner         Owner  `json:"owner"`
+	Name          string `json:"name"`
+	Private       bool   `json:"private"`
+	DefaultBranch string `json:"default_branch"`
 }
 
 type Owner struct {
