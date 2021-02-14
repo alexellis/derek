@@ -19,7 +19,7 @@ import (
 
 const (
 	configFile      = ".DEREK.yml"
-	configURLFormat = "https://github.com/%s/%s/raw/master/%s"
+	configURLFormat = "https://github.com/%s/%s/raw/%s/%s"
 )
 
 func EnabledFeature(attemptedFeature string, config *types.DerekRepoConfig) bool {
@@ -92,10 +92,10 @@ func validateRedirectURL(url string) error {
 // GetPrivateRepoConfig returns the configuration for derek
 // for the specified repository. Since the repository is
 // private we use the github API to fetch `.DEREK.yml`.
-func GetPrivateRepoConfig(owner, repository string, installation int, config config.Config) (*types.DerekRepoConfig, error) {
+func GetPrivateRepoConfig(owner, repository, branch string, installation int, config config.Config) (*types.DerekRepoConfig, error) {
 	client, ctx := makeClient(installation, config)
 	response, err := client.Repositories.DownloadContents(ctx, owner, repository, configFile, &github.RepositoryContentGetOptions{
-		Ref: "master",
+		Ref: branch,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to download config file: %s", err)
@@ -117,12 +117,12 @@ func GetPrivateRepoConfig(owner, repository string, installation int, config con
 // repository. The repository has to be public since this function
 // will fetch the file from the CDN. If you are trying to fetch
 // the config from a private repo use `GetPrivateRepoConfig` instead.
-func GetRepoConfig(owner string, repository string) (*types.DerekRepoConfig, error) {
+func GetRepoConfig(owner, repository, branch string) (*types.DerekRepoConfig, error) {
 	client := http.Client{
 		Timeout: 30 * time.Second,
 	}
 
-	configFile := fmt.Sprintf(configURLFormat, owner, repository, configFile)
+	configFile := fmt.Sprintf(configURLFormat, owner, repository, branch, configFile)
 	bytesConfig, err := readConfigFromURL(client, configFile)
 	if err != nil {
 		return nil, err

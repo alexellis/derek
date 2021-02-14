@@ -86,9 +86,9 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 
 		var derekConfig *types.DerekRepoConfig
 		if req.Repository.Private {
-			derekConfig, err = handler.GetPrivateRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Installation.ID, config)
+			derekConfig, err = handler.GetPrivateRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Repository.DefaultBranch, req.Installation.ID, config)
 		} else {
-			derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
+			derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Repository.DefaultBranch)
 		}
 
 		if err != nil {
@@ -146,9 +146,9 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 
 			var derekConfig *types.DerekRepoConfig
 			if req.Repository.Private {
-				derekConfig, err = handler.GetPrivateRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Installation.ID, config)
+				derekConfig, err = handler.GetPrivateRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Repository.DefaultBranch, req.Installation.ID, config)
 			} else {
-				derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
+				derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Repository.DefaultBranch)
 			}
 			if err != nil {
 				return fmt.Errorf("Unable to access maintainers file at: %s/%s\nError: %s",
@@ -183,9 +183,9 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 
 		var derekConfig *types.DerekRepoConfig
 		if req.Repository.Private {
-			derekConfig, err = handler.GetPrivateRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Installation.ID, config)
+			derekConfig, err = handler.GetPrivateRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Repository.DefaultBranch, req.Installation.ID, config)
 		} else {
-			derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name)
+			derekConfig, err = handler.GetRepoConfig(req.Repository.Owner.Login, req.Repository.Name, req.Repository.DefaultBranch)
 		}
 
 		if err != nil {
@@ -223,12 +223,12 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 
 			var derekConfig *types.DerekRepoConfig
 			if req.Repo.GetPrivate() {
-				derekConfig, err = handler.GetPrivateRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName(), int(req.Installation.GetID()), config)
+				derekConfig, err = handler.GetPrivateRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName(), req.Repo.GetDefaultBranch(), int(req.Installation.GetID()), config)
 				if err != nil {
 					return fmt.Errorf("unable to get private repo config: %s", err)
 				}
 			} else {
-				derekConfig, err = handler.GetRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName())
+				derekConfig, err = handler.GetRepoConfig(req.Repo.Owner.GetLogin(), req.Repo.GetName(), req.Repo.GetDefaultBranch())
 				if err != nil {
 					return fmt.Errorf("unable to get repo config: %s", err)
 				}
