@@ -32,7 +32,7 @@ Estimated setup time 30-60mins depending on your experience-level with GitHub's 
 
 Now get your publicly-available URL for the OpenFaaS gateway.
 
-If you're behind a firewall, use an [inlets](https://inlets.dev tunnel - feel free to get a free trial.
+If you're behind a firewall, use an [inlets](https://inlets.dev) tunnel - feel free to get a free trial.
 
 ```bash
 export OPENFAAS_URL=https://gw.example.com
@@ -80,7 +80,7 @@ Before deploying Derek create two secrets:
 * derek-private-key - used for GitHub authz
 * derek-secret-key - used for verifying webhooks are from GitHub using HMAC
 
-```sh
+```bash
 $ faas-cli secret create derek-private-key \
    --from-file=./derek-private-key
 $ faas-cli secret create derek-secret-key \
@@ -93,13 +93,13 @@ Most of the configuration is outside of the image, the exception being the versi
 
 Update derek.yml and replace `alexellis/` with your own username on the Docker Hub or your registry.
 
-```
+```bash
 $ faas-cli build -f derek.yml
 ```
 
 This will build a Docker image in your local library, now push it to the Docker Hub.
 
-```
+```bash
 $ docker login
 $ faas-cli push -f derek.yml
 ```
@@ -137,7 +137,8 @@ Provide an `https` location of your `.CUSTOMERS` file.  If hosted on GitHub then
 Validating via a symmetric key is also known as HMAC. If the webhook secret wasn't set earlier and you want to turn this off (to edit and debug) then set `validate_hmac="false"`
 
 Now deploy Derek:
-```
+
+```bash
 $ faas-cli deploy -f derek.yml
 ```
 
@@ -154,6 +155,7 @@ $ faas-cli deploy -f derek.yml
 Finally configure the features that you want to enable within your GitHub repo by creating a `.DEREK.yml` file.
 
 The file should detail which features you wish to enable and the maintainer names; for example this repo would look as follows:
+
 ```yml
 maintainers:
  - alexellis
