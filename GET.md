@@ -8,9 +8,7 @@ If you're considering using Derek, then please use our managed service, availabl
 
 The price covers hosting, management and maintenance of the service.
 
-If you're looking to hack on Derek, see [DEV.md](DEV.md) for how to set it up locally.
-
-* [Sponsor OpenFaaS on Github](https://github.com/sponsors/openfaas)
+* [Sponsor OpenFaaS on Github](https://github.com/sponsors/openfaas) on the 25 USD/mo tier
 
 ### The workflow
 
@@ -53,3 +51,8 @@ https://github.com/alexellis/derek/blob/master/.CUSTOMERS
 * Finally test it works
 
 Raise a new issue and type in `Derek close` or `/close`, then edit your `.DEREK.yml` file to add your team and community maintainers/contributors.
+
+## Contributions
+
+If you're looking to hack on Derek, see [DEV.md](DEV.md) for how to set it up locally for testing and development.
+
