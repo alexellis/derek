@@ -78,7 +78,7 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 		customer, err := auth.IsCustomer(req.Repository.Owner.Login, &http.Client{})
 		if err != nil {
 			return fmt.Errorf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
-		} else if customer == false {
+		} else if !customer {
 			return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
@@ -140,7 +140,7 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			customer, err := auth.IsCustomer(req.Repository.Owner.Login, &http.Client{})
 			if err != nil {
 				return fmt.Errorf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
-			} else if customer == false {
+			} else if !customer {
 				return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 			}
 
@@ -165,7 +165,6 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			}
 		}
 
-		break
 	case "issue_comment":
 		req := types.IssueCommentOuter{}
 		if err := json.Unmarshal(bytesIn, &req); err != nil {
@@ -177,7 +176,7 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 		customer, err := auth.IsCustomer(req.Repository.Owner.Login, &http.Client{})
 		if err != nil {
 			return fmt.Errorf("Unable to verify customer: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
-		} else if customer == false {
+		} else if !customer {
 			return fmt.Errorf("No customer found for: %s/%s", req.Repository.Owner.Login, req.Repository.Name)
 		}
 
@@ -202,7 +201,6 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 				handler.HandleComment(req, config, derekConfig)
 			}
 		}
-		break
 
 	case "release":
 		req := github.ReleaseEvent{}
@@ -243,9 +241,9 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 			}
 			return err
 		}
-		break
+
 	default:
-		return fmt.Errorf("X_Github_Event want: ['pull_request', 'issue_comment'], got: " + eventType)
+		return fmt.Errorf("X_Github_Event want: ['pull_request', 'issue_comment', 'release'], got: " + eventType)
 	}
 
 	return nil
