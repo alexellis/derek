@@ -33,7 +33,7 @@ func buildCustomerURL() string {
 // The validation is controlled by the 'validate_customers' env-var
 func IsCustomer(ownerLogin string, c *http.Client) (bool, error) {
 	validate := customerValidationEnabled()
-	if validate == false {
+	if !validate {
 		return true, nil
 	}
 

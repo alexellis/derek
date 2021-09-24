@@ -56,6 +56,7 @@ Subscribe to these events:
 
 - Issue comment
 - Pull request
+- Release
 
 Set "Where can this GitHub App be installed?" to Any account
 
@@ -111,7 +112,7 @@ This is where Derek finds the details he needs to do the work he does.  The main
 ```yaml
 provider:
   name: openfaas
-  
+
 functions:
   derek:
     handler: ./derek
@@ -169,10 +170,10 @@ features:
 
 ### Testing and troubleshooting
 
-To test: 
+To test:
 
 Create a label of "no-dco" within every project you want Derek to help you with.
- 
+
 Head over to your GitHub repository and raise a Pull Request from the web-UI for your README file. This will not sign-off the commit, so you'll have Derek on your case.
 
 If you're not sure if things are working right then Click on the GitHub App via your account settings and then click "Advanced" and "Recent Deliveries". This will show you all the incoming messages and their responses.
