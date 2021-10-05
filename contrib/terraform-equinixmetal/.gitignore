@@ -1,0 +1,3 @@
+/main.tfvars
+/.terraform
+/*.tfstate
