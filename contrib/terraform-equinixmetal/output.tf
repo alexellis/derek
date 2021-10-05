@@ -12,9 +12,9 @@ Give Caddy a moment to get a certificate and when ready, the faasd gateway is av
 
 Authenticate with faas-cli:
 
-    export PWD=$(terraform output -raw basic_auth_password)
+    export PASSWORD=$(terraform output -raw basic_auth_password)
     export OPENFAAS_URL=${module.faasd.gateway_url}
-    echo $PWD | faas-cli login -u admin --password-stdin
+    echo $PASSWORD | faas-cli login -u admin --password-stdin
 
 CONFIGURATION
 }
