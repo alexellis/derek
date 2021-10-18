@@ -4,9 +4,9 @@ provider:
 
 functions:
   derek:
-    handler: ./derek
-    image: derek
-    lang: Dockerfile
+    lang: golang-http
+    handler: ./http-handler
+    image: derek-2:latest
     environment:
       application_id: <your_GH_applicationID>
       multilabel_limit: 5

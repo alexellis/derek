@@ -1,12 +1,13 @@
+version: 1.0
 provider:
   name: openfaas
   gateway: http://127.0.0.1:8080
-
 functions:
-  derek-0913:
-    handler: ./
-    image: alexellis/derek:0.9.13
-    lang: dockerfile
+  # TODO: Double check port stuff
+  derek:
+    lang: golang-http
+    handler: ./http-handler
+    image: derek-2:latest
     environment:
       debug: true
       customers_url: https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS
