@@ -4,6 +4,7 @@
 package handler
 
 import (
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -11,6 +12,10 @@ import (
 	"github.com/alexellis/derek/types"
 	"github.com/google/go-github/github"
 )
+
+func Test_fixCommitsMessage(t *testing.T) {
+	log.Println(fixCommits)
+}
 
 func Test_getCommandTrigger(t *testing.T) {
 

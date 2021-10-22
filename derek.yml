@@ -3,24 +3,23 @@ provider:
   gateway: http://127.0.0.1:8080
 
 functions:
-  derek-0913:
+  derek-0110:
     handler: ./
-    image: alexellis/derek:0.9.13
+    image: ghcr.io/alexellis/derek:0.11.0
     lang: dockerfile
     environment:
       debug: true
       customers_url: https://raw.githubusercontent.com/alexellis/derek/master/.CUSTOMERS
       validate_hmac: true
-      validate_customers: false
+      validate_customers: true
       secret_path: /var/openfaas/secrets/ # use /run/secrets/ for older OpenFaaS versions
       write_debug: true
-      read_timeout: 10s
-      write_timeout: 10s
-      combine_output: false
+      read_timeout: 15s
+      write_timeout: 15s
+      combine_output: true
     environment_file:
       - secrets.yml
       # See secrets.example.yml
     secrets:
       - derek-secret-key
       - derek-private-key
-

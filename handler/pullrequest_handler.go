@@ -187,13 +187,39 @@ func VerifyPullRequestDescription(req types.PullRequestOuter, contributingURL st
 	}
 }
 
+const fixCommits = `### :bulb: Shall we fix this?
+
+This will only take a few moments.
+
+First, clone your fork and checkout this branch using the git CLI.
+
+Next, set up your real name and email address:
+
+` + "`" + `git config --global user.name "Your Full Name"` + "`" + `
+` + "`" + `git config --global user.email "you@domain.com"` + "`" + `
+
+Finally, run one of these commands to add the "Signed-off-by" line to your commits.
+
+If you only have one commit so far then run: ` + "`" + `git commit --amend --signoff` + "`" + ` and then ` + "`" + `git push --force` + "`." + `
+If you have multiple commits, watch [this video](https://www.youtube.com/watch?v=8j0H6urZ-bU).
+
+Check that the message has been added properly by running "git log".
+`
+
 func anonymousCommitComment(contributingURL string) string {
-	return `Thank you for your contribution. It seems that one or more of your commits have an anonymous email address. Please consider signing your commits with a valid email address. Please see our [contributing guide](` + contributingURL + `).`
+	return `Thank you for your contribution. It seems that one or more of your commits have a "Signed-off-by" statement with an anonymous email address. The [Developer Certificate of Origin (DCO)](https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin) requires all commits to be signed off by genuine, contactable individuals. Please see our [contributing guide](` + contributingURL + `).
+
+	` + fixCommits
 }
 
 func unsignedCommitComment(contributingURL string) string {
-	return `Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off. That's something we need before your Pull Request can be merged. Please see our [contributing guide](` + contributingURL + `).
-Tip: if you only have one commit so far then run: ` + "`" + `git commit --amend --signoff` + "`" + ` and then ` + "`" + `git push --force` + "`."
+
+	return `Thank you for your contribution. unfortunately, one or more of your commits are missing the required "Signed-off-by:" statement. Signing off is part of the [Developer Certificate of Origin (DCO)](https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin) which is used by this project.
+
+Read the DCO and [project contributing guide](` + contributingURL + `) carefully, and amend your commits using the git CLI. Note that this does not require any cryptography, keys or special steps to be taken.
+
+` + fixCommits
+
 }
 
 func emptyDescriptionComment(contributingURL string) string {
@@ -442,6 +468,7 @@ func updateUnsuccessfulDCOCheck(checks *github.ListCheckRunsResults) github.Upda
 	now := github.Timestamp{time.Now()}
 	text := `Thank you for your contribution. I've just checked and your commit doesn't appear to be signed-off.
 	That's something we need before your Pull Request can be merged.`
+
 	title := "Unsigned commits"
 	summary := "One or more of the commits in this Pull Request are not signed-off."
 
