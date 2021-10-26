@@ -3,7 +3,7 @@ module github.com/alexellis/derek
 go 1.15
 
 require (
-	github.com/alexellis/hmac v0.0.0-20180624211220-5c52ab81c0de
+	github.com/alexellis/hmac v1.3.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect

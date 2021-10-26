@@ -37,10 +37,10 @@ func main() {
 
 	requestRaw, _ := ioutil.ReadAll(os.Stdin)
 
-	xHubSignature := os.Getenv("Http_X_Hub_Signature")
+	xHubSignature256 := os.Getenv("Http_X_Hub_Signature_256")
 
-	if validateHmac && len(xHubSignature) == 0 {
-		os.Stderr.Write([]byte("must provide X_Hub_Signature"))
+	if validateHmac && len(xHubSignature256) == 0 {
+		os.Stderr.Write([]byte("must provide X_Hub_Signature_256"))
 		os.Exit(1)
 	}
 
@@ -51,7 +51,7 @@ func main() {
 	}
 
 	if validateHmac {
-		err := hmac.Validate(requestRaw, xHubSignature, config.SecretKey)
+		err := hmac.Validate(requestRaw, xHubSignature256, config.SecretKey)
 		if err != nil {
 			os.Stderr.Write([]byte(err.Error()))
 			os.Exit(1)
