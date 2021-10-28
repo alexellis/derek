@@ -19,7 +19,7 @@ import (
 	"github.com/alexellis/derek/handler"
 
 	"github.com/alexellis/derek/types"
-	"github.com/alexellis/hmac"
+	"github.com/alexellis/hmac/v2"
 )
 
 const (

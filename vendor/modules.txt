@@ -1,6 +1,6 @@
-# github.com/alexellis/hmac v1.3.0
+# github.com/alexellis/hmac/v2 v2.0.0
 ## explicit
-github.com/alexellis/hmac
+github.com/alexellis/hmac/v2
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 ## explicit
 github.com/dgrijalva/jwt-go
