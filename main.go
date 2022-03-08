@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/google/go-github/github"
 
@@ -238,6 +239,15 @@ func handleEvent(eventType string, bytesIn []byte, config config.Config) error {
 
 				handler := handler.NewReleaseHandler(config, int(req.Installation.GetID()))
 				err = handler.Handle(req)
+				// retry once - with a 5 second delay
+				if err != nil && err.Error() == "unable to detect current release, retry webhook after a few seconds" {
+					time.Sleep(time.Second * 5)
+					err = handler.Handle(req)
+					if err != nil {
+						err = fmt.Errorf("got an error, then retried after 5 seconds: %w", err)
+					}
+
+				}
 			}
 			return err
 		}
