@@ -72,37 +72,24 @@ func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfi
 	switch command.Type {
 
 	case addLabelConstant, removeLabelConstant:
-
 		feedback, err = manageLabel(req, command.Type, command.Value, config)
-		break
 
 	case assignConstant, unassignConstant:
-
 		feedback, err = manageAssignment(req, command.Type, command.Value, config)
-		break
 
 	case closeConstant, reopenConstant:
-
 		feedback, err = manageState(req, command.Type, config)
-		break
 
 	case setTitleConstant:
-
 		feedback, err = manageTitle(req, command.Type, command.Value, config)
-		break
 
 	case lockConstant, unlockConstant:
-
 		feedback, err = manageLocking(req, command.Type, config)
-		break
 
 	case setMilestoneConstant, removeMilestoneConstant:
-
 		feedback, err = updateMilestone(req, command.Type, command.Value, config)
-		break
 
 	case assignReviewerConstant, unassignReviewerConstant:
-
 		pr := types.PullRequest{
 			Number: req.Issue.Number,
 		}
@@ -113,22 +100,22 @@ func HandleComment(req types.IssueCommentOuter, config config.Config, derekConfi
 			InstallationRequest: req.InstallationRequest,
 		}
 		feedback, err = editReviewers(prReq, command.Type, command.Value, config)
-		break
 
 	case messageConstant:
-
 		feedback, err = createMessage(req, command.Type, command.Value, config, derekConfig)
-		break
 
 	default:
-		feedback = "No command found in comment"
+		feedback = "No command found in comment\n"
 
 		if strings.HasPrefix(req.Comment.Body, "Derek ") || strings.HasPrefix(req.Comment.Body, "/") {
-			feedback = fmt.Sprintf("Unable to work with command: %q", req.Comment.Body)
+			feedback = fmt.Sprintf("Unable to work with command: %q\n", req.Comment.Body)
 		}
 
 		err = nil
-		break
+	}
+
+	if !strings.HasSuffix(feedback, "\n") {
+		feedback += "\n"
 	}
 
 	fmt.Print(feedback)
