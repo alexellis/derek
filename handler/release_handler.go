@@ -172,19 +172,26 @@ func buildClosedPRs(client *github.Client, workingReleases WorkingRelease, owner
 func getWorkingReleases(releases []*github.RepositoryRelease, owner, repo, tag string) WorkingRelease {
 	rel := WorkingRelease{}
 
-	var count int
-	var r *github.RepositoryRelease
-
-	for count, r = range releases {
+	for position, r := range releases {
 		if r.GetTagName() == tag {
 			rel.CurrentDate = r.CreatedAt.Time
 			rel.CurrentTag = tag
 			rel.CurrentRelease = r
 
-			if count+1 < len(releases) {
-				prior := releases[count+1]
-				rel.PreviousDate = prior.CreatedAt.Time
-				rel.PreviousTag = prior.GetTagName()
+			prevRel := position + 1
+
+			for prevRel < len(releases) {
+
+				prior := releases[prevRel]
+
+				if !*prior.Prerelease {
+					rel.PreviousDate = prior.CreatedAt.Time
+					rel.PreviousTag = prior.GetTagName()
+					break
+				}
+
+				prevRel++
+
 			}
 
 			break

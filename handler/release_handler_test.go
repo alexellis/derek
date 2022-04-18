@@ -77,6 +77,7 @@ func Test_getWorkingReleases_TwoReleases(t *testing.T) {
 	repo := "derek"
 	tag := "0.2.0"
 	lastTag := "0.1.0"
+	prerelease := false
 
 	releases := []*github.RepositoryRelease{
 		&github.RepositoryRelease{
@@ -84,12 +85,14 @@ func Test_getWorkingReleases_TwoReleases(t *testing.T) {
 			CreatedAt: &github.Timestamp{
 				Time: time.Now(),
 			},
+			Prerelease: &prerelease,
 		},
 		&github.RepositoryRelease{
 			TagName: &lastTag,
 			CreatedAt: &github.Timestamp{
 				Time: time.Now().Add(time.Hour * -1),
 			},
+			Prerelease: &prerelease,
 		},
 	}
 	workingReleases := getWorkingReleases(releases, owner, repo, tag)
@@ -120,6 +123,7 @@ func Test_getWorkingReleases_OneRelease(t *testing.T) {
 	owner := "alexellis"
 	repo := "derek"
 	tag := "0.2.0"
+	prerelease := false
 
 	releases := []*github.RepositoryRelease{
 		&github.RepositoryRelease{
@@ -127,6 +131,7 @@ func Test_getWorkingReleases_OneRelease(t *testing.T) {
 			CreatedAt: &github.Timestamp{
 				Time: time.Now(),
 			},
+			Prerelease: &prerelease,
 		},
 	}
 	workingReleases := getWorkingReleases(releases, owner, repo, tag)
@@ -201,5 +206,61 @@ func Test_includeCommit_WithinCurrentRange(t *testing.T) {
 		t.Errorf("Included value for Commit %s incorrect for range: [%s-%s] got: %v, want %v",
 			cm.GetCommit().GetCommitter().GetDate().String(), previous.String(), current.String(), got, want)
 		t.Fail()
+	}
+}
+
+func Test_getWorkingReleases_ThreeReleasesOnePreRelease(t *testing.T) {
+	owner := "alexellis"
+	repo := "derek"
+	tag := "0.2.0"
+	midTag := "0.1.5"
+	midPreRelease := true
+	lastTag := "0.1.0"
+	preRelease := false
+
+	releases := []*github.RepositoryRelease{
+		&github.RepositoryRelease{
+			TagName: &tag,
+			CreatedAt: &github.Timestamp{
+				Time: time.Now(),
+			},
+			Prerelease: &preRelease,
+		},
+		&github.RepositoryRelease{
+			TagName: &midTag,
+			CreatedAt: &github.Timestamp{
+				Time: time.Now().Add(time.Hour * -1),
+			},
+			Prerelease: &midPreRelease,
+		},
+		&github.RepositoryRelease{
+			TagName: &lastTag,
+			CreatedAt: &github.Timestamp{
+				Time: time.Now().Add(time.Hour * -2),
+			},
+			Prerelease: &preRelease,
+		},
+	}
+	workingReleases := getWorkingReleases(releases, owner, repo, tag)
+
+	gotCurrentDate := workingReleases.CurrentDate
+	wantCurrentDate := releases[0].GetCreatedAt().Time
+
+	if gotCurrentDate != wantCurrentDate {
+		t.Errorf("current date, got: %s, want: %s", gotCurrentDate, wantCurrentDate)
+	}
+
+	gotPreviousDate := workingReleases.PreviousDate
+	wantPreviousDate := releases[2].GetCreatedAt().Time
+
+	if gotPreviousDate != wantPreviousDate {
+		t.Errorf("previous date, got: %s, want: %s", gotPreviousDate, wantPreviousDate)
+	}
+
+	gotPreviousTag := workingReleases.PreviousTag
+	wantPreviousTag := *releases[2].TagName
+
+	if gotPreviousTag != wantPreviousTag {
+		t.Errorf("previous tag, got: %s, want: %s", gotPreviousTag, wantPreviousTag)
 	}
 }
