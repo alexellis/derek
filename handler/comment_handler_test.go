@@ -4,7 +4,6 @@
 package handler
 
 import (
-	"log"
 	"os"
 	"strings"
 	"testing"
@@ -14,7 +13,7 @@ import (
 )
 
 func Test_fixCommitsMessage(t *testing.T) {
-	log.Println(fixCommits)
+	t.Log(fixCommits)
 }
 
 func Test_getCommandTrigger(t *testing.T) {
@@ -770,7 +769,7 @@ func Test_getCommandValue(t *testing.T) {
 			expectedVal: "burt",
 		},
 		{
-			title: "Single Label trailing mixure",
+			title:       "Single Label trailing mixure",
 			commentBody: "Derek add label: burt,,. , ,,	,.,",
 			trigger:     "Derek add label: ",
 			expectedVal: "burt",
