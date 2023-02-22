@@ -1,5 +1,5 @@
-FROM --platform=${TARGETPLATFORM:-linux/amd64} ghcr.io/openfaas/classic-watchdog:0.1.4 as watchdog
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.15-alpine3.12 as build
+FROM --platform=${TARGETPLATFORM:-linux/amd64} ghcr.io/openfaas/classic-watchdog:0.2.2 as watchdog
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.18-alpine3.17 as build
 
 ENV CGO_ENABLED=0
 ENV GO111MODULE=on
@@ -8,9 +8,9 @@ WORKDIR /go/src/github.com/alexellis/derek
 COPY . .
 
 RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=${CGO_ENABLED} go test $(go list ./... | grep -v /vendor/) -cover
-RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=${CGO_ENABLED} go build -mod=vendor -a -installsuffix cgo -o derek .
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=${CGO_ENABLED} go build -mod=vendor -o derek .
 
-FROM --platform=${TARGETPLATFORM:-linux/amd64} alpine:3.13 as ship
+FROM --platform=${TARGETPLATFORM:-linux/amd64} alpine:3.17.2 as ship
 
 COPY --from=watchdog /fwatchdog /usr/bin/fwatchdog
 RUN chmod +x /usr/bin/fwatchdog
