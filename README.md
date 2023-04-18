@@ -1,6 +1,6 @@
 # derek
 
-[![Build Status](https://travis-ci.com/alexellis/derek.svg?branch=master)](https://travis-ci.com/alexellis/derek)
+[![ci](https://github.com/alexellis/derek/actions/workflows/ci.yml/badge.svg)](https://github.com/alexellis/derek/actions/workflows/ci.yml)
 [![OpenFaaS](https://img.shields.io/badge/openfaas-serverless-blue.svg)](https://www.openfaas.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![](https://godoc.org/github.com/alexellis/derek?status.svg)](https://godoc.org/github.com/alexellis/derek)
