@@ -11,5 +11,9 @@ func MergeDerekRepoConfigs(localConfig, remoteConfig DerekRepoConfig) (DerekRepo
 		return remoteConfig, mergeErr
 	}
 
+	if len(localConfig.RequiredInIssues) > 0 {
+		remoteConfig.RequiredInIssues = localConfig.RequiredInIssues
+	}
+
 	return remoteConfig, nil
 }
