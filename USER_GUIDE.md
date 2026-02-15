@@ -51,7 +51,7 @@ This file enables Derek usage for `rgee0` and `alexellis`, it also turns on all 
 
 ### Feature: `release_notes`
 
-Derek will collate closed PRs since the last release and then put together a summary and set it for your release text body.
+Derek will collate closed PRs since the previous full release and then put together a summary and set it for your release text body.
 
 Example from [openfaas/faas-cli](https://github.com/openfaas/faas-cli/releases/tag/0.9.5):
 
