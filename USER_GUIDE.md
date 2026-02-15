@@ -274,3 +274,5 @@ You can specify a `redirect` URL in the .DEREK.yml file, this instructs derek to
 apply local overrides and additions to the config set in the remote file.
 
 For example, to add a contributor to that repo (in addition to the existing contributors) you can specify the remote file and also add the `maintainers` section to your local file. These lists will then be merged, giving all users in the merged set access to derek.
+
+The exception to the rule in the merging of configs is in the `required_in_issues` feature where the locally configured values will fully override any and all values set in the remote config.

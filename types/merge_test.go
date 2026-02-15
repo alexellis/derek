@@ -78,3 +78,27 @@ func Test_mergeDerekRepoConfigs_ConfigValuesAppendedToList(t *testing.T) {
 	}
 
 }
+
+func Test_mergeDerekRepoConfigs_UseLocalHeadings(t *testing.T) {
+
+	remote := DerekRepoConfig{
+		RequiredInIssues: []string{
+			"#1",
+			"#2",
+		},
+	}
+	local := DerekRepoConfig{
+		RequiredInIssues: []string{
+			"#2",
+		},
+	}
+
+	got, err := MergeDerekRepoConfigs(local, remote)
+
+	if err != nil {
+		t.Errorf("Got error for a single plan, expected no error: %s", err.Error())
+	}
+	if len(got.RequiredInIssues) != len(local.RequiredInIssues) {
+		t.Errorf("RequiredInIssues want %s, but got %s", local.RequiredInIssues, got.RequiredInIssues)
+	}
+}
